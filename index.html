@@ -140,6 +140,37 @@
             color: var(--error);
             font-weight: 600;
         }
+        
+        .segmented-control {
+            display: flex;
+            width: 100%;
+            border: 1px solid var(--bg-light);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .segmented-control button {
+            flex: 1;
+            padding: 12px;
+            background-color: transparent;
+            border: none;
+            color: var(--text-dark);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            border-radius: 0;
+            width: 50%;
+        }
+        .segmented-control button.active {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+        }
+        .segmented-control button:not(.active):hover {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+        }
 
         #group-code-display {
             margin-top: 1.5rem;
@@ -417,11 +448,15 @@
     <div id="multiplayer-modal-overlay" class="modal-overlay">
         <div class="modal-content">
             <h2>Multiplayer Setup</h2>
+            <div class="segmented-control">
+                <button id="multiplayer-create-tab" class="active">Create Group</button>
+                <button id="multiplayer-join-tab">Join Group</button>
+            </div>
             <input type="text" id="nickname-input" placeholder="Enter your nickname (max 15 chars)">
-            <input type="text" id="group-code-input" placeholder="Enter 3-digit group code">
+            <input type="text" id="group-code-input" placeholder="Enter 3-digit group code" style="display: none;">
             <div id="multiplayer-feedback">Connecting to server...</div>
             <div class="button-group">
-                <button id="join-group-btn" class="secondary" disabled>Join Group</button>
+                <button id="join-group-btn" class="secondary" disabled style="display: none;">Join Group</button>
                 <button id="create-group-btn" disabled>Create Group</button>
             </div>
         </div>
@@ -445,7 +480,7 @@
         <header>
             <h1 id="game-title">The Syntax Card Game</h1>
             <p id="game-subtitle">Arrange the words to form a correct sentence.</p>
-            <div id="timer">Time: 30</div>
+            <div id="timer">Time: 50</div>
         </header>
 
         <main>
@@ -485,7 +520,7 @@
         totalLevels: 50,
         totalQuestionsPerLevel: 30,
         score: 0,
-        timer: 30,
+        timer: 50,
         timerInterval: null,
         currentSentence: '',
         currentWords: [],
@@ -524,7 +559,9 @@
         waitingPlayerList: document.getElementById('waiting-room-player-list'),
         startGameBtn: document.getElementById('start-game-btn'),
         multiplayerScoreboard: document.getElementById('multiplayer-scoreboard'),
-        playerScoresList: document.getElementById('player-scores')
+        playerScoresList: document.getElementById('player-scores'),
+        multiplayerCreateTab: document.getElementById('multiplayer-create-tab'),
+        multiplayerJoinTab: document.getElementById('multiplayer-join-tab'),
     };
 
     // --- OHM.JS GRAMMAR ---
@@ -650,6 +687,24 @@
     });
 
     // Multiplayer Setup
+    elements.multiplayerCreateTab.addEventListener('click', () => {
+        elements.multiplayerCreateTab.classList.add('active');
+        elements.multiplayerJoinTab.classList.remove('active');
+        
+        elements.groupCodeInput.style.display = 'none';
+        elements.createGroupBtn.style.display = 'block';
+        elements.joinGroupBtn.style.display = 'none';
+    });
+
+    elements.multiplayerJoinTab.addEventListener('click', () => {
+        elements.multiplayerJoinTab.classList.add('active');
+        elements.multiplayerCreateTab.classList.remove('active');
+
+        elements.groupCodeInput.style.display = 'block';
+        elements.createGroupBtn.style.display = 'none';
+        elements.joinGroupBtn.style.display = 'block';
+    });
+
     elements.createGroupBtn.addEventListener('click', () => {
         const nickname = elements.nicknameInput.value;
         if (!nickname.trim()) {
@@ -756,14 +811,18 @@
         const sentenceTrayWords = Array.from(elements.sentenceTray.querySelectorAll('.word-tile'));
         const userSentence = sentenceTrayWords.map(tile => tile.textContent).join(' ').toLowerCase();
 
-        // Basic validation for now, replace with Ohm.js
         if (userSentence === state.currentSentence.toLowerCase()) {
             elements.feedbackArea.textContent = "Correct!";
             elements.feedbackArea.className = 'feedback-correct';
-            state.score += 10 + state.timer;
-            if(state.gameMode === 'multi') {
+            state.score += state.timer; // Score is based on remaining time
+            if(state.gameMode === 'multi' && state.socket) {
                 state.playerData.score = state.score;
-                state.socket.emit('updateScore', state.playerData);
+                // Send score update with group code for server to identify the group
+                state.socket.emit('updateScore', {
+                    id: state.playerData.id,
+                    score: state.playerData.score,
+                    groupCode: state.groupCode
+                });
             }
             // Move to next question after a delay
             setTimeout(nextQuestion, 1500);
@@ -800,7 +859,7 @@
     }
 
     function startTimer() {
-        state.timer = 30;
+        state.timer = 50; // Set timer to 50 seconds
         elements.timerDisplay.textContent = `Time: ${state.timer}`;
         clearInterval(state.timerInterval);
         state.timerInterval = setInterval(() => {
@@ -808,8 +867,10 @@
             elements.timerDisplay.textContent = `Time: ${state.timer}`;
             if (state.timer <= 0) {
                 clearInterval(state.timerInterval);
-                elements.feedbackArea.textContent = "Time's up!";
+                elements.feedbackArea.textContent = "Time's up! No points awarded. Moving on...";
                 elements.feedbackArea.className = 'feedback-incorrect';
+                // Automatically move to the next question
+                setTimeout(nextQuestion, 1500);
             }
         }, 1000);
     }
