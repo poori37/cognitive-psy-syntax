@@ -52,7 +52,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joinGroup', ({ playerData, groupCode }) => {
-        const group = groups[groupCode];
+        const trimmedGroupCode = groupCode ? groupCode.trim() : '';
+        const group = groups[trimmedGroupCode];
+        
         if (!group) {
             return socket.emit('joinError', 'Group not found.');
         }
@@ -73,7 +75,7 @@ io.on('connection', (socket) => {
         }
 
         if (group.players.some(p => p.id === socket.id)) {
-            console.warn(`Player ${socket.id} sent a duplicate join request for group ${groupCode}. Ignoring.`);
+            console.warn(`Player ${socket.id} sent a duplicate join request for group ${trimmedGroupCode}. Ignoring.`);
             return;
         }
         
@@ -84,12 +86,12 @@ io.on('connection', (socket) => {
         };
 
         group.players.push(newPlayer);
-        socket.join(groupCode);
+        socket.join(trimmedGroupCode);
 
-        console.log(`${newPlayer.nickname} joined group ${groupCode}`);
+        console.log(`${newPlayer.nickname} joined group ${trimmedGroupCode}`);
         
-        socket.emit('joinSuccess', { groupCode });
-        io.to(groupCode).emit('updatePlayers', group.players);
+        socket.emit('joinSuccess', { groupCode: trimmedGroupCode });
+        io.to(trimmedGroupCode).emit('updatePlayers', group.players);
     });
 
     socket.on('startGameRequest', (groupCode) => {

@@ -916,7 +916,11 @@
                 });
                 
                 state.socket.on('joinError', (message) => {
-                    DOMElements.multiplayerFeedback.textContent = message;
+                    if (message && message.toLowerCase().includes('not found')) {
+                         DOMElements.multiplayerFeedback.textContent = message + " (Note: Groups may expire due to server inactivity.)";
+                    } else {
+                        DOMElements.multiplayerFeedback.textContent = message;
+                    }
                 });
                 
                 state.socket.on('updatePlayers', (players) => {
