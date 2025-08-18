@@ -558,8 +558,8 @@
       S_V_O = Noun Verb Noun Punct?
       S_V_Adv = Noun Verb Adv Punct?
       Det_Adj_N_V = Det Adj Noun Verb Punct?
-      S_V_PP = Noun Verb Prep Det? Noun Punct?
-      S_V_O_PP = Noun Verb Noun Prep Det? Noun Punct?
+      S_V_PP = Noun Verb Prep Noun Punct?
+      S_V_O_PP = Noun Verb Noun Prep Noun Punct?
       S_V_Conj_V = Noun Verb Conj Verb Punct?
       Compound_S_V = Noun Conj Noun Verb Punct?
       S_V_O_Conj_S_V_O = Noun Verb Noun Comma? Conj Noun Verb Noun Punct?
@@ -583,7 +583,7 @@
     
     <script type="module">
         // --- CONFIGURATION ---
-        const SOCKET_SERVER_URL = "https://your-syntax-game-server.com"; // IMPORTANT: Replace with your actual server URL
+        const SOCKET_SERVER_URL = "https://cognitive-psy-assessment.onrender.com"; // Connect to the live server
         const TIME_LIMIT = 60; // seconds
 
         // --- DATA ---
@@ -792,45 +792,62 @@
         // --- MULTIPLAYER LOGIC ---
         function connectSocket() {
             if (state.socket) return;
-            state.socket = io(SOCKET_SERVER_URL, { reconnection: false });
+            try {
+                state.socket = io(SOCKET_SERVER_URL, { reconnection: false });
 
-            state.socket.on('connect', () => {
-                state.playerData.id = state.socket.id;
-                console.log('Connected to server with ID:', state.playerData.id);
-            });
+                state.socket.on('connect', () => {
+                    state.playerData.id = state.socket.id;
+                    console.log('Connected to server with ID:', state.playerData.id);
+                });
 
-            state.socket.on('groupCreated', (groupCode) => {
-                state.playerData.groupCode = groupCode;
-                DOMElements.multiplayerFeedback.textContent = '';
-                DOMElements.groupCodeDisplay.style.display = 'block';
-                DOMElements.groupCodeText.textContent = groupCode;
-                setTimeout(startGame, 1000); // Start game after short delay
-            });
+                state.socket.on('connect_error', (err) => {
+                    console.error('Connection failed:', err.message);
+                    DOMElements.multiplayerFeedback.textContent = "Error: Could not connect to server.";
+                    // Disable multiplayer buttons to prevent further attempts
+                    DOMElements.createGroupBtn.disabled = true;
+                    DOMElements.joinGroupBtn.disabled = true;
+                });
 
-            state.socket.on('joinSuccess', (groupData) => {
-                state.playerData.groupCode = groupData.groupCode;
-                updateScoreboard(groupData.players);
-                startGame();
-            });
-            
-            state.socket.on('joinError', (message) => {
-                DOMElements.multiplayerFeedback.textContent = message;
-            });
-            
-            state.socket.on('updatePlayers', (players) => {
-                updateScoreboard(players);
-            });
+                state.socket.on('groupCreated', (groupCode) => {
+                    state.playerData.groupCode = groupCode;
+                    DOMElements.multiplayerFeedback.textContent = '';
+                    DOMElements.groupCodeDisplay.style.display = 'block';
+                    DOMElements.groupCodeText.textContent = groupCode;
+                    setTimeout(startGame, 1000); // Start game after short delay
+                });
 
-            state.socket.on('disconnect', () => {
-                console.log('Disconnected from server.');
-                displayFeedback('Connection to server lost.', 'error', 0);
-            });
+                state.socket.on('joinSuccess', (groupData) => {
+                    state.playerData.groupCode = groupData.groupCode;
+                    updateScoreboard(groupData.players);
+                    startGame();
+                });
+                
+                state.socket.on('joinError', (message) => {
+                    DOMElements.multiplayerFeedback.textContent = message;
+                });
+                
+                state.socket.on('updatePlayers', (players) => {
+                    updateScoreboard(players);
+                });
+
+                state.socket.on('disconnect', () => {
+                    console.log('Disconnected from server.');
+                    displayFeedback('Connection to server lost.', 'error', 0);
+                });
+            } catch (error) {
+                console.error("Socket.IO client error:", error);
+                DOMElements.multiplayerFeedback.textContent = "An error occurred while setting up multiplayer.";
+            }
         }
         
         function createGroup() {
             const nickname = DOMElements.nicknameInput.value.trim();
             if (!nickname) {
                 DOMElements.multiplayerFeedback.textContent = 'Please enter a nickname.';
+                return;
+            }
+            if (!state.socket || !state.socket.connected) {
+                DOMElements.multiplayerFeedback.textContent = 'Not connected to server.';
                 return;
             }
             state.playerData.nickname = nickname;
@@ -842,6 +859,10 @@
             const groupCode = DOMElements.groupCodeInput.value.trim();
             if (!nickname || !groupCode) {
                 DOMElements.multiplayerFeedback.textContent = 'Please enter a nickname and group code.';
+                return;
+            }
+            if (!state.socket || !state.socket.connected) {
+                DOMElements.multiplayerFeedback.textContent = 'Not connected to server.';
                 return;
             }
             state.playerData.nickname = nickname;
@@ -919,7 +940,7 @@
                 const points = 10 + state.timeLeft; // More points for faster answers
                 state.score += points;
                 updateScoreUI();
-                if (state.gameMode === 'multiplayer') {
+                if (state.gameMode === 'multiplayer' && state.socket && state.socket.connected) {
                     state.playerData.score = state.score;
                     state.socket.emit('updateScore', state.playerData);
                 }
