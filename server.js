@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
         socket.join(groupCode);
         playerData.groupCode = groupCode;
         console.log(`Group created by ${playerData.nickname} with code ${groupCode}`);
-        socket.emit('groupCreated', groupCode);
+        socket.emit('groupCreated', { groupCode, players: groups[groupCode].players });
     });
 
     socket.on('joinGroup', ({ playerData, groupCode }) => {
@@ -53,9 +53,16 @@ io.on('connection', (socket) => {
             socket.emit('joinSuccess', { groupCode, players: group.players });
             
             // Update all other users in the group
-            socket.to(groupCode).emit('updatePlayers', group.players);
+            io.to(groupCode).emit('updatePlayers', group.players);
         } else {
             socket.emit('joinError', 'Group not found.');
+        }
+    });
+
+    socket.on('startGameRequest', (groupCode) => {
+        if (groups[groupCode]) {
+            console.log(`Start game request received for group ${groupCode}.`);
+            io.to(groupCode).emit('gameStarted');
         }
     });
 

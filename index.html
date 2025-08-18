@@ -71,6 +71,11 @@
             margin-top: 0;
             margin-bottom: 2rem;
         }
+        
+        .modal-content h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
 
         .modal-content button {
             background-color: var(--accent);
@@ -137,6 +142,26 @@
             color: var(--accent);
             letter-spacing: 2px;
             margin-left: 0.5rem;
+        }
+        
+        #waiting-room-player-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: var(--bg-dark);
+            border-radius: 5px;
+            padding: 1rem;
+        }
+        #waiting-room-player-list li {
+            padding: 0.5rem 0.75rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--bg-light);
+        }
+        #waiting-room-player-list li:last-child {
+            border-bottom: none;
         }
 
 
@@ -493,6 +518,16 @@
         </div>
     </div>
     
+    <div id="waiting-room-overlay" class="modal-overlay">
+        <div id="waiting-room-modal" class="modal-content">
+            <h2>Waiting Room</h2>
+            <p>The game will start for everyone when a player clicks the start button.</p>
+            <h3>Players Joined</h3>
+            <ul id="waiting-room-player-list"></ul>
+            <button id="start-game-btn">Start Game</button>
+        </div>
+    </div>
+
     <button id="change-level-btn" style="display: none;">Change Level</button>
 
     <div id="game-container">
@@ -661,6 +696,7 @@
             modeModalOverlay: document.getElementById('mode-modal-overlay'),
             levelModalOverlay: document.getElementById('level-modal-overlay'),
             multiplayerModalOverlay: document.getElementById('multiplayer-modal-overlay'),
+            waitingRoomOverlay: document.getElementById('waiting-room-overlay'),
             abbrModalOverlay: document.getElementById('abbr-modal-overlay'),
             abbrModalContent: document.getElementById('abbr-modal-content'),
             modalDefinitions: document.getElementById('modal-definitions'),
@@ -672,6 +708,7 @@
             professionalBtn: document.getElementById('professional-level'),
             joinGroupBtn: document.getElementById('join-group-btn'),
             createGroupBtn: document.getElementById('create-group-btn'),
+            startGameBtn: document.getElementById('start-game-btn'),
             checkBtn: document.getElementById('check-btn'),
             resetBtn: document.getElementById('reset-btn'),
             changeLevelBtn: document.getElementById('change-level-btn'),
@@ -682,6 +719,7 @@
             multiplayerFeedback: document.getElementById('multiplayer-feedback'),
             groupCodeDisplay: document.getElementById('group-code-display'),
             groupCodeText: document.querySelector('#group-code-display strong'),
+            waitingRoomPlayerList: document.getElementById('waiting-room-player-list'),
             // Game UI
             levelCounter: document.getElementById('level-counter'),
             scoreCounter: document.getElementById('score-counter'),
@@ -740,6 +778,11 @@
             // Multiplayer
             DOMElements.createGroupBtn.addEventListener('click', createGroup);
             DOMElements.joinGroupBtn.addEventListener('click', joinGroup);
+            DOMElements.startGameBtn.addEventListener('click', () => {
+                if (state.socket && state.playerData.groupCode) {
+                    state.socket.emit('startGameRequest', state.playerData.groupCode);
+                }
+            });
 
             // In-Game Controls
             DOMElements.checkBtn.addEventListener('click', checkSentence);
@@ -776,12 +819,16 @@
 
         function setLevelAndStart(level) {
             state.currentLevel = level;
-            startGame();
+            // For single player, start game immediately. For multiplayer, game starts via socket event.
+            if (state.gameMode === 'singlePlayer') {
+                startGame();
+            }
         }
 
         function startGame() {
             DOMElements.levelModalOverlay.style.display = 'none';
             DOMElements.multiplayerModalOverlay.style.display = 'none';
+            DOMElements.waitingRoomOverlay.style.display = 'none';
             DOMElements.gameContainer.style.display = 'block';
             DOMElements.changeLevelBtn.style.display = 'block';
             state.score = 0;
@@ -808,18 +855,23 @@
                     DOMElements.joinGroupBtn.disabled = true;
                 });
 
-                state.socket.on('groupCreated', (groupCode) => {
+                state.socket.on('groupCreated', ({ groupCode, players }) => {
                     state.playerData.groupCode = groupCode;
                     DOMElements.multiplayerFeedback.textContent = '';
                     DOMElements.groupCodeDisplay.style.display = 'block';
                     DOMElements.groupCodeText.textContent = groupCode;
-                    setTimeout(startGame, 1000); // Start game after short delay
+                    
+                    DOMElements.multiplayerModalOverlay.style.display = 'none';
+                    DOMElements.waitingRoomOverlay.style.display = 'flex';
+                    updateWaitingRoomUI(players);
                 });
 
                 state.socket.on('joinSuccess', (groupData) => {
                     state.playerData.groupCode = groupData.groupCode;
+                    DOMElements.multiplayerModalOverlay.style.display = 'none';
+                    DOMElements.waitingRoomOverlay.style.display = 'flex';
                     updateScoreboard(groupData.players);
-                    startGame();
+                    updateWaitingRoomUI(groupData.players);
                 });
                 
                 state.socket.on('joinError', (message) => {
@@ -828,6 +880,13 @@
                 
                 state.socket.on('updatePlayers', (players) => {
                     updateScoreboard(players);
+                    updateWaitingRoomUI(players);
+                });
+
+                state.socket.on('gameStarted', () => {
+                    // Everyone starts the game at beginner level for now
+                    setLevelAndStart(0); 
+                    startGame();
                 });
 
                 state.socket.on('disconnect', () => {
@@ -986,6 +1045,15 @@
             const progress = (state.currentLevel / levels.length) * 100;
             DOMElements.progressBar.style.width = `${progress}%`;
             DOMElements.levelCounter.textContent = `Level ${state.currentLevel + 1} / ${levels.length}`;
+        }
+
+        function updateWaitingRoomUI(players) {
+            DOMElements.waitingRoomPlayerList.innerHTML = '';
+            players.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = player.nickname;
+                DOMElements.waitingRoomPlayerList.appendChild(li);
+            });
         }
 
         function updateScoreboard(players) {
