@@ -870,8 +870,7 @@
                     state.playerData.groupCode = groupData.groupCode;
                     DOMElements.multiplayerModalOverlay.style.display = 'none';
                     DOMElements.waitingRoomOverlay.style.display = 'flex';
-                    updateScoreboard(groupData.players);
-                    updateWaitingRoomUI(groupData.players);
+                    // The 'updatePlayers' event will now handle rendering the player list.
                 });
                 
                 state.socket.on('joinError', (message) => {

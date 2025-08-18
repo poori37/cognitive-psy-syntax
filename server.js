@@ -9,7 +9,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow all origins for simplicity in local development
+    origin: "*", // Allow all origins for simplicity
     methods: ["GET", "POST"]
   }
 });
@@ -29,30 +29,43 @@ io.on('connection', (socket) => {
 
     socket.on('createGroup', (playerData) => {
         const groupCode = generateGroupCode();
-        playerData.id = socket.id; // Ensure player ID is the socket ID
+        const newPlayer = {
+            id: socket.id,
+            nickname: playerData.nickname,
+            score: 0 // Initialize score on the server
+        };
         groups[groupCode] = {
-            players: [playerData]
+            players: [newPlayer],
+            gameStarted: false // Game has not started yet
         };
         socket.join(groupCode);
-        playerData.groupCode = groupCode;
-        console.log(`Group created by ${playerData.nickname} with code ${groupCode}`);
+        console.log(`Group created by ${newPlayer.nickname} with code ${groupCode}`);
         socket.emit('groupCreated', { groupCode, players: groups[groupCode].players });
     });
 
     socket.on('joinGroup', ({ playerData, groupCode }) => {
-        if (groups[groupCode]) {
-            playerData.id = socket.id;
-            const group = groups[groupCode];
-            group.players.push(playerData);
-            socket.join(groupCode);
-            playerData.groupCode = groupCode;
+        const group = groups[groupCode];
+        if (group) {
+            if (group.gameStarted) {
+                socket.emit('joinError', 'Game has already started.');
+                return;
+            }
+            
+            const newPlayer = {
+                id: socket.id,
+                nickname: playerData.nickname,
+                score: 0 // Initialize score on the server
+            };
 
-            console.log(`${playerData.nickname} joined group ${groupCode}`);
+            group.players.push(newPlayer);
+            socket.join(groupCode);
+
+            console.log(`${newPlayer.nickname} joined group ${groupCode}`);
             
-            // Notify the user who just joined
-            socket.emit('joinSuccess', { groupCode, players: group.players });
+            // 1. Notify the joining user of success so they can switch to the waiting room.
+            socket.emit('joinSuccess', { groupCode });
             
-            // Update all other users in the group
+            // 2. Broadcast the updated player list to EVERYONE in the group.
             io.to(groupCode).emit('updatePlayers', group.players);
         } else {
             socket.emit('joinError', 'Group not found.');
@@ -61,7 +74,8 @@ io.on('connection', (socket) => {
 
     socket.on('startGameRequest', (groupCode) => {
         if (groups[groupCode]) {
-            console.log(`Start game request received for group ${groupCode}.`);
+            groups[groupCode].gameStarted = true;
+            console.log(`Start game request received for group ${groupCode}. Starting game.`);
             io.to(groupCode).emit('gameStarted');
         }
     });
