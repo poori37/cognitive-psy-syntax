@@ -556,7 +556,7 @@
     };
 
     // --- SOCKET.IO SETUP ---
-    const SERVER_URL = 'http://localhost:3000';
+    const SERVER_URL = 'https://the-syntax-card-game-server.onrender.com';
 
     function connectToServer() {
         if (state.socket && state.socket.connected) return;
@@ -763,7 +763,7 @@
             state.score += 10 + state.timer;
             if(state.gameMode === 'multi') {
                 state.playerData.score = state.score;
-                state.socket.emit('updateScore', { ...state.playerData, groupCode: state.groupCode });
+                state.socket.emit('updateScore', state.playerData);
             }
             // Move to next question after a delay
             setTimeout(nextQuestion, 1500);
