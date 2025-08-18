@@ -50,14 +50,15 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            backdrop-filter: blur(5px);
         }
         
         #mode-modal-overlay {
-            display: flex; /* Show this modal first */
+            display: flex;
         }
 
         .modal-content {
-            background-color: #2c2f41;
+            background-color: var(--bg-medium);
             color: white;
             padding: 40px;
             border-radius: 10px;
@@ -70,6 +71,7 @@
         .modal-content h2 {
             margin-top: 0;
             margin-bottom: 2rem;
+            font-size: 1.8rem;
         }
         
         .modal-content h3 {
@@ -86,12 +88,19 @@
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
             font-weight: 600;
+            width: 100%;
         }
 
-        .modal-content button:hover {
-            background-color: #99f0e9;
+        .modal-content button:hover:not(:disabled) {
+            background-color: var(--accent-dark);
+        }
+
+        .modal-content button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: var(--bg-light);
         }
         
         .modal-content button.secondary {
@@ -119,8 +128,10 @@
         }
         .modal-content .button-group {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             gap: 1rem;
+            margin-top: 1rem;
         }
 
         #multiplayer-feedback {
@@ -185,12 +196,13 @@
             padding: 2rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--bg-light);
-            display: none; /* Hidden until game starts */
+            display: none; 
         }
 
         header {
             text-align: center;
             margin-bottom: 2rem;
+            position: relative;
         }
 
         h1 {
@@ -207,6 +219,11 @@
         }
 
         #progress-tracker {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-dark);
+            font-weight: 600;
             margin-bottom: 1.5rem;
         }
 
@@ -224,200 +241,78 @@
             height: 100%;
             background: linear-gradient(90deg, var(--accent-dark), var(--accent));
             border-radius: 99px;
-            transition: width 0.5s ease-in-out;
+            transition: width 0.3s ease-in-out;
         }
-        
-        #progress-text {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        
-        #level-counter {
-            text-align: left;
-        }
-        #score-counter {
-            text-align: right;
-        }
-        
-        #timer-display {
+
+        #score-display {
             font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--warning);
-            text-align: center;
         }
-        
-        #scoreboard {
-            margin: 1.5rem 0;
-            background-color: var(--bg-dark);
-            border-radius: 0.5rem;
-            padding: 1rem;
-        }
-        #scoreboard h3 {
-            margin: 0 0 0.75rem;
-            text-align: center;
-            color: var(--text-dark);
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-        #player-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        #player-list li {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.25rem;
-            font-weight: 600;
-        }
-        #player-list li.current-player {
-            background-color: rgba(79, 209, 197, 0.2);
-            color: var(--accent);
-        }
-        #player-list li:not(.current-player) {
-            color: var(--text-light);
-        }
-        #player-list .player-score {
+
+        #timer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-light);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
             font-weight: 700;
         }
 
-
-        #challenge-display {
-            background-color: rgba(0,0,0,0.2);
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            margin-bottom: 2rem;
-            border-left: 4px solid var(--accent);
-            cursor: pointer;
-        }
-
-        #challenge-display h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-        
-        .game-area {
-            margin-bottom: 1.5rem;
-        }
-
-        .game-area h3 {
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-dark);
-            margin-bottom: 0.75rem;
-        }
-        
-        .drop-zone {
-            min-height: 80px;
+        #sentence-tray {
             background-color: var(--bg-dark);
             border: 2px dashed var(--bg-light);
             border-radius: 0.5rem;
-            padding: 0.75rem;
+            padding: 1rem;
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            margin: 1.5rem 0;
+            transition: border-color 0.3s;
+        }
+
+        #word-pool {
             display: flex;
             flex-wrap: wrap;
             gap: 0.75rem;
-            align-items: center;
-            transition: border-color 0.2s, background-color 0.2s;
-        }
-
-        .drop-zone.drag-over {
-            border-color: var(--accent);
-            background-color: #3c4a61;
-        }
-
-        .drop-zone:empty::before {
-            content: 'Drag words here to form a sentence';
-            color: var(--text-dark);
-            width: 100%;
-            text-align: center;
-            font-style: italic;
+            justify-content: center;
+            padding: 1rem;
+            background-color: var(--bg-dark);
+            border-radius: 0.5rem;
         }
 
         .word-tile {
-            padding: 0.5rem 1rem;
             background-color: var(--bg-light);
-            border-radius: 0.25rem;
-            cursor: grab;
-            user-select: none;
+            color: var(--text-light);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.375rem;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-bottom: 3px solid rgba(0,0,0,0.3);
+            cursor: grab;
+            transition: background-color 0.3s, transform 0.2s;
+            user-select: none;
         }
 
+        .word-tile:hover {
+            background-color: #5a6b87;
+        }
+        
         .word-tile.dragging {
             opacity: 0.5;
             transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
-        .word-tile.punctuation {
-            background-color: var(--bg-light);
-            color: var(--warning);
-            font-weight: 700;
-            min-width: auto;
-            padding: 0.5rem 0.75rem;
-            flex-grow: 0;
-            justify-content: center;
-            border-bottom: 3px solid #f6e05e50;
-        }
-
-        #controls {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 2rem;
-        }
-
-        button {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        #check-btn {
-            background-color: var(--accent);
-            color: var(--bg-dark);
-        }
-        #check-btn:hover {
-            background-color: white;
-        }
-        #check-btn:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-        }
-
-        #reset-btn {
-            background-color: var(--bg-light);
-            color: var(--text-light);
-        }
-        #reset-btn:hover {
-            background-color: #5a6b87;
-        }
-
-        #feedback {
-            min-height: 24px;
-            margin-top: 1.5rem;
+        #feedback-area {
             text-align: center;
-            font-weight: 600;
+            margin-top: 1.5rem;
+            min-height: 2.5rem;
             font-size: 1.1rem;
-            transition: opacity 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
+
         .feedback-correct {
             color: var(--success);
         }
@@ -425,766 +320,552 @@
         .feedback-incorrect {
             color: var(--error);
         }
-        .feedback-info {
-            color: var(--warning);
-        }
 
-        #abbr-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
+        #action-buttons {
+            display: flex;
             justify-content: center;
-            align-items: center;
-            z-index: 1001;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
 
-        #abbr-modal-content {
-            background-color: #2c2f41;
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 350px;
-            max-width: 90%;
-            text-align: left;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        .btn {
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
-        
-        #abbr-modal-content h3 {
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+        }
+        .btn-secondary:hover {
+            background-color: #5a6b87;
+        }
+
+        #multiplayer-scoreboard {
+            display: none;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: var(--bg-dark);
+            border-radius: 0.5rem;
+        }
+        #multiplayer-scoreboard h3 {
             margin-top: 0;
             text-align: center;
             color: var(--accent);
         }
-        
-        #modal-definitions p {
-            margin: 0.5rem 0;
-            line-height: 1.6;
+        #player-scores {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
-        
-        #modal-definitions strong {
-            color: var(--accent);
-            display: inline-block;
-            width: 80px;
+        #player-scores li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--bg-light);
+        }
+        #player-scores li:last-child {
+            border-bottom: none;
+        }
+        #player-scores .player-name {
+            font-weight: 600;
+        }
+         #player-scores .player-score {
+            font-weight: 700;
+            color: var(--success);
         }
 
-        #abbr-modal-close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 28px;
-            cursor: pointer;
-            line-height: 1;
-            color: var(--text-dark);
-            transition: color 0.2s;
-        }
-        #abbr-modal-close-btn:hover {
-            color: var(--text-light);
-        }
     </style>
 </head>
 <body>
     <div id="mode-modal-overlay" class="modal-overlay">
-        <div id="mode-modal" class="modal-content">
-            <h2>Choose Your Game Mode</h2>
-            <button id="single-player-btn">Single Player</button>
-            <button id="multiplayer-btn">Multiplayer</button>
+        <div class="modal-content">
+            <h2>Welcome to The Syntax Card Game!</h2>
+            <h3>Choose Your Mode</h3>
+            <div class="button-group">
+                <button id="single-player-mode-btn">Single Player</button>
+                <button id="multiplayer-mode-btn">Multiplayer</button>
+            </div>
         </div>
     </div>
-
-    <div id="level-modal-overlay" class="modal-overlay">
-        <div id="level-modal" class="modal-content">
-            <h2>Select Your Proficiency Level</h2>
-            <button id="beginner-level">Beginner</button>
-            <button id="advanced-level">Advanced</button>
-            <button id="professional-level">Professional</button>
+    
+    <div id="player-setup-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Player Setup</h2>
+            <h3>Select Your Proficiency</h3>
+            <div class="button-group">
+                <button class="proficiency-btn" data-level="beginner">Beginner</button>
+                <button class="proficiency-btn" data-level="advanced">Advanced</button>
+                <button class="proficiency-btn" data-level="professional">Professional</button>
+            </div>
         </div>
     </div>
 
     <div id="multiplayer-modal-overlay" class="modal-overlay">
-        <div id="multiplayer-modal" class="modal-content">
+        <div class="modal-content">
             <h2>Multiplayer Setup</h2>
-            <input type="text" id="nickname-input" placeholder="Enter Your Nickname" maxlength="15">
-            <input type="text" id="group-code-input" placeholder="Enter 3-Digit Group Code (to join)" maxlength="3">
+            <input type="text" id="nickname-input" placeholder="Enter your nickname (max 15 chars)">
+            <input type="text" id="group-code-input" placeholder="Enter 3-digit group code">
+            <div id="multiplayer-feedback">Connecting to server...</div>
             <div class="button-group">
-                <button id="join-group-btn" class="secondary">Join Group</button>
-                <button id="create-group-btn">Create Group</button>
+                <button id="join-group-btn" class="secondary" disabled>Join Group</button>
+                <button id="create-group-btn" disabled>Create Group</button>
             </div>
-            <div id="multiplayer-feedback"></div>
-            <div id="group-code-display" style="display: none;">Your Group Code: <strong></strong></div>
         </div>
     </div>
     
-    <div id="waiting-room-overlay" class="modal-overlay">
-        <div id="waiting-room-modal" class="modal-content">
+    <div id="waiting-room-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
             <h2>Waiting Room</h2>
-            <p>The game will start for everyone when a player clicks the start button.</p>
-            <h3>Players Joined</h3>
-            <ul id="waiting-room-player-list"></ul>
+            <p>Share this code with your friends!</p>
+            <div id="group-code-display">Group Code: <strong>...</strong></div>
+            <h3>Players Joined:</h3>
+            <ul id="waiting-room-player-list">
+                <!-- Player names will be injected here -->
+            </ul>
             <button id="start-game-btn">Start Game</button>
         </div>
     </div>
 
-    <button id="change-level-btn" style="display: none;">Change Level</button>
 
     <div id="game-container">
         <header>
-            <h1>The Syntax Card Game</h1>
-            <p>Arrange the words to match the target sentence structure.</p>
+            <h1 id="game-title">The Syntax Card Game</h1>
+            <p id="game-subtitle">Arrange the words to form a correct sentence.</p>
+            <div id="timer">Time: 30</div>
         </header>
 
-        <section id="progress-tracker">
-            <div id="progress-text">
-                <span id="level-counter"></span>
-                <span id="timer-display"></span>
-                <span id="score-counter"></span>
+        <main>
+            <div id="progress-tracker">
+                <div id="level-indicator">Level: 1/50</div>
+                <div id="question-indicator">Question: 1/30</div>
             </div>
             <div id="progress-bar-container">
                 <div id="progress-bar"></div>
             </div>
-        </section>
 
-        <section id="scoreboard">
-             <h3>Live Scoreboard</h3>
-             <ul id="player-list"></ul>
-        </section>
+            <div id="sentence-tray" class="droppable"></div>
+            <div id="word-pool" class="droppable"></div>
 
-        <main>
-            <div id="challenge-display">
-                <h2>TARGET: <span id="target-grammar"></span></h2>
-            </div>
-            
-            <div class="game-area">
-                <h3>Your Sentence</h3>
-                <div id="sentence-area" class="drop-zone"></div>
-            </div>
-            
-            <div class="game-area">
-                <h3>Word Bank</h3>
-                <div id="word-bank" class="drop-zone"></div>
+            <div id="feedback-area"></div>
+
+            <div id="action-buttons">
+                <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                <button id="check-btn" class="btn btn-primary">Check Answer</button>
             </div>
 
-            <div id="controls">
-                <button id="check-btn">Check Sentence</button>
-                <button id="reset-btn">Reset</button>
+            <div id="multiplayer-scoreboard">
+                <h3>Scoreboard</h3>
+                <ul id="player-scores">
+                </ul>
             </div>
-
-            <div id="feedback"></div>
         </main>
     </div>
-
-    <div id="abbr-modal-overlay">
-        <div id="abbr-modal-content">
-            <span id="abbr-modal-close-btn">&times;</span>
-            <h3 id="modal-title">Grammar Definitions</h3>
-            <div id="modal-definitions"></div>
-        </div>
-    </div>
-
-    <!-- Ohm.js Grammar Definition -->
-    <script type="ohm-js" id="grammar">
-    SyntaxCardGame {
-      // Top-level rules correspond to level targets. Punct is optional at the end.
-      S_V = Noun Verb Punct?
-      Det_N_V = Det Noun Verb Punct?
-      S_V_O = Noun Verb Noun Punct?
-      S_V_Adv = Noun Verb Adv Punct?
-      Det_Adj_N_V = Det Adj Noun Verb Punct?
-      S_V_PP = Noun Verb Prep Noun Punct?
-      S_V_O_PP = Noun Verb Noun Prep Noun Punct?
-      S_V_Conj_V = Noun Verb Conj Verb Punct?
-      Compound_S_V = Noun Conj Noun Verb Punct?
-      S_V_O_Conj_S_V_O = Noun Verb Noun Comma? Conj Noun Verb Noun Punct?
-      Question_V_S_O = Aux Noun Verb Noun Punct?
-      Question_Wh_V_S = Wh Aux Noun Verb Punct?
-
-      // Parts of Speech Definitions
-      Noun = "noun"
-      Verb = "verb"
-      Det = "det"
-      Adj = "adj"
-      Adv = "adv"
-      Prep = "prep"
-      Conj = "conj"
-      Aux = "aux"
-      Wh = "wh"
-      Punct = "punct"
-      Comma = "comma"
-    }
-    </script>
     
-    <script type="module">
-        // --- CONFIGURATION ---
-        const SOCKET_SERVER_URL = "https://cognitive-psy-assessment.onrender.com"; // Connect to the live server
-        const TIME_LIMIT = 60; // seconds
+<script type="module">
+    // --- STATE MANAGEMENT ---
+    const state = {
+        gameMode: 'single', // 'single' or 'multi'
+        proficiency: 'beginner', // 'beginner', 'advanced', 'professional'
+        currentLevel: 1,
+        currentQuestion: 1,
+        totalLevels: 50,
+        totalQuestionsPerLevel: 30,
+        score: 0,
+        timer: 30,
+        timerInterval: null,
+        currentSentence: '',
+        currentWords: [],
+        playerData: { id: null, nickname: '', score: 0 },
+        groupCode: null,
+        players: [],
+        socket: null
+    };
 
-        // --- DATA ---
-        const grammarMap = {
-            'S': 'Subject (a noun that performs the action)', 'V': 'Verb (the action word)',
-            'O': 'Object (a noun that receives the action)', 'Det': 'Determiner (e.g., a, the, my)',
-            'N': 'Noun (person, place, or thing)', 'Adj': 'Adjective (describes a noun)',
-            'Adv': 'Adverb (describes a verb)', 'PP': 'Prepositional Phrase (e.g., "on the chair")',
-            'Conj': 'Conjunction (e.g., and, but, or)', 'Compound': 'Compound Element',
-            'Question': 'Question Form', 'Wh': 'Wh-word (e.g., Who, What, Where)',
-            'Aux': 'Auxiliary Verb (e.g., do, can, is)'
-        };
+    // --- DOM ELEMENTS ---
+    const elements = {
+        gameContainer: document.getElementById('game-container'),
+        levelIndicator: document.getElementById('level-indicator'),
+        questionIndicator: document.getElementById('question-indicator'),
+        progressBar: document.getElementById('progress-bar'),
+        sentenceTray: document.getElementById('sentence-tray'),
+        wordPool: document.getElementById('word-pool'),
+        feedbackArea: document.getElementById('feedback-area'),
+        checkBtn: document.getElementById('check-btn'),
+        resetBtn: document.getElementById('reset-btn'),
+        timerDisplay: document.getElementById('timer'),
+        scoreDisplay: document.getElementById('score-display'),
+        modeModal: document.getElementById('mode-modal-overlay'),
+        singlePlayerBtn: document.getElementById('single-player-mode-btn'),
+        multiplayerBtn: document.getElementById('multiplayer-mode-btn'),
+        playerSetupModal: document.getElementById('player-setup-modal-overlay'),
+        proficiencyBtns: document.querySelectorAll('.proficiency-btn'),
+        multiplayerModal: document.getElementById('multiplayer-modal-overlay'),
+        nicknameInput: document.getElementById('nickname-input'),
+        groupCodeInput: document.getElementById('group-code-input'),
+        joinGroupBtn: document.getElementById('join-group-btn'),
+        createGroupBtn: document.getElementById('create-group-btn'),
+        multiplayerFeedback: document.getElementById('multiplayer-feedback'),
+        waitingRoomModal: document.getElementById('waiting-room-modal-overlay'),
+        groupCodeDisplay: document.querySelector('#group-code-display strong'),
+        waitingPlayerList: document.getElementById('waiting-room-player-list'),
+        startGameBtn: document.getElementById('start-game-btn'),
+        multiplayerScoreboard: document.getElementById('multiplayer-scoreboard'),
+        playerScoresList: document.getElementById('player-scores')
+    };
 
-        const levels = [
-            // Levels 1-20: Beginner
-            { rule: "S_V", target: "S - V", words: [{word: "Birds", type: "Noun"}, {word: "fly", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_N_V", target: "Det - N - V", words: [{word: "The", type: "Det"}, {word: "sun", type: "Noun"}, {word: "shines", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", target: "S - V - O", words: [{word: "Cats", type: "Noun"}, {word: "chase", type: "Verb"}, {word: "mice", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Adv", target: "S - V - Adv", words: [{word: "She", type: "Noun"}, {word: "sings", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", target: "Det - Adj - N - V", words: [{word: "The", type: "Det"}, {word: "big", type: "Adj"}, {word: "dog", type: "Noun"}, {word: "barks", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V", target: "S - V", words: [{word: "Fish", type: "Noun"}, {word: "swim", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_N_V", target: "Det - N - V", words: [{word: "A", type: "Det"}, {word: "baby", type: "Noun"}, {word: "cries", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", target: "S - V - O", words: [{word: "He", type: "Noun"}, {word: "reads", type: "Verb"}, {word: "books", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Adv", target: "S - V - Adv", words: [{word: "They", type: "Noun"}, {word: "ran", type: "Verb"}, {word: "quickly", type: "Adv"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", target: "Det - Adj - N - V", words: [{word: "My", type: "Det"}, {word: "red", type: "Adj"}, {word: "car", type: "Noun"}, {word: "drives", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", target: "S - V - O", words: [{word: "I", type: "Noun"}, {word: "love", type: "Verb"}, {word: "music", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_N_V", target: "Det - N - V", words: [{word: "The", type: "Det"}, {word: "stars", type: "Noun"}, {word: "twinkle", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V", target: "S - V", words: [{word: "Water", type: "Noun"}, {word: "flows", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Adv", target: "S - V - Adv", words: [{word: "He", type: "Noun"}, {word: "speaks", type: "Verb"}, {word: "softly", type: "Adv"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", target: "Det - Adj - N - V", words: [{word: "A", type: "Det"}, {word: "small", type: "Adj"}, {word: "boat", type: "Noun"}, {word: "sails", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", target: "S - V - O", words: [{word: "We", type: "Noun"}, {word: "play", type: "Verb"}, {word: "games", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_N_V", target: "Det - N - V", words: [{word: "The", type: "Det"}, {word: "wind", type: "Noun"}, {word: "blows", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Adv", target: "S - V - Adv", words: [{word: "She", type: "Noun"}, {word: "waited", type: "Verb"}, {word: "patiently", type: "Adv"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V", target: "S - V", words: [{word: "Time", type: "Noun"}, {word: "passes", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", target: "S - V - O", words: [{word: "You", type: "Noun"}, {word: "need", type: "Verb"}, {word: "help", type: "Noun"}, {word: "?", type: "Punct"}] },
-            // Levels 21-40: Advanced
-            { rule: "S_V_PP", target: "S - V - PP", words: [{word: "He", type: "Noun"}, {word: "walked", type: "Verb"}, {word: "to", type: "Prep"}, {word: "school", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "She", type: "Noun"}, {word: "put", type: "Verb"}, {word: "the book", type: "Noun"}, {word: "on", type: "Prep"}, {word: "the table", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Conj_V", target: "S - V - Conj - V", words: [{word: "They", type: "Noun"}, {word: "danced", type: "Verb"}, {word: "and", type: "Conj"}, {word: "sang", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Compound_S_V", target: "Compound S - V", words: [{word: "John", type: "Noun"}, {word: "and", type: "Conj"}, {word: "Mary", type: "Noun"}, {word: "left", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "I", type: "Noun"}, {word: "like", type: "Verb"}, {word: "tea", type: "Noun"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "he", type: "Noun"}, {word: "likes", type: "Verb"}, {word: "coffee", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Question_V_S_O", target: "Question: Aux - S - V - O", words: [{word: "Do", type: "Aux"}, {word: "you", type: "Noun"}, {word: "want", type: "Verb"}, {word: "pizza", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_Wh_V_S", target: "Question: Wh - Aux - S - V", words: [{word: "Where", type: "Wh"}, {word: "are", type: "Aux"}, {word: "you", type: "Noun"}, {word: "going", type: "Verb"}, {word: "?", type: "Punct"}] },
-            { rule: "S_V_PP", target: "S - V - PP", words: [{word: "The keys", type: "Noun"}, {word: "are", type: "Verb"}, {word: "in", type: "Prep"}, {word: "the drawer", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "He", type: "Noun"}, {word: "hit", type: "Verb"}, {word: "the nail", type: "Noun"}, {word: "with", type: "Prep"}, {word: "a hammer", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Conj_V", target: "S - V - Conj - V", words: [{word: "I", type: "Noun"}, {word: "will call", type: "Verb"}, {word: "or", type: "Conj"}, {word: "text", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Compound_S_V", target: "Compound S - V", words: [{word: "The dog", type: "Noun"}, {word: "and", type: "Conj"}, {word: "the cat", type: "Noun"}, {word: "are sleeping", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "She", type: "Noun"}, {word: "is", type: "Verb"}, {word: "smart", type: "Noun"}, {word: ",", type: "Comma"}, {word: "and", type: "Conj"}, {word: "she", type: "Noun"}, {word: "is", type: "Verb"}, {word: "funny", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Question_V_S_O", target: "Question: Aux - S - V - O", words: [{word: "Can", type: "Aux"}, {word: "I", type: "Noun"}, {word: "have", type: "Verb"}, {word: "some", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_Wh_V_S", target: "Question: Wh - Aux - S - V", words: [{word: "What", type: "Wh"}, {word: "did", type: "Aux"}, {word: "you", type: "Noun"}, {word: "say", type: "Verb"}, {word: "?", type: "Punct"}] },
-            { rule: "S_V_PP", target: "S - V - PP", words: [{word: "We", type: "Noun"}, {word: "live", type: "Verb"}, {word: "near", type: "Prep"}, {word: "the city", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "I", type: "Noun"}, {word: "read", type: "Verb"}, {word: "a story", type: "Noun"}, {word: "about", type: "Prep"}, {word: "dragons", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Conj_V", target: "S - V - Conj - V", words: [{word: "He", type: "Noun"}, {word: "tripped", type: "Verb"}, {word: "but", type: "Conj"}, {word: "recovered", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Compound_S_V", target: "Compound S - V", words: [{word: "My mom", type: "Noun"}, {word: "and", type: "Conj"}, {word: "my dad", type: "Noun"}, {word: "are here", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "He", type: "Noun"}, {word: "came", type: "Verb"}, {word: "home", type: "Noun"}, {word: ",", type: "Comma"}, {word: "so", type: "Conj"}, {word: "I", type: "Noun"}, {word: "started", type: "Verb"}, {word: "dinner", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Question_V_S_O", target: "Question: Aux - S - V - O", words: [{word: "Will", type: "Aux"}, {word: "they", type: "Noun"}, {word: "win", type: "Verb"}, {word: "the game", type: "Noun"}, {word: "?", type: "Punct"}] },
-            // Levels 41-50: Professional
-            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "The painting", type: "Noun"}, {word: "was hung", type: "Verb"}, {word: "by the artist", type: "Noun"}, {word: "in", type: "Prep"}, {word: "the gallery", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "Before", type: "Conj"}, {word: "you", type: "Noun"}, {word: "leave", type: "Verb"}, {word: "the house", type: "Noun"}, {word: ",", type: "Comma"}, {word: "you", type: "Noun"}, {word: "should check", type: "Verb"}, {word: "the lights", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Question_Wh_V_S", target: "Question: Wh - Aux - S - V", words: [{word: "Why", type: "Wh"}, {word: "is", type: "Aux"}, {word: "the sky", type: "Noun"}, {word: "blue", type: "Verb"}, {word: "?", type: "Punct"}] },
-            { rule: "S_V_PP", target: "S - V - PP", words: [{word: "Running", type: "Noun"}, {word: "is", type: "Verb"}, {word: "good", type: "Prep"}, {word: "for you", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", target: "S - V - O", words: [{word: "To err", type: "Noun"}, {word: "is", type: "Verb"}, {word: "human", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", target: "Det - Adj - N - V", words: [{word: "The", type: "Det"}, {word: "barking", type: "Adj"}, {word: "dog", type: "Noun"}, {word: "is", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "I", type: "Noun"}, {word: "saw", type: "Verb"}, {word: "the man", type: "Noun"}, {word: "with", type: "Prep"}, {word: "the telescope", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "Although", type: "Conj"}, {word: "it", type: "Noun"}, {word: "was", type: "Verb"}, {word: "raining", type: "Noun"}, {word: ",", type: "Comma"}, {word: "we", type: "Noun"}, {word: "went", type: "Verb"}, {word: "outside", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Question_V_S_O", target: "Question: Aux - S - V - O", words: [{word: "Have", type: "Aux"}, {word: "you", type: "Noun"}, {word: "finished", type: "Verb"}, {word: "your homework", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Compound_S_V", target: "Compound S - V", words: [{word: "The old", type: "Noun"}, {word: "and", type: "Conj"}, {word: "the young", type: "Noun"}, {word: "agree", type: "Verb"}, {word: ".", type: "Punct"}] },
-        ];
-
-
-        // --- DOM ELEMENTS ---
-        const DOMElements = {
-            gameContainer: document.getElementById('game-container'),
-            // Modals
-            modeModalOverlay: document.getElementById('mode-modal-overlay'),
-            levelModalOverlay: document.getElementById('level-modal-overlay'),
-            multiplayerModalOverlay: document.getElementById('multiplayer-modal-overlay'),
-            waitingRoomOverlay: document.getElementById('waiting-room-overlay'),
-            abbrModalOverlay: document.getElementById('abbr-modal-overlay'),
-            abbrModalContent: document.getElementById('abbr-modal-content'),
-            modalDefinitions: document.getElementById('modal-definitions'),
-            // Buttons
-            singlePlayerBtn: document.getElementById('single-player-btn'),
-            multiplayerBtn: document.getElementById('multiplayer-btn'),
-            beginnerBtn: document.getElementById('beginner-level'),
-            advancedBtn: document.getElementById('advanced-level'),
-            professionalBtn: document.getElementById('professional-level'),
-            joinGroupBtn: document.getElementById('join-group-btn'),
-            createGroupBtn: document.getElementById('create-group-btn'),
-            startGameBtn: document.getElementById('start-game-btn'),
-            checkBtn: document.getElementById('check-btn'),
-            resetBtn: document.getElementById('reset-btn'),
-            changeLevelBtn: document.getElementById('change-level-btn'),
-            abbrModalCloseBtn: document.getElementById('abbr-modal-close-btn'),
-            // Inputs & Displays
-            nicknameInput: document.getElementById('nickname-input'),
-            groupCodeInput: document.getElementById('group-code-input'),
-            multiplayerFeedback: document.getElementById('multiplayer-feedback'),
-            groupCodeDisplay: document.getElementById('group-code-display'),
-            groupCodeText: document.querySelector('#group-code-display strong'),
-            waitingRoomPlayerList: document.getElementById('waiting-room-player-list'),
-            // Game UI
-            levelCounter: document.getElementById('level-counter'),
-            scoreCounter: document.getElementById('score-counter'),
-            timerDisplay: document.getElementById('timer-display'),
-            progressBar: document.getElementById('progress-bar'),
-            scoreboard: document.getElementById('scoreboard'),
-            playerList: document.getElementById('player-list'),
-            challengeDisplay: document.getElementById('challenge-display'),
-            targetGrammar: document.getElementById('target-grammar'),
-            sentenceArea: document.getElementById('sentence-area'),
-            wordBank: document.getElementById('word-bank'),
-            feedback: document.getElementById('feedback'),
-        };
-
-        // --- GAME STATE ---
-        let state = {
-            gameMode: null,
-            socket: null,
-            playerData: { id: null, nickname: '', score: 0, groupCode: null },
-            currentLevel: 0,
-            score: 0,
-            timerInterval: null,
-            timeLeft: TIME_LIMIT,
-            grammar: null,
-            semantics: null,
-            draggedItem: null,
-        };
-
-        // --- INITIALIZATION ---
-        function init() {
-            setupGrammar();
-            addEventListeners();
+    // --- OHM.JS GRAMMAR ---
+    const grammarSource = `
+        SentenceGrammar {
+            Sentence = Subject Verb Object Punctuation
+            Subject = Noun | Pronoun
+            Verb = "runs" | "jumps" | "eats" | "sleeps" | "is" | "are" | "was" | "were" | "has" | "have" | "likes" | "sees"
+            Object = Noun | Pronoun
+            Noun = "dog" | "cat" | "man" | "woman" | "boy" | "girl" | "apple" | "ball"
+            Pronoun = "he" | "she" | "it" | "they" | "we" | "i" | "you"
+            Punctuation = "." | "?" | "!"
         }
+    `;
+    const grammar = ohm.grammar(grammarSource);
 
-        function setupGrammar() {
-            const grammarScript = document.getElementById('grammar').textContent;
-            state.grammar = ohm.grammar(grammarScript);
-            state.semantics = state.grammar.createSemantics().addOperation('getPos', {
-                _iter: (...children) => children.map(c => c.getPos()).join(' '),
-                _terminal: function() { return this.sourceString; }
+    // --- GAME LEVELS ---
+    const levels = {
+        beginner: [
+            { sentence: "the dog runs.", words: ["dog", "the", "runs", "."] },
+            { sentence: "she sleeps.", words: ["she", "sleeps", "."] },
+        ],
+        advanced: [
+            { sentence: "the cat sees a ball.", words: ["a", "sees", "cat", "the", "ball", "."] },
+        ],
+        professional: [
+            { sentence: "the quick brown fox jumps over the lazy dog.", words: ["the", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog", "."]},
+        ]
+    };
+
+    // --- SOCKET.IO SETUP ---
+    const SERVER_URL = 'http://localhost:3000';
+
+    function connectToServer() {
+        if (state.socket && state.socket.connected) return;
+
+        // Use default transport negotiation (polling -> websocket) for better reliability
+        state.socket = io(SERVER_URL, {
+            reconnectionAttempts: 5,
+            timeout: 60000, 
+        });
+
+        elements.multiplayerFeedback.textContent = 'Connecting to server...';
+        elements.joinGroupBtn.disabled = true;
+        elements.createGroupBtn.disabled = true;
+
+        state.socket.on('connect', () => {
+            console.log('Connected to server with ID:', state.socket.id);
+            state.playerData.id = state.socket.id;
+            elements.multiplayerFeedback.textContent = '';
+            elements.joinGroupBtn.disabled = false;
+            elements.createGroupBtn.disabled = false;
+        });
+
+        state.socket.on('connect_error', (err) => {
+            console.error('Connection failed:', err.message);
+            elements.multiplayerFeedback.textContent = `Connection failed. Retrying...`;
+        });
+
+        state.socket.on('disconnect', () => {
+            console.log('Disconnected from server.');
+            elements.multiplayerFeedback.textContent = 'Connection lost. Reconnecting...';
+        });
+
+        state.socket.on('groupCreated', ({ groupCode, players }) => {
+            state.groupCode = groupCode;
+            state.players = players;
+            elements.multiplayerModal.style.display = 'none';
+            elements.waitingRoomModal.style.display = 'flex';
+            elements.groupCodeDisplay.textContent = groupCode;
+            updateWaitingRoom(players);
+        });
+
+        state.socket.on('joinSuccess', ({ groupCode }) => {
+            state.groupCode = groupCode;
+            elements.multiplayerModal.style.display = 'none';
+            elements.waitingRoomModal.style.display = 'flex';
+            elements.groupCodeDisplay.textContent = groupCode;
+        });
+        
+        state.socket.on('joinError', (message) => {
+            elements.multiplayerFeedback.textContent = message;
+        });
+
+        state.socket.on('updatePlayers', (players) => {
+            state.players = players;
+            updateWaitingRoom(players);
+            if (state.gameMode === 'multi') {
+                updateMultiplayerScoreboard(players);
+            }
+        });
+
+        state.socket.on('gameStarted', () => {
+            elements.waitingRoomModal.style.display = 'none';
+            startGame();
+        });
+    }
+
+
+    // --- UI & EVENT LISTENERS ---
+    
+    // Mode Selection
+    elements.singlePlayerBtn.addEventListener('click', () => {
+        state.gameMode = 'single';
+        elements.modeModal.style.display = 'none';
+        elements.playerSetupModal.style.display = 'flex';
+    });
+    
+    elements.multiplayerBtn.addEventListener('click', () => {
+        state.gameMode = 'multi';
+        elements.modeModal.style.display = 'none';
+        elements.multiplayerModal.style.display = 'flex';
+        connectToServer();
+    });
+
+    // Proficiency Selection
+    elements.proficiencyBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.proficiency = btn.dataset.level;
+            elements.playerSetupModal.style.display = 'none';
+            startGame();
+        });
+    });
+
+    // Multiplayer Setup
+    elements.createGroupBtn.addEventListener('click', () => {
+        const nickname = elements.nicknameInput.value;
+        if (!nickname.trim()) {
+            elements.multiplayerFeedback.textContent = 'Please enter a nickname.';
+            return;
+        }
+        state.playerData.nickname = nickname.slice(0, 15);
+        elements.multiplayerFeedback.textContent = '';
+        state.socket.emit('createGroup', state.playerData);
+    });
+
+    elements.joinGroupBtn.addEventListener('click', () => {
+        const nickname = elements.nicknameInput.value;
+        const groupCode = elements.groupCodeInput.value;
+        if (!nickname.trim() || !groupCode.trim()) {
+            elements.multiplayerFeedback.textContent = 'Nickname and group code are required.';
+            return;
+        }
+        state.playerData.nickname = nickname.slice(0, 15);
+        elements.multiplayerFeedback.textContent = '';
+        state.socket.emit('joinGroup', { playerData: state.playerData, groupCode });
+    });
+
+    // Waiting Room
+    elements.startGameBtn.addEventListener('click', () => {
+        if(state.socket && state.groupCode) {
+            state.socket.emit('startGameRequest', state.groupCode);
+        }
+    });
+
+    // In-Game Actions
+    elements.checkBtn.addEventListener('click', checkSentence);
+    elements.resetBtn.addEventListener('click', resetWordPositions);
+
+    // --- DRAG AND DROP LOGIC ---
+    function initializeDragAndDrop() {
+        const draggables = document.querySelectorAll('.word-tile');
+        const droppables = document.querySelectorAll('.droppable');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('dragging');
             });
-        }
 
-        // --- EVENT LISTENERS ---
-        function addEventListeners() {
-            // Mode Selection
-            DOMElements.singlePlayerBtn.addEventListener('click', () => selectGameMode('singlePlayer'));
-            DOMElements.multiplayerBtn.addEventListener('click', () => selectGameMode('multiplayer'));
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging');
+            });
+        });
 
-            // Level Selection
-            DOMElements.beginnerBtn.addEventListener('click', () => { setLevelAndStart(0); });
-            DOMElements.advancedBtn.addEventListener('click', () => { setLevelAndStart(20); });
-            DOMElements.professionalBtn.addEventListener('click', () => { setLevelAndStart(40); });
-            DOMElements.changeLevelBtn.addEventListener('click', () => DOMElements.levelModalOverlay.style.display = 'flex');
-
-            // Multiplayer
-            DOMElements.createGroupBtn.addEventListener('click', createGroup);
-            DOMElements.joinGroupBtn.addEventListener('click', joinGroup);
-            DOMElements.startGameBtn.addEventListener('click', () => {
-                if (state.socket && state.playerData.groupCode) {
-                    state.socket.emit('startGameRequest', state.playerData.groupCode);
+        droppables.forEach(container => {
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(container, e.clientY);
+                const draggable = document.querySelector('.dragging');
+                if (draggable) {
+                   if (afterElement == null) {
+                        container.appendChild(draggable);
+                    } else {
+                        container.insertBefore(draggable, afterElement);
+                    }
                 }
             });
+        });
+    }
+    
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.word-tile:not(.dragging)')];
 
-            // In-Game Controls
-            DOMElements.checkBtn.addEventListener('click', checkSentence);
-            DOMElements.resetBtn.addEventListener('click', resetLevel);
-            
-            // Abbreviation Modal
-            DOMElements.challengeDisplay.addEventListener('click', showAbbreviations);
-            DOMElements.abbrModalCloseBtn.addEventListener('click', hideAbbreviations);
-            DOMElements.abbrModalOverlay.addEventListener('click', (e) => {
-                if (e.target === DOMElements.abbrModalOverlay) hideAbbreviations();
-            });
-
-            // Drag and Drop
-            [DOMElements.sentenceArea, DOMElements.wordBank].forEach(zone => {
-                zone.addEventListener('dragover', handleDragOver);
-                zone.addEventListener('dragleave', handleDragLeave);
-                zone.addEventListener('drop', handleDrop);
-            });
-        }
-
-        // --- MODAL & GAME FLOW ---
-        function selectGameMode(mode) {
-            state.gameMode = mode;
-            DOMElements.modeModalOverlay.style.display = 'none';
-            if (mode === 'singlePlayer') {
-                DOMElements.levelModalOverlay.style.display = 'flex';
-                DOMElements.scoreboard.style.display = 'none'; // Hide scoreboard in single player
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
             } else {
-                DOMElements.multiplayerModalOverlay.style.display = 'flex';
-                DOMElements.scoreboard.style.display = 'block'; // Show scoreboard in multiplayer
-                connectSocket();
+                return closest;
             }
-        }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
 
-        function setLevelAndStart(level) {
-            state.currentLevel = level;
-            // For single player, start game immediately. For multiplayer, game starts via socket event.
-            if (state.gameMode === 'singlePlayer') {
-                startGame();
+
+    // --- GAME LOGIC FUNCTIONS ---
+    function startGame() {
+        elements.gameContainer.style.display = 'block';
+        if (state.gameMode === 'multi') {
+            elements.multiplayerScoreboard.style.display = 'block';
+            updateMultiplayerScoreboard(state.players);
+        }
+        loadQuestion();
+    }
+    
+    function loadQuestion() {
+        // Simple logic for now, will expand to 50 levels / 30 questions
+        const levelData = levels[state.proficiency][0]; // Simplified
+        state.currentSentence = levelData.sentence;
+        state.currentWords = [...levelData.words].sort(() => Math.random() - 0.5);
+
+        renderWords();
+        updateUI();
+        startTimer();
+    }
+
+    function checkSentence() {
+        clearInterval(state.timerInterval);
+        const sentenceTrayWords = Array.from(elements.sentenceTray.querySelectorAll('.word-tile'));
+        const userSentence = sentenceTrayWords.map(tile => tile.textContent).join(' ').toLowerCase();
+
+        // Basic validation for now, replace with Ohm.js
+        if (userSentence === state.currentSentence.toLowerCase()) {
+            elements.feedbackArea.textContent = "Correct!";
+            elements.feedbackArea.className = 'feedback-correct';
+            state.score += 10 + state.timer;
+            if(state.gameMode === 'multi') {
+                state.playerData.score = state.score;
+                state.socket.emit('updateScore', { ...state.playerData, groupCode: state.groupCode });
             }
-        }
-
-        function startGame() {
-            DOMElements.levelModalOverlay.style.display = 'none';
-            DOMElements.multiplayerModalOverlay.style.display = 'none';
-            DOMElements.waitingRoomOverlay.style.display = 'none';
-            DOMElements.gameContainer.style.display = 'block';
-            DOMElements.changeLevelBtn.style.display = 'block';
-            state.score = 0;
-            updateScoreUI();
-            loadLevel(state.currentLevel);
-        }
-
-        // --- MULTIPLAYER LOGIC ---
-        function connectSocket() {
-            if (state.socket) return;
-            try {
-                // Disable buttons and show connecting message immediately
-                DOMElements.multiplayerFeedback.textContent = 'Connecting to server...';
-                DOMElements.createGroupBtn.disabled = true;
-                DOMElements.joinGroupBtn.disabled = true;
-
-                state.socket = io(SOCKET_SERVER_URL, {
-                    reconnection: true,
-                    reconnectionAttempts: 5,
-                    timeout: 60000, // 60 seconds, to allow for cold starts on services like Render
-                    transports: ['websocket', 'polling'], // Prioritize websockets
-                });
-
-                // --- Connection Lifecycle Events ---
-                state.socket.on('connect', () => {
-                    state.playerData.id = state.socket.id;
-                    console.log('Connected to server with ID:', state.playerData.id);
-                    DOMElements.multiplayerFeedback.textContent = 'Connection successful!';
-                    DOMElements.createGroupBtn.disabled = false;
-                    DOMElements.joinGroupBtn.disabled = false;
-                    setTimeout(() => {
-                        // Clear success message only if it hasn't changed
-                        if (DOMElements.multiplayerFeedback.textContent === 'Connection successful!') {
-                            DOMElements.multiplayerFeedback.textContent = '';
-                        }
-                    }, 2000);
-                });
-
-                state.socket.on('connect_error', (err) => {
-                    console.error('Connection failed:', err.message);
-                    // This message will be updated by 'reconnect_attempt' if retries are happening
-                    DOMElements.multiplayerFeedback.textContent = `Connection failed. Retrying...`;
-                });
-                
-                state.socket.on('reconnect_attempt', (attempt) => {
-                    console.log(`Reconnection attempt #${attempt}`);
-                    DOMElements.multiplayerFeedback.textContent = `Connection failed. Retrying... (Attempt ${attempt} of 5)`;
-                });
-
-                state.socket.on('reconnect_failed', () => {
-                     console.error('Reconnection failed permanently.');
-                     DOMElements.multiplayerFeedback.textContent = "Error: Could not connect to the server. Please check your internet and refresh.";
-                     // Keep buttons disabled
-                });
-
-                state.socket.on('disconnect', (reason) => {
-                    console.log(`Disconnected from server: ${reason}`);
-                    // The client will automatically try to reconnect unless it was a deliberate disconnect
-                    if (reason === 'io server disconnect' || reason === 'transport close') {
-                        if (DOMElements.gameContainer.style.display === 'block') {
-                            displayFeedback('Connection lost. Reconnecting...', 'error', 0);
-                        } else {
-                            DOMElements.multiplayerFeedback.textContent = 'Connection lost. Reconnecting...';
-                        }
-                    }
-                });
-                
-                // --- Game Logic Events ---
-                state.socket.on('groupCreated', ({ groupCode, players }) => {
-                    state.playerData.groupCode = groupCode;
-                    DOMElements.multiplayerFeedback.textContent = '';
-                    DOMElements.groupCodeDisplay.style.display = 'block';
-                    DOMElements.groupCodeText.textContent = groupCode;
-                    
-                    DOMElements.multiplayerModalOverlay.style.display = 'none';
-                    DOMElements.waitingRoomOverlay.style.display = 'flex';
-                    updateWaitingRoomUI(players);
-                });
-
-                state.socket.on('joinSuccess', (groupData) => {
-                    state.playerData.groupCode = groupData.groupCode;
-                    DOMElements.multiplayerModalOverlay.style.display = 'none';
-                    DOMElements.waitingRoomOverlay.style.display = 'flex';
-                    // The 'updatePlayers' event will now handle rendering the player list.
-                });
-                
-                state.socket.on('joinError', (message) => {
-                    if (message && message.toLowerCase().includes('not found')) {
-                         DOMElements.multiplayerFeedback.textContent = message + " (Note: Groups may expire due to server inactivity.)";
-                    } else {
-                        DOMElements.multiplayerFeedback.textContent = message;
-                    }
-                });
-                
-                state.socket.on('updatePlayers', (players) => {
-                    updateScoreboard(players);
-                    updateWaitingRoomUI(players);
-                });
-
-                state.socket.on('gameStarted', () => {
-                    // Everyone starts the game at beginner level for now
-                    setLevelAndStart(0); 
-                    startGame();
-                });
-                
-            } catch (error) {
-                console.error("Socket.IO client error:", error);
-                DOMElements.multiplayerFeedback.textContent = "An error occurred while setting up multiplayer.";
+            // Move to next question after a delay
+            setTimeout(nextQuestion, 1500);
+        } else {
+            const match = grammar.match(userSentence);
+            let feedback = "Incorrect. Try again!";
+            if(match.failed()) {
+                const failure = match.message;
+                const expected = failure.match(/Expected (.+)/);
+                 if (expected) {
+                    feedback = `Hint: Something is missing or in the wrong place. The grammar expected ${expected[1].replace(/_/g, ' ')}.`;
+                 }
             }
+            elements.feedbackArea.textContent = feedback;
+            elements.feedbackArea.className = 'feedback-incorrect';
         }
-
-        function createGroup() {
-            const nickname = DOMElements.nicknameInput.value.trim();
-            if (!nickname) {
-                DOMElements.multiplayerFeedback.textContent = 'Please enter a nickname.';
+        updateUI();
+    }
+    
+    function nextQuestion() {
+        if (state.currentQuestion < state.totalQuestionsPerLevel) {
+            state.currentQuestion++;
+        } else {
+            state.currentQuestion = 1;
+            if(state.currentLevel < state.totalLevels) {
+                state.currentLevel++;
+            } else {
+                // Game Over
+                elements.feedbackArea.textContent = `Congratulations! You've completed all levels! Final Score: ${state.score}`;
                 return;
             }
-            if (!state.socket || !state.socket.connected) {
-                DOMElements.multiplayerFeedback.textContent = 'Not connected to server.';
-                return;
-            }
-            state.playerData.nickname = nickname;
-            state.socket.emit('createGroup', state.playerData);
         }
+        loadQuestion();
+    }
 
-        function joinGroup() {
-            const nickname = DOMElements.nicknameInput.value.trim();
-            const groupCode = DOMElements.groupCodeInput.value.trim();
-            if (!nickname || !groupCode) {
-                DOMElements.multiplayerFeedback.textContent = 'Please enter a nickname and group code.';
-                return;
+    function startTimer() {
+        state.timer = 30;
+        elements.timerDisplay.textContent = `Time: ${state.timer}`;
+        clearInterval(state.timerInterval);
+        state.timerInterval = setInterval(() => {
+            state.timer--;
+            elements.timerDisplay.textContent = `Time: ${state.timer}`;
+            if (state.timer <= 0) {
+                clearInterval(state.timerInterval);
+                elements.feedbackArea.textContent = "Time's up!";
+                elements.feedbackArea.className = 'feedback-incorrect';
             }
-            if (!state.socket || !state.socket.connected) {
-                DOMElements.multiplayerFeedback.textContent = 'Not connected to server.';
-                return;
-            }
-            state.playerData.nickname = nickname;
-            state.socket.emit('joinGroup', { playerData: state.playerData, groupCode });
-        }
+        }, 1000);
+    }
+    
+    function resetWordPositions() {
+        // Move all tiles from sentence tray back to word pool
+        const sentenceTiles = elements.sentenceTray.querySelectorAll('.word-tile');
+        sentenceTiles.forEach(tile => elements.wordPool.appendChild(tile));
+    }
 
-
-        // --- CORE GAME LOGIC ---
-        function loadLevel(levelIndex) {
-            if (levelIndex >= levels.length) {
-                displayFeedback("Congratulations! You've completed all levels!", 'success', 0);
-                stopTimer();
-                return;
-            }
-            
-            state.currentLevel = levelIndex;
-            const level = levels[levelIndex];
-            
-            // Clear previous state
-            DOMElements.sentenceArea.innerHTML = '';
-            DOMElements.wordBank.innerHTML = '';
-            displayFeedback('', 'info');
-
-            // Populate word bank with shuffled words
-            shuffleArray(level.words).forEach(wordObj => {
-                const tile = createWordTile(wordObj);
-                DOMElements.wordBank.appendChild(tile);
-            });
-
-            // Update UI
-            DOMElements.targetGrammar.textContent = level.target;
-            updateProgress();
-            
-            // Start timer
-            startTimer();
-        }
-
-        function createWordTile(wordObj) {
+    // --- UI UPDATE FUNCTIONS ---
+    function renderWords() {
+        elements.wordPool.innerHTML = '';
+        elements.sentenceTray.innerHTML = '';
+        elements.feedbackArea.innerHTML = '';
+        state.currentWords.forEach(word => {
             const tile = document.createElement('div');
             tile.className = 'word-tile';
-            tile.textContent = wordObj.word;
-            tile.dataset.type = wordObj.type.toLowerCase();
+            tile.textContent = word;
             tile.draggable = true;
-            if (wordObj.type === 'Punct' || wordObj.type === 'Comma') {
-                tile.classList.add('punctuation');
-            }
-            
-            tile.addEventListener('dragstart', handleDragStart);
-            tile.addEventListener('dragend', handleDragEnd);
-            return tile;
-        }
+            elements.wordPool.appendChild(tile);
+        });
+        initializeDragAndDrop();
+    }
 
-        function resetLevel() {
-            loadLevel(state.currentLevel);
-        }
+    function updateUI() {
+        elements.levelIndicator.textContent = `Level: ${state.currentLevel}/${state.totalLevels}`;
+        elements.questionIndicator.textContent = `Question: ${state.currentQuestion}/${state.totalQuestionsPerLevel}`;
+        const progress = (state.currentQuestion / state.totalQuestionsPerLevel) * 100;
+        elements.progressBar.style.width = `${progress}%`;
+        // In single player, a score display could be added to the header
+    }
 
-        function checkSentence() {
-            stopTimer();
-            DOMElements.checkBtn.disabled = true;
+    function updateWaitingRoom(players) {
+        elements.waitingPlayerList.innerHTML = '';
+        players.forEach(player => {
+            const li = document.createElement('li');
+            li.textContent = player.nickname;
+            elements.waitingPlayerList.appendChild(li);
+        });
+    }
 
-            const sentenceTiles = [...DOMElements.sentenceArea.children];
-            if (sentenceTiles.length === 0) {
-                displayFeedback('Please build a sentence first.', 'info');
-                DOMElements.checkBtn.disabled = false;
-                startTimer(); // Restart timer if nothing was checked
-                return;
-            }
-            
-            const posString = sentenceTiles.map(tile => tile.dataset.type).join(' ');
-            const targetRule = levels[state.currentLevel].rule;
-            
-            const match = state.grammar.match(posString, targetRule);
-            
-            if (match.succeeded()) {
-                const points = 10 + state.timeLeft; // More points for faster answers
-                state.score += points;
-                updateScoreUI();
-                if (state.gameMode === 'multiplayer' && state.socket && state.socket.connected) {
-                    state.playerData.score = state.score;
-                    state.socket.emit('updateScore', state.playerData);
-                }
-                displayFeedback(`Correct! +${points} points`, 'correct');
-                setTimeout(() => loadLevel(state.currentLevel + 1), 1500);
-            } else {
-                displayFeedback('That sentence structure is incorrect. Try again!', 'incorrect');
-                setTimeout(() => {
-                    DOMElements.checkBtn.disabled = false;
-                    startTimer();
-                }, 1500);
-            }
-        }
+    function updateMultiplayerScoreboard(players) {
+        elements.playerScoresList.innerHTML = '';
+        const sortedPlayers = [...players].sort((a,b) => b.score - a.score);
+        sortedPlayers.forEach(player => {
+            const li = document.createElement('li');
+            const isCurrentUser = player.id === state.playerData.id;
+            li.innerHTML = `
+                <span class="player-name">${player.nickname}${isCurrentUser ? ' (You)' : ''}</span>
+                <span class="player-score">${player.score}</span>
+            `;
+            elements.playerScoresList.appendChild(li);
+        });
+    }
 
-        // --- TIMER ---
-        function startTimer() {
-            stopTimer(); // Ensure no multiple timers run
-            state.timeLeft = TIME_LIMIT;
-            DOMElements.timerDisplay.textContent = `${state.timeLeft}s`;
-            DOMElements.checkBtn.disabled = false;
-            
-            state.timerInterval = setInterval(() => {
-                state.timeLeft--;
-                DOMElements.timerDisplay.textContent = `${state.timeLeft}s`;
-                if (state.timeLeft <= 0) {
-                    stopTimer();
-                    displayFeedback("Time's up! Moving to the next question.", 'info');
-                    setTimeout(() => loadLevel(state.currentLevel + 1), 2000);
-                }
-            }, 1000);
-        }
-
-        function stopTimer() {
-            if (state.timerInterval) {
-                clearInterval(state.timerInterval);
-            }
-        }
-
-        // --- UI UPDATES ---
-        function updateScoreUI() {
-            DOMElements.scoreCounter.textContent = `Score: ${state.score}`;
-        }
-
-        function updateProgress() {
-            const progress = (state.currentLevel / levels.length) * 100;
-            DOMElements.progressBar.style.width = `${progress}%`;
-            DOMElements.levelCounter.textContent = `Level ${state.currentLevel + 1} / ${levels.length}`;
-        }
-
-        function updateWaitingRoomUI(players) {
-            DOMElements.waitingRoomPlayerList.innerHTML = '';
-            players.forEach(player => {
-                const li = document.createElement('li');
-                li.textContent = player.nickname;
-                DOMElements.waitingRoomPlayerList.appendChild(li);
-            });
-        }
-
-        function updateScoreboard(players) {
-            DOMElements.playerList.innerHTML = '';
-            players.sort((a, b) => b.score - a.score); // Sort by score descending
-            players.forEach(player => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                            <span class="player-name">${player.nickname}</span>
-                            <span class="player-score">${player.score}</span>
-                        `;
-                if (player.id === state.playerData.id) {
-                    li.classList.add('current-player');
-                }
-                DOMElements.playerList.appendChild(li);
-            });
-        }
-
-        function displayFeedback(message, type, duration = 3000) {
-            DOMElements.feedback.textContent = message;
-            DOMElements.feedback.className = `feedback-${type}`;
-            if (duration > 0) {
-                setTimeout(() => {
-                    if (DOMElements.feedback.textContent === message) {
-                        DOMElements.feedback.textContent = '';
-                    }
-                }, duration);
-            }
-        }
-
-        function showAbbreviations() {
-            const targetText = levels[state.currentLevel].target.split(' - ');
-            let html = '';
-            const uniqueAbbrs = [...new Set(targetText.map(t => t.replace(/[^A-Z]/g, '')))];
-            uniqueAbbrs.forEach(abbr => {
-                const fullForm = grammarMap[abbr] || 'Unknown';
-                html += `<p><strong>${abbr}:</strong> ${fullForm}</p>`;
-            });
-            DOMElements.modalDefinitions.innerHTML = html;
-            DOMElements.abbrModalOverlay.style.display = 'flex';
-        }
-
-        function hideAbbreviations() {
-            DOMElements.abbrModalOverlay.style.display = 'none';
-        }
-
-        // --- DRAG & DROP HANDLERS ---
-        function handleDragStart(e) {
-            state.draggedItem = e.target;
-            setTimeout(() => e.target.classList.add('dragging'), 0);
-        }
-
-        function handleDragEnd(e) {
-            e.target.classList.remove('dragging');
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.target.closest('.drop-zone')?.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.target.closest('.drop-zone')?.classList.remove('drag-over');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            const dropZone = e.target.closest('.drop-zone');
-            if (dropZone) {
-                dropZone.classList.remove('drag-over');
-                if (state.draggedItem) {
-                    dropZone.appendChild(state.draggedItem);
-                }
-            }
-            state.draggedItem = null;
-        }
-
-        // --- UTILITY ---
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        // --- START THE APP ---
-        init();
-    </script>
+</script>
 </body>
 </html>

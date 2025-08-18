@@ -6,6 +6,11 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 
+// Add a health check route for the hosting platform
+app.get("/", (req, res) => {
+    res.status(200).send({ status: "ok" });
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
