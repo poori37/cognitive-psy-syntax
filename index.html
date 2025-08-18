@@ -51,6 +51,10 @@
             align-items: center;
             z-index: 1000;
         }
+        
+        #mode-modal-overlay {
+            display: flex; /* Show this modal first */
+        }
 
         .modal-content {
             background-color: #2c2f41;
@@ -458,6 +462,14 @@
     </style>
 </head>
 <body>
+    <div id="mode-modal-overlay" class="modal-overlay">
+        <div id="mode-modal" class="modal-content">
+            <h2>Choose Your Game Mode</h2>
+            <button id="single-player-btn">Single Player</button>
+            <button id="multiplayer-btn">Multiplayer</button>
+        </div>
+    </div>
+
     <div id="level-modal-overlay" class="modal-overlay">
         <div id="level-modal" class="modal-content">
             <h2>Select Your Proficiency Level</h2>
@@ -546,8 +558,8 @@
       S_V_O = Noun Verb Noun Punct?
       S_V_Adv = Noun Verb Adv Punct?
       Det_Adj_N_V = Det Adj Noun Verb Punct?
-      S_V_PP = Noun Verb Prep Det Noun Punct?
-      S_V_O_PP = Noun Verb Noun Prep Det Noun Punct?
+      S_V_PP = Noun Verb Prep Det? Noun Punct?
+      S_V_O_PP = Noun Verb Noun Prep Det? Noun Punct?
       S_V_Conj_V = Noun Verb Conj Verb Punct?
       Compound_S_V = Noun Conj Noun Verb Punct?
       S_V_O_Conj_S_V_O = Noun Verb Noun Comma? Conj Noun Verb Noun Punct?
@@ -584,430 +596,461 @@
             'Question': 'Question Form', 'Wh': 'Wh-word (e.g., Who, What, Where)',
             'Aux': 'Auxiliary Verb (e.g., do, can, is)'
         };
-
-        const allQuestions = [
-            // Levels 1-20: Beginner
-            { rule: "S_V", words: [{word: "Birds", type: "Noun"}, {word: "fly", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_N_V", words: [{word: "The", type: "Det"}, {word: "sun", type: "Noun"}, {word: "shines", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", words: [{word: "Cats", type: "Noun"}, {word: "chase", type: "Verb"}, {word: "mice", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Adv", words: [{word: "She", type: "Noun"}, {word: "sings", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V", words: [{word: "Dogs", type: "Noun"}, {word: "bark", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_N_V", words: [{word: "A", type: "Det"}, {word: "boy", type: "Noun"}, {word: "runs", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", words: [{word: "I", type: "Noun"}, {word: "read", type: "Verb"}, {word: "books", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Adv", words: [{word: "He", type: "Noun"}, {word: "works", type: "Verb"}, {word: "hard", type: "Adv"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O", words: [{word: "They", type: "Noun"}, {word: "play", type: "Verb"}, {word: "games", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_N_V", words: [{word: "The", type: "Det"}, {word: "baby", type: "Noun"}, {word: "cries", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", words: [{word: "The", type: "Det"}, {word: "big", type: "Adj"}, {word: "dog", type: "Noun"}, {word: "barks", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_PP", words: [{word: "He", type: "Noun"}, {word: "sits", type: "Verb"}, {word: "on", type: "Prep"}, {word: "the", type: "Det"}, {word: "chair", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", words: [{word: "A", type: "Det"}, {word: "red", type: "Adj"}, {word: "car", type: "Noun"}, {word: "drives", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_PP", words: [{word: "She", type: "Noun"}, {word: "put", type: "Verb"}, {word: "keys", type: "Noun"}, {word: "in", type: "Prep"}, {word: "the", type: "Det"}, {word: "box", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", words: [{word: "The", type: "Det"}, {word: "tall", type: "Adj"}, {word: "tree", type: "Noun"}, {word: "grows", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_PP", words: [{word: "Fish", type: "Noun"}, {word: "swim", type: "Verb"}, {word: "in", type: "Prep"}, {word: "the", type: "Det"}, {word: "sea", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", words: [{word: "A", type: "Det"}, {word: "happy", type: "Adj"}, {word: "child", type: "Noun"}, {word: "laughs", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_PP", words: [{word: "He", type: "Noun"}, {word: "threw", type: "Verb"}, {word: "ball", type: "Noun"}, {word: "over", type: "Prep"}, {word: "the", type: "Det"}, {word: "fence", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", words: [{word: "The", type: "Det"}, {word: "cold", type: "Adj"}, {word: "wind", type: "Noun"}, {word: "blows", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_PP", words: [{word: "We", type: "Noun"}, {word: "walk", type: "Verb"}, {word: "to", type: "Prep"}, {word: "the", type: "Det"}, {word: "park", type: "Noun"}, {word: ".", type: "Punct"}] },
-            // Levels 21-40: Advanced
-            { rule: "S_V_Conj_V", words: [{word: "I", type: "Noun"}, {word: "read", type: "Verb"}, {word: "and", type: "Conj"}, {word: "write", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Compound_S_V", words: [{word: "Tom", type: "Noun"}, {word: "and", type: "Conj"}, {word: "Jerry", type: "Noun"}, {word: "run", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", words: [{word: "She", type: "Noun"}, {word: "likes", type: "Verb"}, {word: "tea", type: "Noun"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "he", type: "Noun"}, {word: "wants", type: "Verb"}, {word: "coffee", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Conj_V", words: [{word: "He", type: "Noun"}, {word: "sings", type: "Verb"}, {word: "and", type: "Conj"}, {word: "dances", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Compound_S_V", words: [{word: "You", type: "Noun"}, {word: "and", type: "Conj"}, {word: "I", type: "Noun"}, {word: "learn", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", words: [{word: "Dogs", type: "Noun"}, {word: "bark", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "cats", type: "Noun"}, {word: "prowl", type: "Verb"}, {word: "silently", type: "Adv"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Conj_V", words: [{word: "She", type: "Noun"}, {word: "fell", type: "Verb"}, {word: "but", type: "Conj"}, {word: "recovered", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Compound_S_V", words: [{word: "The", type: "Det"}, {word: "cat", type: "Noun"}, {word: "and", type: "Conj"}, {word: "dog", type: "Noun"}, {word: "play", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", words: [{word: "We", type: "Noun"}, {word: "can", type: "Verb"}, {word: "win", type: "Noun"}, {word: ",", type: "Comma"}, {word: "or", type: "Conj"}, {word: "we", type: "Noun"}, {word: "can", type: "Verb"}, {word: "lose", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Conj_V", words: [{word: "They", type: "Noun"}, {word: "work", type: "Verb"}, {word: "and", type: "Conj"}, {word: "succeed", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Question_V_S_O", words: [{word: "Do", type: "Aux"}, {word: "you", type: "Noun"}, {word: "like", type: "Verb"}, {word: "pizza", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_Wh_V_S", words: [{word: "When", type: "Wh"}, {word: "did", type: "Aux"}, {word: "they", type: "Noun"}, {word: "leave", type: "Verb"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_V_S_O", words: [{word: "Can", type: "Aux"}, {word: "he", type: "Noun"}, {word: "speak", type: "Verb"}, {word: "French", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_Wh_V_S", words: [{word: "Where", type: "Wh"}, {word: "is", type: "Aux"}, {word: "the", type: "Det"}, {word: "party", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_V_S_O", words: [{word: "Will", type: "Aux"}, {word: "she", type: "Noun"}, {word: "call", type: "Verb"}, {word: "you", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_Wh_V_S", words: [{word: "Why", type: "Wh"}, {word: "are", type: "Aux"}, {word: "you", type: "Noun"}, {word: "late", type: "Adj"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_V_S_O", words: [{word: "Have", type: "Aux"}, {word: "they", type: "Noun"}, {word: "eaten", type: "Verb"}, {word: "lunch", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_Wh_V_S", words: [{word: "Who", type: "Wh"}, {word: "ate", type: "Aux"}, {word: "the", type: "Det"}, {word: "cake", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_V_S_O", words: [{word: "Does", type: "Aux"}, {word: "it", type: "Noun"}, {word: "work", type: "Verb"}, {word: "now", type: "Adv"}, {word: "?", type: "Punct"}] },
-            { rule: "Question_Wh_V_S", words: [{word: "What", type: "Wh"}, {word: "is", type: "Aux"}, {word: "your", type: "Det"}, {word: "name", type: "Noun"}, {word: "?", type: "Punct"}] },
-             // Levels 41-50: Professional
-            { rule: "S_V_O_PP", words: [{word: "Artists", type: "Noun"}, {word: "paint", type: "Verb"}, {word: "pictures", type: "Noun"}, {word: "with", type: "Prep"}, {word: "great", type: "Adj"}, {word: "skill", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Adv", words: [{word: "Computers", type: "Noun"}, {word: "calculate", type: "Verb"}, {word: "quickly", type: "Adv"}, {word: ".", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", words: [{word: "The", type: "Det"}, {word: "old", type: "Adj"}, {word: "castle", type: "Noun"}, {word: "stands", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_PP", words: [{word: "She", type: "Noun"}, {word: "told", type: "Verb"}, {word: "a story", type: "Noun"}, {word: "to", type: "Prep"}, {word: "the", type: "Det"}, {word: "children", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_Conj_V", words: [{word: "He", type: "Noun"}, {word: "tries", type: "Verb"}, {word: "but", type: "Conj"}, {word: "fails", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "Question_V_S_O", words: [{word: "Did", type: "Aux"}, {word: "the", type: "Det"}, {word: "team", type: "Noun"}, {word: "win", type: "Verb"}, {word: "the", type: "Det"}, {word: "match", type: "Noun"}, {word: "?", type: "Punct"}] },
-            { rule: "Det_Adj_N_V", words: [{word: "A", type: "Det"}, {word: "brilliant", type: "Adj"}, {word: "idea", type: "Noun"}, {word: "emerged", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_PP", words: [{word: "We", type: "Noun"}, {word: "received", type: "Verb"}, {word: "a letter", type: "Noun"}, {word: "from", type: "Prep"}, {word: "our", type: "Det"}, {word: "friends", type: "Noun"}, {word: ".", type: "Punct"}] },
-            { rule: "Compound_S_V", words: [{word: "Stars", type: "Noun"}, {word: "and", type: "Conj"}, {word: "planets", type: "Noun"}, {word: "shine", type: "Verb"}, {word: ".", type: "Punct"}] },
-            { rule: "S_V_O_Conj_S_V_O", words: [{word: "The", type: "Det"}, {word: "movie", type: "Noun"}, {word: "was", type: "Verb"}, {word: "long", type: "Adj"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "it", type: "Noun"}, {word: "was", type: "Verb"}, {word: "exciting", type: "Adj"}, {word: ".", type: "Punct"}] },
-        ];
-
-        const levels = [
-            allQuestions.slice(0, 20), // Beginner
-            allQuestions.slice(20, 40), // Advanced
-            allQuestions.slice(40, 50)  // Professional
-        ];
-        const tierNames = ["Beginner", "Advanced", "Professional"];
-        const totalQuestions = allQuestions.length;
-
-        // --- GAME STATE ---
-        let currentTierIndex;
-        let currentQuestionIndex;
-        let score = 0;
-        let draggedTile = null;
-        let timerInterval = null;
         
-        // --- MULTIPLAYER STATE ---
-        let socket;
-        let nickname = '';
-        let groupCode = '';
+        const levels = [
+            // Levels 1-20: Beginner
+            { rule: "S_V", target: "S - V", words: [{word: "Birds", type: "Noun"}, {word: "fly", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_N_V", target: "Det - N - V", words: [{word: "The", type: "Det"}, {word: "sun", type: "Noun"}, {word: "shines", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", target: "S - V - O", words: [{word: "Cats", type: "Noun"}, {word: "chase", type: "Verb"}, {word: "mice", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Adv", target: "S - V - Adv", words: [{word: "She", type: "Noun"}, {word: "sings", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", target: "Det - Adj - N - V", words: [{word: "The", type: "Det"}, {word: "big", type: "Adj"}, {word: "dog", type: "Noun"}, {word: "barks", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V", target: "S - V", words: [{word: "Fish", type: "Noun"}, {word: "swim", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_N_V", target: "Det - N - V", words: [{word: "A", type: "Det"}, {word: "baby", type: "Noun"}, {word: "cries", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", target: "S - V - O", words: [{word: "He", type: "Noun"}, {word: "reads", type: "Verb"}, {word: "books", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Adv", target: "S - V - Adv", words: [{word: "They", type: "Noun"}, {word: "ran", type: "Verb"}, {word: "quickly", type: "Adv"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", target: "Det - Adj - N - V", words: [{word: "My", type: "Det"}, {word: "red", type: "Adj"}, {word: "car", type: "Noun"}, {word: "drives", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", target: "S - V - O", words: [{word: "I", type: "Noun"}, {word: "love", type: "Verb"}, {word: "music", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_N_V", target: "Det - N - V", words: [{word: "The", type: "Det"}, {word: "stars", type: "Noun"}, {word: "twinkle", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V", target: "S - V", words: [{word: "Water", type: "Noun"}, {word: "flows", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Adv", target: "S - V - Adv", words: [{word: "He", type: "Noun"}, {word: "speaks", type: "Verb"}, {word: "softly", type: "Adv"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", target: "Det - Adj - N - V", words: [{word: "A", type: "Det"}, {word: "small", type: "Adj"}, {word: "boat", type: "Noun"}, {word: "sails", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", target: "S - V - O", words: [{word: "We", type: "Noun"}, {word: "play", type: "Verb"}, {word: "games", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_N_V", target: "Det - N - V", words: [{word: "The", type: "Det"}, {word: "wind", type: "Noun"}, {word: "blows", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Adv", target: "S - V - Adv", words: [{word: "She", type: "Noun"}, {word: "waited", type: "Verb"}, {word: "patiently", type: "Adv"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V", target: "S - V", words: [{word: "Time", type: "Noun"}, {word: "passes", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", target: "S - V - O", words: [{word: "You", type: "Noun"}, {word: "need", type: "Verb"}, {word: "help", type: "Noun"}, {word: "?", type: "Punct"}] },
+            // Levels 21-40: Advanced
+            { rule: "S_V_PP", target: "S - V - PP", words: [{word: "He", type: "Noun"}, {word: "walked", type: "Verb"}, {word: "to", type: "Prep"}, {word: "school", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "She", type: "Noun"}, {word: "put", type: "Verb"}, {word: "the book", type: "Noun"}, {word: "on", type: "Prep"}, {word: "the table", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Conj_V", target: "S - V - Conj - V", words: [{word: "They", type: "Noun"}, {word: "danced", type: "Verb"}, {word: "and", type: "Conj"}, {word: "sang", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Compound_S_V", target: "Compound S - V", words: [{word: "John", type: "Noun"}, {word: "and", type: "Conj"}, {word: "Mary", type: "Noun"}, {word: "left", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "I", type: "Noun"}, {word: "like", type: "Verb"}, {word: "tea", type: "Noun"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "he", type: "Noun"}, {word: "likes", type: "Verb"}, {word: "coffee", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Question_V_S_O", target: "Question: Aux - S - V - O", words: [{word: "Do", type: "Aux"}, {word: "you", type: "Noun"}, {word: "want", type: "Verb"}, {word: "pizza", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_Wh_V_S", target: "Question: Wh - Aux - S - V", words: [{word: "Where", type: "Wh"}, {word: "are", type: "Aux"}, {word: "you", type: "Noun"}, {word: "going", type: "Verb"}, {word: "?", type: "Punct"}] },
+            { rule: "S_V_PP", target: "S - V - PP", words: [{word: "The keys", type: "Noun"}, {word: "are", type: "Verb"}, {word: "in", type: "Prep"}, {word: "the drawer", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "He", type: "Noun"}, {word: "hit", type: "Verb"}, {word: "the nail", type: "Noun"}, {word: "with", type: "Prep"}, {word: "a hammer", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Conj_V", target: "S - V - Conj - V", words: [{word: "I", type: "Noun"}, {word: "will call", type: "Verb"}, {word: "or", type: "Conj"}, {word: "text", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Compound_S_V", target: "Compound S - V", words: [{word: "The dog", type: "Noun"}, {word: "and", type: "Conj"}, {word: "the cat", type: "Noun"}, {word: "are sleeping", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "She", type: "Noun"}, {word: "is", type: "Verb"}, {word: "smart", type: "Noun"}, {word: ",", type: "Comma"}, {word: "and", type: "Conj"}, {word: "she", type: "Noun"}, {word: "is", type: "Verb"}, {word: "funny", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Question_V_S_O", target: "Question: Aux - S - V - O", words: [{word: "Can", type: "Aux"}, {word: "I", type: "Noun"}, {word: "have", type: "Verb"}, {word: "some", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_Wh_V_S", target: "Question: Wh - Aux - S - V", words: [{word: "What", type: "Wh"}, {word: "did", type: "Aux"}, {word: "you", type: "Noun"}, {word: "say", type: "Verb"}, {word: "?", type: "Punct"}] },
+            { rule: "S_V_PP", target: "S - V - PP", words: [{word: "We", type: "Noun"}, {word: "live", type: "Verb"}, {word: "near", type: "Prep"}, {word: "the city", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "I", type: "Noun"}, {word: "read", type: "Verb"}, {word: "a story", type: "Noun"}, {word: "about", type: "Prep"}, {word: "dragons", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Conj_V", target: "S - V - Conj - V", words: [{word: "He", type: "Noun"}, {word: "tripped", type: "Verb"}, {word: "but", type: "Conj"}, {word: "recovered", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Compound_S_V", target: "Compound S - V", words: [{word: "My mom", type: "Noun"}, {word: "and", type: "Conj"}, {word: "my dad", type: "Noun"}, {word: "are here", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "He", type: "Noun"}, {word: "came", type: "Verb"}, {word: "home", type: "Noun"}, {word: ",", type: "Comma"}, {word: "so", type: "Conj"}, {word: "I", type: "Noun"}, {word: "started", type: "Verb"}, {word: "dinner", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Question_V_S_O", target: "Question: Aux - S - V - O", words: [{word: "Will", type: "Aux"}, {word: "they", type: "Noun"}, {word: "win", type: "Verb"}, {word: "the game", type: "Noun"}, {word: "?", type: "Punct"}] },
+            // Levels 41-50: Professional
+            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "The painting", type: "Noun"}, {word: "was hung", type: "Verb"}, {word: "by the artist", type: "Noun"}, {word: "in", type: "Prep"}, {word: "the gallery", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "Before", type: "Conj"}, {word: "you", type: "Noun"}, {word: "leave", type: "Verb"}, {word: "the house", type: "Noun"}, {word: ",", type: "Comma"}, {word: "you", type: "Noun"}, {word: "should check", type: "Verb"}, {word: "the lights", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Question_Wh_V_S", target: "Question: Wh - Aux - S - V", words: [{word: "Why", type: "Wh"}, {word: "is", type: "Aux"}, {word: "the sky", type: "Noun"}, {word: "blue", type: "Verb"}, {word: "?", type: "Punct"}] },
+            { rule: "S_V_PP", target: "S - V - PP", words: [{word: "Running", type: "Noun"}, {word: "is", type: "Verb"}, {word: "good", type: "Prep"}, {word: "for you", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", target: "S - V - O", words: [{word: "To err", type: "Noun"}, {word: "is", type: "Verb"}, {word: "human", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", target: "Det - Adj - N - V", words: [{word: "The", type: "Det"}, {word: "barking", type: "Adj"}, {word: "dog", type: "Noun"}, {word: "is", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_PP", target: "S - V - O - PP", words: [{word: "I", type: "Noun"}, {word: "saw", type: "Verb"}, {word: "the man", type: "Noun"}, {word: "with", type: "Prep"}, {word: "the telescope", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", target: "S - V - O, Conj S - V - O", words: [{word: "Although", type: "Conj"}, {word: "it", type: "Noun"}, {word: "was", type: "Verb"}, {word: "raining", type: "Noun"}, {word: ",", type: "Comma"}, {word: "we", type: "Noun"}, {word: "went", type: "Verb"}, {word: "outside", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Question_V_S_O", target: "Question: Aux - S - V - O", words: [{word: "Have", type: "Aux"}, {word: "you", type: "Noun"}, {word: "finished", type: "Verb"}, {word: "your homework", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Compound_S_V", target: "Compound S - V", words: [{word: "The old", type: "Noun"}, {word: "and", type: "Conj"}, {word: "the young", type: "Noun"}, {word: "agree", type: "Verb"}, {word: ".", type: "Punct"}] },
+        ];
+
 
         // --- DOM ELEMENTS ---
-        const gameContainer = document.getElementById('game-container');
-        const levelCounter = document.getElementById('level-counter');
-        const scoreCounter = document.getElementById('score-counter');
-        const timerDisplay = document.getElementById('timer-display');
-        const progressBar = document.getElementById('progress-bar');
-        const challengeDisplay = document.getElementById('challenge-display');
-        const targetGrammarEl = document.getElementById('target-grammar');
-        const sentenceArea = document.getElementById('sentence-area');
-        const wordBank = document.getElementById('word-bank');
-        const checkBtn = document.getElementById('check-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const feedbackEl = document.getElementById('feedback');
-        const playerListEl = document.getElementById('player-list');
-        
-        // Level Modal
-        const levelModalOverlay = document.getElementById('level-modal-overlay');
-        const beginnerBtn = document.getElementById('beginner-level');
-        const advancedBtn = document.getElementById('advanced-level');
-        const professionalBtn = document.getElementById('professional-level');
-        const changeLevelBtn = document.getElementById('change-level-btn');
-        
-        // Multiplayer Modal
-        const multiplayerModalOverlay = document.getElementById('multiplayer-modal-overlay');
-        const nicknameInput = document.getElementById('nickname-input');
-        const groupCodeInput = document.getElementById('group-code-input');
-        const joinGroupBtn = document.getElementById('join-group-btn');
-        const createGroupBtn = document.getElementById('create-group-btn');
-        const multiplayerFeedback = document.getElementById('multiplayer-feedback');
-        const groupCodeDisplay = document.getElementById('group-code-display');
-        
-        // Abbreviation Modal
-        const abbrModalOverlay = document.getElementById('abbr-modal-overlay');
-        const modalDefinitions = document.getElementById('modal-definitions');
-        const abbrModalCloseBtn = document.getElementById('abbr-modal-close-btn');
+        const DOMElements = {
+            gameContainer: document.getElementById('game-container'),
+            // Modals
+            modeModalOverlay: document.getElementById('mode-modal-overlay'),
+            levelModalOverlay: document.getElementById('level-modal-overlay'),
+            multiplayerModalOverlay: document.getElementById('multiplayer-modal-overlay'),
+            abbrModalOverlay: document.getElementById('abbr-modal-overlay'),
+            abbrModalContent: document.getElementById('abbr-modal-content'),
+            modalDefinitions: document.getElementById('modal-definitions'),
+            // Buttons
+            singlePlayerBtn: document.getElementById('single-player-btn'),
+            multiplayerBtn: document.getElementById('multiplayer-btn'),
+            beginnerBtn: document.getElementById('beginner-level'),
+            advancedBtn: document.getElementById('advanced-level'),
+            professionalBtn: document.getElementById('professional-level'),
+            joinGroupBtn: document.getElementById('join-group-btn'),
+            createGroupBtn: document.getElementById('create-group-btn'),
+            checkBtn: document.getElementById('check-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            changeLevelBtn: document.getElementById('change-level-btn'),
+            abbrModalCloseBtn: document.getElementById('abbr-modal-close-btn'),
+            // Inputs & Displays
+            nicknameInput: document.getElementById('nickname-input'),
+            groupCodeInput: document.getElementById('group-code-input'),
+            multiplayerFeedback: document.getElementById('multiplayer-feedback'),
+            groupCodeDisplay: document.getElementById('group-code-display'),
+            groupCodeText: document.querySelector('#group-code-display strong'),
+            // Game UI
+            levelCounter: document.getElementById('level-counter'),
+            scoreCounter: document.getElementById('score-counter'),
+            timerDisplay: document.getElementById('timer-display'),
+            progressBar: document.getElementById('progress-bar'),
+            scoreboard: document.getElementById('scoreboard'),
+            playerList: document.getElementById('player-list'),
+            challengeDisplay: document.getElementById('challenge-display'),
+            targetGrammar: document.getElementById('target-grammar'),
+            sentenceArea: document.getElementById('sentence-area'),
+            wordBank: document.getElementById('word-bank'),
+            feedback: document.getElementById('feedback'),
+        };
 
-        // Ohm.js setup
-        const grammar = ohm.grammar(document.getElementById('grammar').textContent);
+        // --- GAME STATE ---
+        let state = {
+            gameMode: null, // 'singlePlayer' or 'multiplayer'
+            socket: null,
+            playerData: { id: null, nickname: '', score: 0, groupCode: null },
+            currentLevel: 0,
+            score: 0,
+            timerInterval: null,
+            timeLeft: TIME_LIMIT,
+            grammar: null,
+            semantics: null,
+            draggedItem: null,
+        };
 
-        // --- HELPER FUNCTIONS ---
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        // --- INITIALIZATION ---
+        function init() {
+            setupGrammar();
+            addEventListeners();
+        }
+
+        function setupGrammar() {
+            const grammarScript = document.getElementById('grammar').textContent;
+            state.grammar = ohm.grammar(grammarScript);
+            state.semantics = state.grammar.createSemantics().addOperation('getPos', {
+                _iter: (...children) => children.map(c => c.getPos()).join(' '),
+                _terminal: function() { return this.sourceString; }
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
+        function addEventListeners() {
+            // Mode Selection
+            DOMElements.singlePlayerBtn.addEventListener('click', () => selectGameMode('singlePlayer'));
+            DOMElements.multiplayerBtn.addEventListener('click', () => selectGameMode('multiplayer'));
+
+            // Level Selection
+            DOMElements.beginnerBtn.addEventListener('click', () => { setLevelAndStart(0); });
+            DOMElements.advancedBtn.addEventListener('click', () => { setLevelAndStart(20); });
+            DOMElements.professionalBtn.addEventListener('click', () => { setLevelAndStart(40); });
+            DOMElements.changeLevelBtn.addEventListener('click', () => DOMElements.levelModalOverlay.style.display = 'flex');
+
+            // Multiplayer
+            DOMElements.createGroupBtn.addEventListener('click', createGroup);
+            DOMElements.joinGroupBtn.addEventListener('click', joinGroup);
+
+            // In-Game Controls
+            DOMElements.checkBtn.addEventListener('click', checkSentence);
+            DOMElements.resetBtn.addEventListener('click', resetLevel);
+            
+            // Abbreviation Modal
+            DOMElements.challengeDisplay.addEventListener('click', showAbbreviations);
+            DOMElements.abbrModalCloseBtn.addEventListener('click', hideAbbreviations);
+            DOMElements.abbrModalOverlay.addEventListener('click', (e) => {
+                if (e.target === DOMElements.abbrModalOverlay) hideAbbreviations();
+            });
+
+            // Drag and Drop
+            [DOMElements.sentenceArea, DOMElements.wordBank].forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('drop', handleDrop);
+            });
+        }
+        
+        // --- MODAL & GAME FLOW ---
+        function selectGameMode(mode) {
+            state.gameMode = mode;
+            DOMElements.modeModalOverlay.style.display = 'none';
+            if (mode === 'singlePlayer') {
+                DOMElements.levelModalOverlay.style.display = 'flex';
+                DOMElements.scoreboard.style.display = 'none'; // Hide scoreboard in single player
+            } else {
+                DOMElements.multiplayerModalOverlay.style.display = 'flex';
+                DOMElements.scoreboard.style.display = 'block'; // Show scoreboard in multiplayer
+                connectSocket();
             }
         }
 
-        // --- TIMER FUNCTIONS ---
-        function stopTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = null;
+        function setLevelAndStart(level) {
+            state.currentLevel = level;
+            startGame();
         }
 
-        function startTimer() {
-            stopTimer();
-            let timeLeft = TIME_LIMIT;
-            timerDisplay.textContent = `Time: ${timeLeft}s`;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = `Time: ${timeLeft}s`;
-                if (timeLeft <= 0) {
-                    stopTimer();
-                    feedbackEl.textContent = "Time's up! Moving to the next question.";
-                    feedbackEl.className = 'feedback-info';
-                    setTimeout(nextQuestion, 2000);
-                }
-            }, 1000);
+        function startGame() {
+            DOMElements.levelModalOverlay.style.display = 'none';
+            DOMElements.multiplayerModalOverlay.style.display = 'none';
+            DOMElements.gameContainer.style.display = 'block';
+            DOMElements.changeLevelBtn.style.display = 'block';
+            state.score = 0;
+            updateScoreUI();
+            loadLevel(state.currentLevel);
+        }
+
+        // --- MULTIPLAYER LOGIC ---
+        function connectSocket() {
+            if (state.socket) return;
+            state.socket = io(SOCKET_SERVER_URL, { reconnection: false });
+
+            state.socket.on('connect', () => {
+                state.playerData.id = state.socket.id;
+                console.log('Connected to server with ID:', state.playerData.id);
+            });
+
+            state.socket.on('groupCreated', (groupCode) => {
+                state.playerData.groupCode = groupCode;
+                DOMElements.multiplayerFeedback.textContent = '';
+                DOMElements.groupCodeDisplay.style.display = 'block';
+                DOMElements.groupCodeText.textContent = groupCode;
+                setTimeout(startGame, 1000); // Start game after short delay
+            });
+
+            state.socket.on('joinSuccess', (groupData) => {
+                state.playerData.groupCode = groupData.groupCode;
+                updateScoreboard(groupData.players);
+                startGame();
+            });
+            
+            state.socket.on('joinError', (message) => {
+                DOMElements.multiplayerFeedback.textContent = message;
+            });
+            
+            state.socket.on('updatePlayers', (players) => {
+                updateScoreboard(players);
+            });
+
+            state.socket.on('disconnect', () => {
+                console.log('Disconnected from server.');
+                displayFeedback('Connection to server lost.', 'error', 0);
+            });
         }
         
-        // --- GAME LOGIC ---
-        function nextQuestion() {
-            stopTimer();
-            currentQuestionIndex++;
-            if (currentQuestionIndex >= levels[currentTierIndex].length) {
-                currentQuestionIndex = 0;
-                currentTierIndex++;
-            }
-            if (currentTierIndex >= levels.length) showGameComplete();
-            else loadQuestion();
-        }
-
-        function loadQuestion() {
-            stopTimer();
-            if (currentTierIndex === undefined || currentQuestionIndex === undefined || currentTierIndex >= levels.length) {
-                showGameComplete();
+        function createGroup() {
+            const nickname = DOMElements.nicknameInput.value.trim();
+            if (!nickname) {
+                DOMElements.multiplayerFeedback.textContent = 'Please enter a nickname.';
                 return;
             }
-            const question = levels[currentTierIndex][currentQuestionIndex];
-            sentenceArea.innerHTML = '';
-            wordBank.innerHTML = '';
-            feedbackEl.textContent = '';
-            feedbackEl.className = '';
-            checkBtn.disabled = true;
-
-            const ruleParts = question.rule.split('_');
-            const fullRuleText = ruleParts
-                .map(part => (grammarMap[part] || part).split('(')[0].trim())
-                .join(' - ');
-            targetGrammarEl.textContent = fullRuleText;
-            targetGrammarEl.dataset.rule = question.rule;
-            
-            updateProgress();
-
-            const wordsToShuffle = [...question.words];
-            shuffleArray(wordsToShuffle);
-            wordsToShuffle.forEach(wordData => wordBank.appendChild(createWordTile(wordData)));
-            
-            startTimer();
+            state.playerData.nickname = nickname;
+            state.socket.emit('createGroup', state.playerData);
         }
         
-        function updateProgress() {
-            const currentTierName = tierNames[currentTierIndex];
-            const questionsInTier = levels[currentTierIndex].length;
-            levelCounter.textContent = `${currentTierName}: Q ${currentQuestionIndex + 1}/${questionsInTier}`;
-            scoreCounter.textContent = `Score: ${score}`;
-            
-            let questionsCompleted = currentQuestionIndex;
-            for (let i = 0; i < currentTierIndex; i++) {
-                questionsCompleted += levels[i].length;
+        function joinGroup() {
+            const nickname = DOMElements.nicknameInput.value.trim();
+            const groupCode = DOMElements.groupCodeInput.value.trim();
+            if (!nickname || !groupCode) {
+                DOMElements.multiplayerFeedback.textContent = 'Please enter a nickname and group code.';
+                return;
             }
-            const progressPercentage = (questionsCompleted / totalQuestions) * 100;
-            progressBar.style.width = `${progressPercentage}%`;
+            state.playerData.nickname = nickname;
+            state.socket.emit('joinGroup', { playerData: state.playerData, groupCode });
         }
 
-        function createWordTile(wordData) {
+
+        // --- CORE GAME LOGIC ---
+        function loadLevel(levelIndex) {
+            if (levelIndex >= levels.length) {
+                displayFeedback("Congratulations! You've completed all levels!", 'success', 0);
+                stopTimer();
+                return;
+            }
+            
+            state.currentLevel = levelIndex;
+            const level = levels[levelIndex];
+            
+            // Clear previous state
+            DOMElements.sentenceArea.innerHTML = '';
+            DOMElements.wordBank.innerHTML = '';
+            displayFeedback('', 'info');
+
+            // Populate word bank with shuffled words
+            shuffleArray(level.words).forEach(wordObj => {
+                const tile = createWordTile(wordObj);
+                DOMElements.wordBank.appendChild(tile);
+            });
+
+            // Update UI
+            DOMElements.targetGrammar.textContent = level.target;
+            updateProgress();
+            
+            // Start timer
+            startTimer();
+        }
+
+        function createWordTile(wordObj) {
             const tile = document.createElement('div');
             tile.className = 'word-tile';
-            if (wordData.type === 'Punct' || wordData.type === 'Comma') {
+            tile.textContent = wordObj.word;
+            tile.dataset.type = wordObj.type.toLowerCase();
+            tile.draggable = true;
+            if (wordObj.type === 'Punct' || wordObj.type === 'Comma') {
                 tile.classList.add('punctuation');
             }
-            tile.textContent = wordData.word;
-            tile.dataset.type = wordData.type;
-            tile.draggable = true;
+            
             tile.addEventListener('dragstart', handleDragStart);
             tile.addEventListener('dragend', handleDragEnd);
             return tile;
         }
 
+        function resetLevel() {
+            loadLevel(state.currentLevel);
+        }
+
         function checkSentence() {
-            if (sentenceArea.children.length === 0) return;
             stopTimer();
+            DOMElements.checkBtn.disabled = true;
 
-            const question = levels[currentTierIndex][currentQuestionIndex];
-            const typeSequence = Array.from(sentenceArea.children).map(tile => tile.dataset.type.toLowerCase()).join(' ');
-            const match = grammar.match(typeSequence, question.rule);
-
-            if (match.succeeded() && wordBank.children.length === 0) {
-                feedbackEl.textContent = 'Correct! Structure matched.';
-                feedbackEl.className = 'feedback-correct';
-                score += 10;
-                updateProgress();
-                if (socket && socket.connected) {
-                    socket.emit('scoreUpdate', { groupCode, score });
+            const sentenceTiles = [...DOMElements.sentenceArea.children];
+            if (sentenceTiles.length === 0) {
+                displayFeedback('Please build a sentence first.', 'info');
+                DOMElements.checkBtn.disabled = false;
+                startTimer(); // Restart timer if nothing was checked
+                return;
+            }
+            
+            const posString = sentenceTiles.map(tile => tile.dataset.type).join(' ');
+            const targetRule = levels[state.currentLevel].rule;
+            
+            const match = state.grammar.match(posString, targetRule);
+            
+            if (match.succeeded()) {
+                const points = 10 + state.timeLeft; // More points for faster answers
+                state.score += points;
+                updateScoreUI();
+                if (state.gameMode === 'multiplayer') {
+                    state.playerData.score = state.score;
+                    state.socket.emit('updateScore', state.playerData);
                 }
-                setTimeout(nextQuestion, 1500);
+                displayFeedback(`Correct! +${points} points`, 'correct');
+                setTimeout(() => loadLevel(state.currentLevel + 1), 1500);
             } else {
-                feedbackEl.className = 'feedback-incorrect';
-                if (wordBank.children.length > 0) {
-                     feedbackEl.textContent = `You haven't used all the words yet.`;
-                } else {
-                    const friendlyRule = targetGrammarEl.textContent;
-                    feedbackEl.textContent = `The word order is incorrect. Remember: ${friendlyRule}.`;
-                }
+                displayFeedback('That sentence structure is incorrect. Try again!', 'incorrect');
+                setTimeout(() => {
+                    DOMElements.checkBtn.disabled = false;
+                    startTimer();
+                }, 1500);
             }
         }
         
-        function resetQuestion() { loadQuestion(); }
-
-        function showGameComplete() {
-            stopTimer();
-            gameContainer.innerHTML = `
-                <header>
-                    <h1>Congratulations!</h1>
-                    <p>You have completed all ${totalQuestions} questions.</p>
-                    <h2>Final Score: ${score}</h2>
-                    <button id="restart-btn" style="margin-top: 1rem; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; font-size: 1rem; cursor: pointer; background-color: var(--accent); color: var(--bg-dark);">Play Again</button>
-                </header>
-            `;
-            document.getElementById('restart-btn').addEventListener('click', () => window.location.reload());
-        }
-
-        // --- DRAG & DROP HANDLERS ---
-        function handleDragStart(e) {
-            draggedTile = e.target;
-            setTimeout(() => e.target.classList.add('dragging'), 0);
-        }
-        function handleDragEnd(e) {
-            e.target.classList.remove('dragging');
-            draggedTile = null;
-        }
-        function getDragAfterElement(container, x) {
-            const draggableElements = [...container.querySelectorAll('.word-tile:not(.dragging)')];
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = x - box.left - box.width / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
+        // --- TIMER ---
+        function startTimer() {
+            stopTimer(); // Ensure no multiple timers run
+            state.timeLeft = TIME_LIMIT;
+            DOMElements.timerDisplay.textContent = `${state.timeLeft}s`;
+            DOMElements.checkBtn.disabled = false;
+            
+            state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                DOMElements.timerDisplay.textContent = `${state.timeLeft}s`;
+                if (state.timeLeft <= 0) {
+                    stopTimer();
+                    displayFeedback("Time's up! Moving to the next question.", 'info');
+                    setTimeout(() => loadLevel(state.currentLevel + 1), 2000);
                 }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }, 1000);
         }
 
-        // --- MODAL & UI FLOW ---
-        function showLevelModal() {
-            stopTimer();
-            levelModalOverlay.style.display = 'flex';
+        function stopTimer() {
+            clearInterval(state.timerInterval);
         }
-        function showMultiplayerModal() {
-            levelModalOverlay.style.display = 'none';
-            multiplayerModalOverlay.style.display = 'flex';
-        }
-        function startGame() {
-            multiplayerModalOverlay.style.display = 'none';
-            gameContainer.style.display = 'block';
-            changeLevelBtn.style.display = 'block';
-            loadQuestion();
-        }
-        function showAbbreviations() {
-            const rule = targetGrammarEl.dataset.rule;
-            if (!rule) return;
-            const uniqueAbbrs = [...new Set(rule.split('_').map(abbr => abbr.trim()))];
-            modalDefinitions.innerHTML = uniqueAbbrs.map(abbr => 
-                abbr ? `<p><strong>${abbr}:</strong> ${grammarMap[abbr] || 'N/A'}</p>` : ''
-            ).join('');
-            abbrModalOverlay.style.display = 'flex';
-        }
-        function hideAbbreviations() { abbrModalOverlay.style.display = 'none'; }
-        
-        // --- MULTIPLAYER LOGIC ---
-        function connectSocket() {
-            // Use a try-catch block for environments where io might not be defined or fails to connect
-            try {
-                socket = io(SOCKET_SERVER_URL, { reconnectionAttempts: 3, timeout: 5000 });
-                setupSocketListeners();
-            } catch (error) {
-                console.error("Socket.IO connection failed:", error);
-                multiplayerFeedback.textContent = "Cannot connect to server.";
-            }
+
+        // --- UI UPDATES ---
+        function updateScoreUI() {
+            DOMElements.scoreCounter.textContent = `Score: ${state.score}`;
         }
         
-        function updatePlayerList(players) {
-            playerListEl.innerHTML = '';
+        function updateProgress() {
+            const progress = (state.currentLevel / levels.length) * 100;
+            DOMElements.progressBar.style.width = `${progress}%`;
+            DOMElements.levelCounter.textContent = `Level ${state.currentLevel + 1} / ${levels.length}`;
+        }
+
+        function updateScoreboard(players) {
+            DOMElements.playerList.innerHTML = '';
             players.sort((a, b) => b.score - a.score); // Sort by score descending
             players.forEach(player => {
                 const li = document.createElement('li');
-                if (player.id === socket.id) {
-                    li.className = 'current-player';
-                }
                 li.innerHTML = `
                     <span class="player-name">${player.nickname}</span>
                     <span class="player-score">${player.score}</span>
                 `;
-                playerListEl.appendChild(li);
+                if (player.id === state.playerData.id) {
+                    li.classList.add('current-player');
+                }
+                DOMElements.playerList.appendChild(li);
             });
         }
         
-        function setupSocketListeners() {
-            socket.on('connect_error', () => {
-                multiplayerFeedback.textContent = "Connection to server failed. Please try again.";
-            });
-
-            socket.on('groupCreated', (newGroupCode) => {
-                groupCode = newGroupCode;
-                groupCodeDisplay.querySelector('strong').textContent = groupCode;
-                groupCodeDisplay.style.display = 'block';
-                multiplayerFeedback.textContent = "Group created! Share the code.";
-            });
-
-            socket.on('groupJoined', (data) => {
-                groupCode = data.groupCode;
-                updatePlayerList(data.players);
-                startGame();
-            });
-            
-            socket.on('playerListUpdate', (players) => {
-                updatePlayerList(players);
-            });
-            
-            socket.on('error', (message) => {
-                multiplayerFeedback.textContent = message;
-            });
+        function displayFeedback(message, type, duration = 3000) {
+            DOMElements.feedback.textContent = message;
+            DOMElements.feedback.className = `feedback-${type}`;
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (DOMElements.feedback.textContent === message) {
+                        DOMElements.feedback.textContent = '';
+                    }
+                }, duration);
+            }
         }
 
-        // --- EVENT LISTENERS ---
-        [sentenceArea, wordBank].forEach(zone => {
-            zone.addEventListener('dragover', e => {
-                e.preventDefault();
-                zone.classList.add('drag-over');
-                const afterElement = getDragAfterElement(zone, e.clientX);
-                if (afterElement == null) zone.appendChild(draggedTile);
-                else zone.insertBefore(draggedTile, afterElement);
+        function showAbbreviations() {
+            const targetText = levels[state.currentLevel].target.split(' - ');
+            let html = '';
+            const uniqueAbbrs = [...new Set(targetText.map(t => t.replace(/[^A-Z]/g, '')))];
+            uniqueAbbrs.forEach(abbr => {
+                const fullForm = grammarMap[abbr] || 'Unknown';
+                html += `<p><strong>${abbr}:</strong> ${fullForm}</p>`;
             });
-            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-            zone.addEventListener('drop', e => {
-                e.preventDefault();
-                zone.classList.remove('drag-over');
-                checkBtn.disabled = sentenceArea.children.length === 0;
-            });
-        });
-
-        checkBtn.addEventListener('click', checkSentence);
-        resetBtn.addEventListener('click', resetQuestion);
-        
-        // Modal and Level Selection Listeners
-        function handleTierSelection(tier) {
-            currentTierIndex = tier;
-            currentQuestionIndex = 0;
-            score = 0;
-            connectSocket(); // Connect to server upon choosing a level
-            showMultiplayerModal();
+            DOMElements.modalDefinitions.innerHTML = html;
+            DOMElements.abbrModalOverlay.style.display = 'flex';
         }
-        beginnerBtn.addEventListener('click', () => handleTierSelection(0));
-        advancedBtn.addEventListener('click', () => handleTierSelection(1));
-        professionalBtn.addEventListener('click', () => handleTierSelection(2));
+
+        function hideAbbreviations() {
+            DOMElements.abbrModalOverlay.style.display = 'none';
+        }
+
+        // --- DRAG & DROP HANDLERS ---
+        function handleDragStart(e) {
+            state.draggedItem = e.target;
+            setTimeout(() => e.target.classList.add('dragging'), 0);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.target.closest('.drop-zone').classList.add('drag-over');
+        }
         
-        changeLevelBtn.addEventListener('click', () => window.location.reload());
-
-        // Multiplayer Modal Listeners
-        joinGroupBtn.addEventListener('click', () => {
-            nickname = nicknameInput.value.trim();
-            const codeToJoin = groupCodeInput.value.trim();
-            if (!nickname) { multiplayerFeedback.textContent = 'Please enter a nickname.'; return; }
-            if (!/^\d{3}$/.test(codeToJoin)) { multiplayerFeedback.textContent = 'Group code must be 3 digits.'; return; }
-            if (socket && socket.connected) {
-                socket.emit('joinGroup', { nickname, groupCode: codeToJoin });
-            } else { multiplayerFeedback.textContent = 'Not connected to server.'; }
-        });
-
-        createGroupBtn.addEventListener('click', () => {
-            nickname = nicknameInput.value.trim();
-            if (!nickname) { multiplayerFeedback.textContent = 'Please enter a nickname.'; return; }
-            if (socket && socket.connected) {
-                 socket.emit('createGroup', { nickname });
-                 // Wait for the server to send back the 'groupJoined' event before starting
-            } else { multiplayerFeedback.textContent = 'Not connected to server.'; }
-        });
-
-        // Abbreviation Modal Listeners
-        challengeDisplay.addEventListener('click', showAbbreviations);
-        abbrModalCloseBtn.addEventListener('click', hideAbbreviations);
-        window.addEventListener('click', (event) => {
-            if (event.target === abbrModalOverlay) hideAbbreviations();
-        });
+        function handleDragLeave(e) {
+            e.target.closest('.drop-zone').classList.remove('drag-over');
+        }
         
-        // --- INITIAL LOAD ---
-        showLevelModal();
+        function handleDrop(e) {
+            e.preventDefault();
+            const dropZone = e.target.closest('.drop-zone');
+            dropZone.classList.remove('drag-over');
+            if (dropZone && state.draggedItem) {
+                dropZone.appendChild(state.draggedItem);
+            }
+            state.draggedItem = null;
+        }
+
+        // --- UTILITY ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- START THE APP ---
+        init();
     </script>
 </body>
 </html>
