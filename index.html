@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Syntax Card Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/ohm-js@16.4.0/dist/ohm.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #1a202c;
+            --bg-medium: #2d3748;
+            --bg-light: #4a5568;
+            --text-light: #e2e8f0;
+            --text-dark: #a0aec0;
+            --accent: #4fd1c5;
+            --accent-dark: #38b2ac;
+            --success: #68d391;
+            --error: #fc8181;
+            --warning: #f6e05e;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #2c2f41;
+            color: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 450px;
+        }
+        
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 2rem;
+        }
+
+        .modal-content button {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .modal-content button:hover {
+            background-color: #99f0e9;
+        }
+        
+        .modal-content button.secondary {
+             background-color: var(--bg-light);
+             color: var(--text-light);
+        }
+        .modal-content button.secondary:hover {
+             background-color: #5a6b87;
+        }
+
+        .modal-content input {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            border: 2px solid var(--bg-light);
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-size: 1rem;
+            text-align: center;
+        }
+        .modal-content input::placeholder {
+            color: var(--text-dark);
+        }
+        .modal-content .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        #multiplayer-feedback {
+            min-height: 24px;
+            margin-top: 1rem;
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        #group-code-display {
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+        }
+        #group-code-display strong {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: var(--bg-dark);
+            border-radius: 5px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            margin-left: 0.5rem;
+        }
+
+
+        #change-level-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            z-index: 10;
+        }
+        #change-level-btn:hover {
+            background-color: #5a6b87;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--bg-medium);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--bg-light);
+            display: none; /* Hidden until game starts */
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0;
+        }
+
+        header p {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        #progress-tracker {
+            margin-bottom: 1.5rem;
+        }
+
+        #progress-bar-container {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border-radius: 99px;
+            height: 1rem;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+            border-radius: 99px;
+            transition: width 0.5s ease-in-out;
+        }
+        
+        #progress-text {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        #level-counter {
+            text-align: left;
+        }
+        #score-counter {
+            text-align: right;
+        }
+        
+        #timer-display {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--warning);
+            text-align: center;
+        }
+        
+        #scoreboard {
+            margin: 1.5rem 0;
+            background-color: var(--bg-dark);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        #scoreboard h3 {
+            margin: 0 0 0.75rem;
+            text-align: center;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        #player-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        #player-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+        }
+        #player-list li.current-player {
+            background-color: rgba(79, 209, 197, 0.2);
+            color: var(--accent);
+        }
+        #player-list li:not(.current-player) {
+            color: var(--text-light);
+        }
+        #player-list .player-score {
+            font-weight: 700;
+        }
+
+
+        #challenge-display {
+            background-color: rgba(0,0,0,0.2);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--accent);
+            cursor: pointer;
+        }
+
+        #challenge-display h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .game-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .game-area h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .drop-zone {
+            min-height: 80px;
+            background-color: var(--bg-dark);
+            border: 2px dashed var(--bg-light);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--accent);
+            background-color: #3c4a61;
+        }
+
+        .drop-zone:empty::before {
+            content: 'Drag words here to form a sentence';
+            color: var(--text-dark);
+            width: 100%;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .word-tile {
+            padding: 0.5rem 1rem;
+            background-color: var(--bg-light);
+            border-radius: 0.25rem;
+            cursor: grab;
+            user-select: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-bottom: 3px solid rgba(0,0,0,0.3);
+        }
+
+        .word-tile.dragging {
+            opacity: 0.5;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .word-tile.punctuation {
+            background-color: var(--bg-light);
+            color: var(--warning);
+            font-weight: 700;
+            min-width: auto;
+            padding: 0.5rem 0.75rem;
+            flex-grow: 0;
+            justify-content: center;
+            border-bottom: 3px solid #f6e05e50;
+        }
+
+        #controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #check-btn {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+        }
+        #check-btn:hover {
+            background-color: white;
+        }
+        #check-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        #reset-btn {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+        }
+        #reset-btn:hover {
+            background-color: #5a6b87;
+        }
+
+        #feedback {
+            min-height: 24px;
+            margin-top: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: opacity 0.3s;
+        }
+        
+        .feedback-correct {
+            color: var(--success);
+        }
+
+        .feedback-incorrect {
+            color: var(--error);
+        }
+        .feedback-info {
+            color: var(--warning);
+        }
+
+        #abbr-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        #abbr-modal-content {
+            background-color: #2c2f41;
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 350px;
+            max-width: 90%;
+            text-align: left;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #abbr-modal-content h3 {
+            margin-top: 0;
+            text-align: center;
+            color: var(--accent);
+        }
+        
+        #modal-definitions p {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+        }
+        
+        #modal-definitions strong {
+            color: var(--accent);
+            display: inline-block;
+            width: 80px;
+        }
+
+        #abbr-modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            color: var(--text-dark);
+            transition: color 0.2s;
+        }
+        #abbr-modal-close-btn:hover {
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <div id="level-modal-overlay" class="modal-overlay">
+        <div id="level-modal" class="modal-content">
+            <h2>Select Your Proficiency Level</h2>
+            <button id="beginner-level">Beginner</button>
+            <button id="advanced-level">Advanced</button>
+            <button id="professional-level">Professional</button>
+        </div>
+    </div>
+
+    <div id="multiplayer-modal-overlay" class="modal-overlay">
+        <div id="multiplayer-modal" class="modal-content">
+            <h2>Multiplayer Setup</h2>
+            <input type="text" id="nickname-input" placeholder="Enter Your Nickname" maxlength="15">
+            <input type="text" id="group-code-input" placeholder="Enter 3-Digit Group Code (to join)" maxlength="3">
+            <div class="button-group">
+                <button id="join-group-btn" class="secondary">Join Group</button>
+                <button id="create-group-btn">Create Group</button>
+            </div>
+            <div id="multiplayer-feedback"></div>
+            <div id="group-code-display" style="display: none;">Your Group Code: <strong></strong></div>
+        </div>
+    </div>
+    
+    <button id="change-level-btn" style="display: none;">Change Level</button>
+
+    <div id="game-container">
+        <header>
+            <h1>The Syntax Card Game</h1>
+            <p>Arrange the words to match the target sentence structure.</p>
+        </header>
+
+        <section id="progress-tracker">
+            <div id="progress-text">
+                <span id="level-counter"></span>
+                <span id="timer-display"></span>
+                <span id="score-counter"></span>
+            </div>
+            <div id="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+        </section>
+
+        <section id="scoreboard">
+             <h3>Live Scoreboard</h3>
+             <ul id="player-list"></ul>
+        </section>
+
+        <main>
+            <div id="challenge-display">
+                <h2>TARGET: <span id="target-grammar"></span></h2>
+            </div>
+            
+            <div class="game-area">
+                <h3>Your Sentence</h3>
+                <div id="sentence-area" class="drop-zone"></div>
+            </div>
+            
+            <div class="game-area">
+                <h3>Word Bank</h3>
+                <div id="word-bank" class="drop-zone"></div>
+            </div>
+
+            <div id="controls">
+                <button id="check-btn">Check Sentence</button>
+                <button id="reset-btn">Reset</button>
+            </div>
+
+            <div id="feedback"></div>
+        </main>
+    </div>
+
+    <div id="abbr-modal-overlay">
+        <div id="abbr-modal-content">
+            <span id="abbr-modal-close-btn">&times;</span>
+            <h3 id="modal-title">Grammar Definitions</h3>
+            <div id="modal-definitions"></div>
+        </div>
+    </div>
+
+    <!-- Ohm.js Grammar Definition -->
+    <script type="ohm-js" id="grammar">
+    SyntaxCardGame {
+      // Top-level rules correspond to level targets. Punct is optional at the end.
+      S_V = Noun Verb Punct?
+      Det_N_V = Det Noun Verb Punct?
+      S_V_O = Noun Verb Noun Punct?
+      S_V_Adv = Noun Verb Adv Punct?
+      Det_Adj_N_V = Det Adj Noun Verb Punct?
+      S_V_PP = Noun Verb Prep Det Noun Punct?
+      S_V_O_PP = Noun Verb Noun Prep Det Noun Punct?
+      S_V_Conj_V = Noun Verb Conj Verb Punct?
+      Compound_S_V = Noun Conj Noun Verb Punct?
+      S_V_O_Conj_S_V_O = Noun Verb Noun Comma? Conj Noun Verb Noun Punct?
+      Question_V_S_O = Aux Noun Verb Noun Punct?
+      Question_Wh_V_S = Wh Aux Noun Verb Punct?
+
+      // Parts of Speech Definitions
+      Noun = "noun"
+      Verb = "verb"
+      Det = "det"
+      Adj = "adj"
+      Adv = "adv"
+      Prep = "prep"
+      Conj = "conj"
+      Aux = "aux"
+      Wh = "wh"
+      Punct = "punct"
+      Comma = "comma"
+    }
+    </script>
+    
+    <script type="module">
+        // --- CONFIGURATION ---
+        const SOCKET_SERVER_URL = "https://your-syntax-game-server.com"; // IMPORTANT: Replace with your actual server URL
+        const TIME_LIMIT = 60; // seconds
+
+        // --- DATA ---
+        const grammarMap = {
+            'S': 'Subject (a noun that performs the action)', 'V': 'Verb (the action word)',
+            'O': 'Object (a noun that receives the action)', 'Det': 'Determiner (e.g., a, the, my)',
+            'N': 'Noun (person, place, or thing)', 'Adj': 'Adjective (describes a noun)',
+            'Adv': 'Adverb (describes a verb)', 'PP': 'Prepositional Phrase (e.g., "on the chair")',
+            'Conj': 'Conjunction (e.g., and, but, or)', 'Compound': 'Compound Element',
+            'Question': 'Question Form', 'Wh': 'Wh-word (e.g., Who, What, Where)',
+            'Aux': 'Auxiliary Verb (e.g., do, can, is)'
+        };
+
+        const allQuestions = [
+            // Levels 1-20: Beginner
+            { rule: "S_V", words: [{word: "Birds", type: "Noun"}, {word: "fly", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_N_V", words: [{word: "The", type: "Det"}, {word: "sun", type: "Noun"}, {word: "shines", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", words: [{word: "Cats", type: "Noun"}, {word: "chase", type: "Verb"}, {word: "mice", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Adv", words: [{word: "She", type: "Noun"}, {word: "sings", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V", words: [{word: "Dogs", type: "Noun"}, {word: "bark", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_N_V", words: [{word: "A", type: "Det"}, {word: "boy", type: "Noun"}, {word: "runs", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", words: [{word: "I", type: "Noun"}, {word: "read", type: "Verb"}, {word: "books", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Adv", words: [{word: "He", type: "Noun"}, {word: "works", type: "Verb"}, {word: "hard", type: "Adv"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O", words: [{word: "They", type: "Noun"}, {word: "play", type: "Verb"}, {word: "games", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_N_V", words: [{word: "The", type: "Det"}, {word: "baby", type: "Noun"}, {word: "cries", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", words: [{word: "The", type: "Det"}, {word: "big", type: "Adj"}, {word: "dog", type: "Noun"}, {word: "barks", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_PP", words: [{word: "He", type: "Noun"}, {word: "sits", type: "Verb"}, {word: "on", type: "Prep"}, {word: "the", type: "Det"}, {word: "chair", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", words: [{word: "A", type: "Det"}, {word: "red", type: "Adj"}, {word: "car", type: "Noun"}, {word: "drives", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_PP", words: [{word: "She", type: "Noun"}, {word: "put", type: "Verb"}, {word: "keys", type: "Noun"}, {word: "in", type: "Prep"}, {word: "the", type: "Det"}, {word: "box", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", words: [{word: "The", type: "Det"}, {word: "tall", type: "Adj"}, {word: "tree", type: "Noun"}, {word: "grows", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_PP", words: [{word: "Fish", type: "Noun"}, {word: "swim", type: "Verb"}, {word: "in", type: "Prep"}, {word: "the", type: "Det"}, {word: "sea", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", words: [{word: "A", type: "Det"}, {word: "happy", type: "Adj"}, {word: "child", type: "Noun"}, {word: "laughs", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_PP", words: [{word: "He", type: "Noun"}, {word: "threw", type: "Verb"}, {word: "ball", type: "Noun"}, {word: "over", type: "Prep"}, {word: "the", type: "Det"}, {word: "fence", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", words: [{word: "The", type: "Det"}, {word: "cold", type: "Adj"}, {word: "wind", type: "Noun"}, {word: "blows", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_PP", words: [{word: "We", type: "Noun"}, {word: "walk", type: "Verb"}, {word: "to", type: "Prep"}, {word: "the", type: "Det"}, {word: "park", type: "Noun"}, {word: ".", type: "Punct"}] },
+            // Levels 21-40: Advanced
+            { rule: "S_V_Conj_V", words: [{word: "I", type: "Noun"}, {word: "read", type: "Verb"}, {word: "and", type: "Conj"}, {word: "write", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Compound_S_V", words: [{word: "Tom", type: "Noun"}, {word: "and", type: "Conj"}, {word: "Jerry", type: "Noun"}, {word: "run", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", words: [{word: "She", type: "Noun"}, {word: "likes", type: "Verb"}, {word: "tea", type: "Noun"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "he", type: "Noun"}, {word: "wants", type: "Verb"}, {word: "coffee", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Conj_V", words: [{word: "He", type: "Noun"}, {word: "sings", type: "Verb"}, {word: "and", type: "Conj"}, {word: "dances", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Compound_S_V", words: [{word: "You", type: "Noun"}, {word: "and", type: "Conj"}, {word: "I", type: "Noun"}, {word: "learn", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", words: [{word: "Dogs", type: "Noun"}, {word: "bark", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "cats", type: "Noun"}, {word: "prowl", type: "Verb"}, {word: "silently", type: "Adv"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Conj_V", words: [{word: "She", type: "Noun"}, {word: "fell", type: "Verb"}, {word: "but", type: "Conj"}, {word: "recovered", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Compound_S_V", words: [{word: "The", type: "Det"}, {word: "cat", type: "Noun"}, {word: "and", type: "Conj"}, {word: "dog", type: "Noun"}, {word: "play", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", words: [{word: "We", type: "Noun"}, {word: "can", type: "Verb"}, {word: "win", type: "Noun"}, {word: ",", type: "Comma"}, {word: "or", type: "Conj"}, {word: "we", type: "Noun"}, {word: "can", type: "Verb"}, {word: "lose", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Conj_V", words: [{word: "They", type: "Noun"}, {word: "work", type: "Verb"}, {word: "and", type: "Conj"}, {word: "succeed", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Question_V_S_O", words: [{word: "Do", type: "Aux"}, {word: "you", type: "Noun"}, {word: "like", type: "Verb"}, {word: "pizza", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_Wh_V_S", words: [{word: "When", type: "Wh"}, {word: "did", type: "Aux"}, {word: "they", type: "Noun"}, {word: "leave", type: "Verb"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_V_S_O", words: [{word: "Can", type: "Aux"}, {word: "he", type: "Noun"}, {word: "speak", type: "Verb"}, {word: "French", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_Wh_V_S", words: [{word: "Where", type: "Wh"}, {word: "is", type: "Aux"}, {word: "the", type: "Det"}, {word: "party", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_V_S_O", words: [{word: "Will", type: "Aux"}, {word: "she", type: "Noun"}, {word: "call", type: "Verb"}, {word: "you", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_Wh_V_S", words: [{word: "Why", type: "Wh"}, {word: "are", type: "Aux"}, {word: "you", type: "Noun"}, {word: "late", type: "Adj"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_V_S_O", words: [{word: "Have", type: "Aux"}, {word: "they", type: "Noun"}, {word: "eaten", type: "Verb"}, {word: "lunch", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_Wh_V_S", words: [{word: "Who", type: "Wh"}, {word: "ate", type: "Aux"}, {word: "the", type: "Det"}, {word: "cake", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_V_S_O", words: [{word: "Does", type: "Aux"}, {word: "it", type: "Noun"}, {word: "work", type: "Verb"}, {word: "now", type: "Adv"}, {word: "?", type: "Punct"}] },
+            { rule: "Question_Wh_V_S", words: [{word: "What", type: "Wh"}, {word: "is", type: "Aux"}, {word: "your", type: "Det"}, {word: "name", type: "Noun"}, {word: "?", type: "Punct"}] },
+             // Levels 41-50: Professional
+            { rule: "S_V_O_PP", words: [{word: "Artists", type: "Noun"}, {word: "paint", type: "Verb"}, {word: "pictures", type: "Noun"}, {word: "with", type: "Prep"}, {word: "great", type: "Adj"}, {word: "skill", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Adv", words: [{word: "Computers", type: "Noun"}, {word: "calculate", type: "Verb"}, {word: "quickly", type: "Adv"}, {word: ".", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", words: [{word: "The", type: "Det"}, {word: "old", type: "Adj"}, {word: "castle", type: "Noun"}, {word: "stands", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_PP", words: [{word: "She", type: "Noun"}, {word: "told", type: "Verb"}, {word: "a story", type: "Noun"}, {word: "to", type: "Prep"}, {word: "the", type: "Det"}, {word: "children", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_Conj_V", words: [{word: "He", type: "Noun"}, {word: "tries", type: "Verb"}, {word: "but", type: "Conj"}, {word: "fails", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "Question_V_S_O", words: [{word: "Did", type: "Aux"}, {word: "the", type: "Det"}, {word: "team", type: "Noun"}, {word: "win", type: "Verb"}, {word: "the", type: "Det"}, {word: "match", type: "Noun"}, {word: "?", type: "Punct"}] },
+            { rule: "Det_Adj_N_V", words: [{word: "A", type: "Det"}, {word: "brilliant", type: "Adj"}, {word: "idea", type: "Noun"}, {word: "emerged", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_PP", words: [{word: "We", type: "Noun"}, {word: "received", type: "Verb"}, {word: "a letter", type: "Noun"}, {word: "from", type: "Prep"}, {word: "our", type: "Det"}, {word: "friends", type: "Noun"}, {word: ".", type: "Punct"}] },
+            { rule: "Compound_S_V", words: [{word: "Stars", type: "Noun"}, {word: "and", type: "Conj"}, {word: "planets", type: "Noun"}, {word: "shine", type: "Verb"}, {word: ".", type: "Punct"}] },
+            { rule: "S_V_O_Conj_S_V_O", words: [{word: "The", type: "Det"}, {word: "movie", type: "Noun"}, {word: "was", type: "Verb"}, {word: "long", type: "Adj"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "it", type: "Noun"}, {word: "was", type: "Verb"}, {word: "exciting", type: "Adj"}, {word: ".", type: "Punct"}] },
+        ];
+
+        const levels = [
+            allQuestions.slice(0, 20), // Beginner
+            allQuestions.slice(20, 40), // Advanced
+            allQuestions.slice(40, 50)  // Professional
+        ];
+        const tierNames = ["Beginner", "Advanced", "Professional"];
+        const totalQuestions = allQuestions.length;
+
+        // --- GAME STATE ---
+        let currentTierIndex;
+        let currentQuestionIndex;
+        let score = 0;
+        let draggedTile = null;
+        let timerInterval = null;
+        
+        // --- MULTIPLAYER STATE ---
+        let socket;
+        let nickname = '';
+        let groupCode = '';
+
+        // --- DOM ELEMENTS ---
+        const gameContainer = document.getElementById('game-container');
+        const levelCounter = document.getElementById('level-counter');
+        const scoreCounter = document.getElementById('score-counter');
+        const timerDisplay = document.getElementById('timer-display');
+        const progressBar = document.getElementById('progress-bar');
+        const challengeDisplay = document.getElementById('challenge-display');
+        const targetGrammarEl = document.getElementById('target-grammar');
+        const sentenceArea = document.getElementById('sentence-area');
+        const wordBank = document.getElementById('word-bank');
+        const checkBtn = document.getElementById('check-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const feedbackEl = document.getElementById('feedback');
+        const playerListEl = document.getElementById('player-list');
+        
+        // Level Modal
+        const levelModalOverlay = document.getElementById('level-modal-overlay');
+        const beginnerBtn = document.getElementById('beginner-level');
+        const advancedBtn = document.getElementById('advanced-level');
+        const professionalBtn = document.getElementById('professional-level');
+        const changeLevelBtn = document.getElementById('change-level-btn');
+        
+        // Multiplayer Modal
+        const multiplayerModalOverlay = document.getElementById('multiplayer-modal-overlay');
+        const nicknameInput = document.getElementById('nickname-input');
+        const groupCodeInput = document.getElementById('group-code-input');
+        const joinGroupBtn = document.getElementById('join-group-btn');
+        const createGroupBtn = document.getElementById('create-group-btn');
+        const multiplayerFeedback = document.getElementById('multiplayer-feedback');
+        const groupCodeDisplay = document.getElementById('group-code-display');
+        
+        // Abbreviation Modal
+        const abbrModalOverlay = document.getElementById('abbr-modal-overlay');
+        const modalDefinitions = document.getElementById('modal-definitions');
+        const abbrModalCloseBtn = document.getElementById('abbr-modal-close-btn');
+
+        // Ohm.js setup
+        const grammar = ohm.grammar(document.getElementById('grammar').textContent);
+
+        // --- HELPER FUNCTIONS ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- TIMER FUNCTIONS ---
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function startTimer() {
+            stopTimer();
+            let timeLeft = TIME_LIMIT;
+            timerDisplay.textContent = `Time: ${timeLeft}s`;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `Time: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    feedbackEl.textContent = "Time's up! Moving to the next question.";
+                    feedbackEl.className = 'feedback-info';
+                    setTimeout(nextQuestion, 2000);
+                }
+            }, 1000);
+        }
+        
+        // --- GAME LOGIC ---
+        function nextQuestion() {
+            stopTimer();
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= levels[currentTierIndex].length) {
+                currentQuestionIndex = 0;
+                currentTierIndex++;
+            }
+            if (currentTierIndex >= levels.length) showGameComplete();
+            else loadQuestion();
+        }
+
+        function loadQuestion() {
+            stopTimer();
+            if (currentTierIndex === undefined || currentQuestionIndex === undefined || currentTierIndex >= levels.length) {
+                showGameComplete();
+                return;
+            }
+            const question = levels[currentTierIndex][currentQuestionIndex];
+            sentenceArea.innerHTML = '';
+            wordBank.innerHTML = '';
+            feedbackEl.textContent = '';
+            feedbackEl.className = '';
+            checkBtn.disabled = true;
+
+            const ruleParts = question.rule.split('_');
+            const fullRuleText = ruleParts
+                .map(part => (grammarMap[part] || part).split('(')[0].trim())
+                .join(' - ');
+            targetGrammarEl.textContent = fullRuleText;
+            targetGrammarEl.dataset.rule = question.rule;
+            
+            updateProgress();
+
+            const wordsToShuffle = [...question.words];
+            shuffleArray(wordsToShuffle);
+            wordsToShuffle.forEach(wordData => wordBank.appendChild(createWordTile(wordData)));
+            
+            startTimer();
+        }
+        
+        function updateProgress() {
+            const currentTierName = tierNames[currentTierIndex];
+            const questionsInTier = levels[currentTierIndex].length;
+            levelCounter.textContent = `${currentTierName}: Q ${currentQuestionIndex + 1}/${questionsInTier}`;
+            scoreCounter.textContent = `Score: ${score}`;
+            
+            let questionsCompleted = currentQuestionIndex;
+            for (let i = 0; i < currentTierIndex; i++) {
+                questionsCompleted += levels[i].length;
+            }
+            const progressPercentage = (questionsCompleted / totalQuestions) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        function createWordTile(wordData) {
+            const tile = document.createElement('div');
+            tile.className = 'word-tile';
+            if (wordData.type === 'Punct' || wordData.type === 'Comma') {
+                tile.classList.add('punctuation');
+            }
+            tile.textContent = wordData.word;
+            tile.dataset.type = wordData.type;
+            tile.draggable = true;
+            tile.addEventListener('dragstart', handleDragStart);
+            tile.addEventListener('dragend', handleDragEnd);
+            return tile;
+        }
+
+        function checkSentence() {
+            if (sentenceArea.children.length === 0) return;
+            stopTimer();
+
+            const question = levels[currentTierIndex][currentQuestionIndex];
+            const typeSequence = Array.from(sentenceArea.children).map(tile => tile.dataset.type.toLowerCase()).join(' ');
+            const match = grammar.match(typeSequence, question.rule);
+
+            if (match.succeeded() && wordBank.children.length === 0) {
+                feedbackEl.textContent = 'Correct! Structure matched.';
+                feedbackEl.className = 'feedback-correct';
+                score += 10;
+                updateProgress();
+                if (socket && socket.connected) {
+                    socket.emit('scoreUpdate', { groupCode, score });
+                }
+                setTimeout(nextQuestion, 1500);
+            } else {
+                feedbackEl.className = 'feedback-incorrect';
+                if (wordBank.children.length > 0) {
+                     feedbackEl.textContent = `You haven't used all the words yet.`;
+                } else {
+                    const friendlyRule = targetGrammarEl.textContent;
+                    feedbackEl.textContent = `The word order is incorrect. Remember: ${friendlyRule}.`;
+                }
+            }
+        }
+        
+        function resetQuestion() { loadQuestion(); }
+
+        function showGameComplete() {
+            stopTimer();
+            gameContainer.innerHTML = `
+                <header>
+                    <h1>Congratulations!</h1>
+                    <p>You have completed all ${totalQuestions} questions.</p>
+                    <h2>Final Score: ${score}</h2>
+                    <button id="restart-btn" style="margin-top: 1rem; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; font-size: 1rem; cursor: pointer; background-color: var(--accent); color: var(--bg-dark);">Play Again</button>
+                </header>
+            `;
+            document.getElementById('restart-btn').addEventListener('click', () => window.location.reload());
+        }
+
+        // --- DRAG & DROP HANDLERS ---
+        function handleDragStart(e) {
+            draggedTile = e.target;
+            setTimeout(() => e.target.classList.add('dragging'), 0);
+        }
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedTile = null;
+        }
+        function getDragAfterElement(container, x) {
+            const draggableElements = [...container.querySelectorAll('.word-tile:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = x - box.left - box.width / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // --- MODAL & UI FLOW ---
+        function showLevelModal() {
+            stopTimer();
+            levelModalOverlay.style.display = 'flex';
+        }
+        function showMultiplayerModal() {
+            levelModalOverlay.style.display = 'none';
+            multiplayerModalOverlay.style.display = 'flex';
+        }
+        function startGame() {
+            multiplayerModalOverlay.style.display = 'none';
+            gameContainer.style.display = 'block';
+            changeLevelBtn.style.display = 'block';
+            loadQuestion();
+        }
+        function showAbbreviations() {
+            const rule = targetGrammarEl.dataset.rule;
+            if (!rule) return;
+            const uniqueAbbrs = [...new Set(rule.split('_').map(abbr => abbr.trim()))];
+            modalDefinitions.innerHTML = uniqueAbbrs.map(abbr => 
+                abbr ? `<p><strong>${abbr}:</strong> ${grammarMap[abbr] || 'N/A'}</p>` : ''
+            ).join('');
+            abbrModalOverlay.style.display = 'flex';
+        }
+        function hideAbbreviations() { abbrModalOverlay.style.display = 'none'; }
+        
+        // --- MULTIPLAYER LOGIC ---
+        function connectSocket() {
+            // Use a try-catch block for environments where io might not be defined or fails to connect
+            try {
+                socket = io(SOCKET_SERVER_URL, { reconnectionAttempts: 3, timeout: 5000 });
+                setupSocketListeners();
+            } catch (error) {
+                console.error("Socket.IO connection failed:", error);
+                multiplayerFeedback.textContent = "Cannot connect to server.";
+            }
+        }
+        
+        function updatePlayerList(players) {
+            playerListEl.innerHTML = '';
+            players.sort((a, b) => b.score - a.score); // Sort by score descending
+            players.forEach(player => {
+                const li = document.createElement('li');
+                if (player.id === socket.id) {
+                    li.className = 'current-player';
+                }
+                li.innerHTML = `
+                    <span class="player-name">${player.nickname}</span>
+                    <span class="player-score">${player.score}</span>
+                `;
+                playerListEl.appendChild(li);
+            });
+        }
+        
+        function setupSocketListeners() {
+            socket.on('connect_error', () => {
+                multiplayerFeedback.textContent = "Connection to server failed. Please try again.";
+            });
+
+            socket.on('groupCreated', (newGroupCode) => {
+                groupCode = newGroupCode;
+                groupCodeDisplay.querySelector('strong').textContent = groupCode;
+                groupCodeDisplay.style.display = 'block';
+                multiplayerFeedback.textContent = "Group created! Share the code.";
+            });
+
+            socket.on('groupJoined', (data) => {
+                groupCode = data.groupCode;
+                updatePlayerList(data.players);
+                startGame();
+            });
+            
+            socket.on('playerListUpdate', (players) => {
+                updatePlayerList(players);
+            });
+            
+            socket.on('error', (message) => {
+                multiplayerFeedback.textContent = message;
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        [sentenceArea, wordBank].forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+                const afterElement = getDragAfterElement(zone, e.clientX);
+                if (afterElement == null) zone.appendChild(draggedTile);
+                else zone.insertBefore(draggedTile, afterElement);
+            });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                checkBtn.disabled = sentenceArea.children.length === 0;
+            });
+        });
+
+        checkBtn.addEventListener('click', checkSentence);
+        resetBtn.addEventListener('click', resetQuestion);
+        
+        // Modal and Level Selection Listeners
+        function handleTierSelection(tier) {
+            currentTierIndex = tier;
+            currentQuestionIndex = 0;
+            score = 0;
+            connectSocket(); // Connect to server upon choosing a level
+            showMultiplayerModal();
+        }
+        beginnerBtn.addEventListener('click', () => handleTierSelection(0));
+        advancedBtn.addEventListener('click', () => handleTierSelection(1));
+        professionalBtn.addEventListener('click', () => handleTierSelection(2));
+        
+        changeLevelBtn.addEventListener('click', () => window.location.reload());
+
+        // Multiplayer Modal Listeners
+        joinGroupBtn.addEventListener('click', () => {
+            nickname = nicknameInput.value.trim();
+            const codeToJoin = groupCodeInput.value.trim();
+            if (!nickname) { multiplayerFeedback.textContent = 'Please enter a nickname.'; return; }
+            if (!/^\d{3}$/.test(codeToJoin)) { multiplayerFeedback.textContent = 'Group code must be 3 digits.'; return; }
+            if (socket && socket.connected) {
+                socket.emit('joinGroup', { nickname, groupCode: codeToJoin });
+            } else { multiplayerFeedback.textContent = 'Not connected to server.'; }
+        });
+
+        createGroupBtn.addEventListener('click', () => {
+            nickname = nicknameInput.value.trim();
+            if (!nickname) { multiplayerFeedback.textContent = 'Please enter a nickname.'; return; }
+            if (socket && socket.connected) {
+                 socket.emit('createGroup', { nickname });
+                 // Wait for the server to send back the 'groupJoined' event before starting
+            } else { multiplayerFeedback.textContent = 'Not connected to server.'; }
+        });
+
+        // Abbreviation Modal Listeners
+        challengeDisplay.addEventListener('click', showAbbreviations);
+        abbrModalCloseBtn.addEventListener('click', hideAbbreviations);
+        window.addEventListener('click', (event) => {
+            if (event.target === abbrModalOverlay) hideAbbreviations();
+        });
+        
+        // --- INITIAL LOAD ---
+        showLevelModal();
+    </script>
+</body>
+</html>

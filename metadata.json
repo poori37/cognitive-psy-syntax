@@ -1,0 +1,5 @@
+{
+  "name": "Copy of The Syntax Card Game",
+  "description": "An educational card game where players use virtual word tiles to build grammatically correct sentences. The game uses a client-side grammar engine to instantly validate sentences and provide feedback, making learning grammar interactive and fun.",
+  "requestFramePermissions": []
+}
