@@ -15,6 +15,7 @@ const io = new Server(server, {
 });
 
 const groups = {}; // In-memory store for groups
+const NICKNAME_MAX_LENGTH = 15;
 
 function generateGroupCode() {
     let code;
@@ -28,48 +29,67 @@ io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
     socket.on('createGroup', (playerData) => {
+        const nickname = playerData.nickname ? playerData.nickname.trim() : '';
+        if (!nickname) {
+            return socket.emit('joinError', 'Nickname is required.'); // Using joinError for simplicity
+        }
+        
+        const finalNickname = nickname.slice(0, NICKNAME_MAX_LENGTH);
+
         const groupCode = generateGroupCode();
         const newPlayer = {
             id: socket.id,
-            nickname: playerData.nickname,
-            score: 0 // Initialize score on the server
+            nickname: finalNickname,
+            score: 0
         };
         groups[groupCode] = {
             players: [newPlayer],
-            gameStarted: false // Game has not started yet
+            gameStarted: false
         };
         socket.join(groupCode);
-        console.log(`Group created by ${newPlayer.nickname} with code ${groupCode}`);
+        console.log(`Group created by ${finalNickname} with code ${groupCode}`);
         socket.emit('groupCreated', { groupCode, players: groups[groupCode].players });
     });
 
     socket.on('joinGroup', ({ playerData, groupCode }) => {
         const group = groups[groupCode];
-        if (group) {
-            if (group.gameStarted) {
-                socket.emit('joinError', 'Game has already started.');
-                return;
-            }
-            
-            const newPlayer = {
-                id: socket.id,
-                nickname: playerData.nickname,
-                score: 0 // Initialize score on the server
-            };
-
-            group.players.push(newPlayer);
-            socket.join(groupCode);
-
-            console.log(`${newPlayer.nickname} joined group ${groupCode}`);
-            
-            // 1. Notify the joining user of success so they can switch to the waiting room.
-            socket.emit('joinSuccess', { groupCode });
-            
-            // 2. Broadcast the updated player list to EVERYONE in the group.
-            io.to(groupCode).emit('updatePlayers', group.players);
-        } else {
-            socket.emit('joinError', 'Group not found.');
+        if (!group) {
+            return socket.emit('joinError', 'Group not found.');
         }
+
+        if (group.gameStarted) {
+            return socket.emit('joinError', 'Game has already started.');
+        }
+        
+        const nickname = playerData.nickname ? playerData.nickname.trim() : '';
+        if (!nickname) {
+            return socket.emit('joinError', 'Nickname is required.');
+        }
+
+        const finalNickname = nickname.slice(0, NICKNAME_MAX_LENGTH);
+
+        if (group.players.some(p => p.nickname.toLowerCase() === finalNickname.toLowerCase())) {
+            return socket.emit('joinError', 'That nickname is already taken in this group.');
+        }
+
+        if (group.players.some(p => p.id === socket.id)) {
+            console.warn(`Player ${socket.id} sent a duplicate join request for group ${groupCode}. Ignoring.`);
+            return;
+        }
+        
+        const newPlayer = {
+            id: socket.id,
+            nickname: finalNickname,
+            score: 0
+        };
+
+        group.players.push(newPlayer);
+        socket.join(groupCode);
+
+        console.log(`${newPlayer.nickname} joined group ${groupCode}`);
+        
+        socket.emit('joinSuccess', { groupCode });
+        io.to(groupCode).emit('updatePlayers', group.players);
     });
 
     socket.on('startGameRequest', (groupCode) => {
@@ -82,12 +102,11 @@ io.on('connection', (socket) => {
 
     socket.on('updateScore', (playerData) => {
         const { groupCode, id, score } = playerData;
-        if (groups[groupCode]) {
-            const group = groups[groupCode];
+        const group = groups[groupCode];
+        if (group) {
             const player = group.players.find(p => p.id === id);
             if (player) {
                 player.score = score;
-                // Broadcast the updated player list to everyone in the group
                 io.to(groupCode).emit('updatePlayers', group.players);
             }
         }
@@ -95,7 +114,6 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
-        // Find which group the user was in and remove them
         for (const groupCode in groups) {
             const group = groups[groupCode];
             const playerIndex = group.players.findIndex(p => p.id === socket.id);
@@ -103,15 +121,13 @@ io.on('connection', (socket) => {
                 group.players.splice(playerIndex, 1);
                 console.log(`Removed player from group ${groupCode}`);
                 
-                // If group is empty, delete it
                 if (group.players.length === 0) {
                     delete groups[groupCode];
                     console.log(`Group ${groupCode} is empty and has been deleted.`);
                 } else {
-                    // Otherwise, notify remaining players
                     io.to(groupCode).emit('updatePlayers', group.players);
                 }
-                break; // Player can only be in one group
+                break;
             }
         }
     });
