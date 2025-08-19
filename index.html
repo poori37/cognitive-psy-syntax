@@ -251,7 +251,7 @@
             font-weight: 600;
         }
 
-        #progress-tracker {
+        .progress-tracker {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -260,7 +260,7 @@
             margin-bottom: 0.5rem;
         }
 
-        #progress-bar-container {
+        .progress-bar-container {
             width: 100%;
             background-color: var(--bg-dark);
             border-radius: 99px;
@@ -269,7 +269,7 @@
             margin-top: 0.5rem;
         }
 
-        #progress-bar {
+        .progress-bar {
             width: 0%;
             height: 100%;
             background: linear-gradient(90deg, var(--accent-dark), var(--accent));
@@ -426,6 +426,68 @@
             color: var(--success);
         }
 
+        /* --- QUIZ STYLES --- */
+        #quiz-question-area {
+            background-color: var(--bg-dark);
+            padding: 1.5rem 2rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent);
+            text-align: center;
+        }
+        #quiz-question-text {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+        #quiz-options-area {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .quiz-option-btn {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            border: 2px solid transparent;
+            padding: 1rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-align: left;
+        }
+        .quiz-option-btn:hover:not(:disabled) {
+            background-color: #5a6b87;
+            border-color: var(--accent);
+        }
+        .quiz-option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .quiz-option-btn.correct {
+            background-color: var(--success);
+            color: var(--bg-dark);
+            border-color: var(--success);
+        }
+        .quiz-option-btn.incorrect {
+            background-color: var(--error);
+            color: var(--bg-dark);
+            border-color: var(--error);
+        }
+        #quiz-feedback-area {
+            min-height: 24px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        #quiz-action-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -437,6 +499,7 @@
             <div class="button-group">
                 <button id="single-player-mode-btn">Single Player</button>
                 <button id="multiplayer-mode-btn">Multiplayer</button>
+                <button id="quiz-mode-btn">Syntax Quiz</button>
             </div>
         </div>
     </div>
@@ -454,6 +517,24 @@
                 <p>Or</p>
                 <button id="resume-game-btn" class="secondary">Resume Previous Game</button>
             </div>
+            <div class="button-group" style="margin-top: 1rem;">
+                <button id="back-from-setup-btn" class="secondary">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="quiz-setup-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Syntax Quiz Setup</h2>
+            <h3>Select Your Difficulty</h3>
+            <div class="button-group">
+                <button class="quiz-proficiency-btn" data-level="beginner">Beginner</button>
+                <button class="quiz-proficiency-btn" data-level="advanced">Advanced</button>
+                <button class="quiz-proficiency-btn" data-level="professional">Professional</button>
+            </div>
+            <div class="button-group" style="margin-top: 1rem;">
+                <button id="back-from-quiz-setup-btn" class="secondary">Back</button>
+            </div>
         </div>
     </div>
 
@@ -470,10 +551,26 @@
             <div class="button-group">
                 <button id="join-group-btn" class="secondary" disabled style="display: none;">Join Group</button>
                 <button id="create-group-btn" disabled>Create Group</button>
+                <button id="back-from-multiplayer-btn" class="secondary">Back</button>
             </div>
         </div>
     </div>
     
+    <div id="multiplayer-proficiency-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Choose Game Difficulty</h2>
+            <h3 style="color: var(--text-dark); font-size: 1rem; margin-bottom: 2rem;">The host selects the proficiency for all players.</h3>
+            <div class="button-group">
+                <button class="multiplayer-proficiency-btn" data-level="beginner">Beginner</button>
+                <button class="multiplayer-proficiency-btn" data-level="advanced">Advanced</button>
+                <button class="multiplayer-proficiency-btn" data-level="professional">Professional</button>
+            </div>
+            <div class="button-group" style="margin-top: 1rem;">
+                <button id="back-from-multiplayer-proficiency-btn" class="secondary">Back</button>
+            </div>
+        </div>
+    </div>
+
     <div id="waiting-room-modal-overlay" class="modal-overlay">
         <div class="modal-content">
             <h2>Waiting Room</h2>
@@ -482,7 +579,10 @@
             <h3>Players Joined:</h3>
             <ul id="waiting-room-player-list">
             </ul>
-            <button id="start-game-btn">Start Game</button>
+            <div class="button-group">
+                <button id="start-game-btn" style="display: none;">Start Game</button>
+                <button id="back-from-waiting-btn" class="secondary">Back</button>
+            </div>
         </div>
     </div>
 
@@ -499,40 +599,65 @@
 
     <!-- GAME CONTAINER -->
     <div id="game-container">
-        <header>
-            <h1 id="game-title">The Syntax Card Game</h1>
-            <p id="game-subtitle">Arrange the words to match the target sentence structure.</p>
-            <div id="timer">Time: 50</div>
-        </header>
+        <div id="game-view">
+            <header>
+                <h1 id="game-title">The Syntax Card Game</h1>
+                <p id="game-subtitle">Arrange the words to match the target sentence structure.</p>
+                <div id="timer">Time: 50</div>
+            </header>
 
-        <main>
-            <div id="challenge-display">
-                <h2>TARGET: <span id="target-grammar"></span></h2>
-            </div>
-            <div id="progress-tracker">
-                <div id="level-indicator">Proficiency: Beginner</div>
-                <div id="question-indicator">Question: 1/8</div>
-            </div>
-            <div id="progress-bar-container">
-                <div id="progress-bar"></div>
-            </div>
+            <main>
+                <div id="challenge-display">
+                    <h2>TARGET: <span id="target-grammar"></span></h2>
+                </div>
+                <div id="progress-tracker" class="progress-tracker">
+                    <div id="level-indicator">Proficiency: Beginner</div>
+                    <div id="question-indicator">Question: 1/10</div>
+                </div>
+                <div id="progress-bar-container" class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
 
-            <div id="sentence-tray" class="droppable"></div>
-            <div id="word-pool" class="droppable"></div>
+                <div id="sentence-tray" class="droppable"></div>
+                <div id="word-pool" class="droppable"></div>
 
-            <div id="feedback-area"></div>
+                <div id="feedback-area"></div>
 
-            <div id="action-buttons">
-                <button id="reset-btn" class="btn btn-secondary">Reset</button>
-                <button id="check-btn" class="btn btn-primary">Check Answer</button>
-            </div>
+                <div id="action-buttons">
+                    <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                    <button id="check-btn" class="btn btn-primary">Check Answer</button>
+                </div>
 
-            <div id="multiplayer-scoreboard">
-                <h3>Scoreboard</h3>
-                <ul id="player-scores">
-                </ul>
-            </div>
-        </main>
+                <div id="multiplayer-scoreboard">
+                    <h3>Scoreboard</h3>
+                    <ul id="player-scores">
+                    </ul>
+                </div>
+            </main>
+        </div>
+        <div id="quiz-view" style="display: none;">
+             <header>
+                <h1>Syntax Quiz</h1>
+                <p>Test your grammar knowledge.</p>
+            </header>
+            <main>
+                <div id="quiz-progress-tracker" class="progress-tracker">
+                    <div id="quiz-level-indicator">Difficulty: Beginner</div>
+                    <div id="quiz-question-indicator">Question: 1/10</div>
+                </div>
+                <div id="quiz-progress-bar-container" class="progress-bar-container">
+                    <div id="quiz-progress-bar" class="progress-bar"></div>
+                </div>
+                <div id="quiz-question-area">
+                    <h2 id="quiz-question-text"></h2>
+                </div>
+                <div id="quiz-options-area"></div>
+                <div id="quiz-feedback-area"></div>
+                <div id="quiz-action-buttons">
+                    <button id="next-question-btn" class="btn btn-primary" style="display: none;">Next Question</button>
+                </div>
+            </main>
+        </div>
     </div>
 
 <script type="ohm-js" id="grammar">
@@ -541,7 +666,7 @@
     // Noun, Pronoun, Verb, Det(erminer), Adj(ective), Adv(erb), 
     // Prep(osition), Conj(unction), Punc(tuation), Comma
 
-    // Beginner
+    // Original Beginner
     Det_N_V_Punc = Det Noun Verb Punc
     Pronoun_V_Punc = Pronoun Verb Punc
     Pronoun_V_Det_N_Punc = Pronoun Verb Det Noun Punc
@@ -551,20 +676,38 @@
     Pronoun_V_Det_Adj_N_Punc = Pronoun Verb Det Adj Noun Punc
     Pronoun_V_N_Punc = Pronoun Verb Noun Punc
 
-    // Advanced
+    // Original Advanced
     Pronoun_V_Ving_Det_Adj_N_Punc = Pronoun Verb Ving Det Adj Noun Punc
     Pronoun_V_Prep_Det_N_Punc = Pronoun Verb Prep Det Noun Punc
     Poss_N_V_Det_Adj_N_Punc = Poss Noun Verb Det Adj Noun Punc
     Det_Adj_N_V_Adv_Punc = Det Adj Noun Verb Adv Punc
     Pronoun_V_Adj_Conj_Pronoun_V_Adj_Punc = Pronoun Verb Adj Conj Pronoun Verb Adj Punc
 
-    // Professional
+    // Original Professional
     Det_Adj_Adj_N_V_Prep_Det_Adj_N_Punc = Det Adj Adj Noun Verb Prep Det Adj Noun Punc
     Pronoun_V_Adv_Prep_Poss_N_Punc = Pronoun Verb Noun Adv Prep Poss Noun Punc
     Conj_Clause_Clause_Punc = Prep Det Noun Comma Pronoun Verb Prep Verb Prep Det Noun Punc
     Sentence_With_Comma = Det_Noun_Clause Comma Conj Noun_Clause Punc
     Det_Noun_Clause = Det Noun Verb Adj
     Noun_Clause = Det Noun Verb Adv Adj
+
+    // New Rules for expanded levels
+    Pronoun_V_Adj_Punc = Pronoun Verb Adj Punc
+    N_V_Punc = Noun Verb Punc
+    Det_N_V_Det_N_Punc = Det Noun Verb Det Noun Punc
+    Pronoun_V_Adj_N_Punc = Pronoun Verb Adj Noun Punc
+    Pronoun_V_Det_N_Prep_Det_N_Punc = Pronoun Verb Det Noun Prep Det Noun Punc
+    Pronoun_V_Adj_Comma_Conj_Pronoun_V_Adj_Punc = Pronoun Verb Adj Comma Conj Pronoun Verb Adj Punc
+    Pronoun_V_Conj_V_Punc = Pronoun Verb Conj Verb Punc
+    Pronoun_V_V_Conj_Pronoun_V_Ving_Punc = Pronoun Verb Verb Conj Pronoun Verb Ving Punc
+    Det_N_V_Adv_Punc = Det Noun Verb Adv Punc
+    Pronoun_V_Pronoun_Det_N_Punc = Pronoun Verb Pronoun Det Noun Punc
+    Det_N_V_Prep_Det_N_Punc = Det Noun Verb Prep Det Noun Punc
+    Pronoun_V_Ving_Prep_Det_N_Punc = Pronoun Verb Ving Prep Det Noun Punc
+    Pronoun_V_Prep_V_Punc = Pronoun Verb Prep Verb Punc
+    Pronoun_V_Conj_Det_N_V_Adj_Punc = Pronoun Verb Conj Det Noun Verb Adj Punc
+    Det_N_V_Det_N_Prep_Det_N_Punc = Det Noun Verb Det Noun Prep Det Noun Punc
+    Pronoun_V_Det_Adj_N_Prep_Det_N_Punc = Pronoun Verb Det Adj Noun Prep Det Noun Punc
     
     // Parts of Speech Definitions (terminals)
     Noun = "Noun"
@@ -585,7 +728,8 @@
 <script type="module">
     // --- STATE MANAGEMENT ---
     const state = {
-        gameMode: 'single', // 'single' or 'multi'
+        gameMode: null, // 'single', 'multi', 'quiz'
+        // Card Game State
         proficiency: 'beginner',
         currentQuestionIndex: 0,
         totalQuestions: 0,
@@ -593,15 +737,37 @@
         timer: 50,
         timerInterval: null,
         currentWords: [],
+        // Multiplayer State
         playerData: { id: null, nickname: '', score: 0 },
         groupCode: null,
         players: [],
-        socket: null
+        socket: null,
+        // Quiz State
+        quizProficiency: 'beginner',
+        currentQuizQuestionIndex: 0,
+        quizScore: 0,
+        quizQuestions: [],
     };
 
     // --- DOM ELEMENTS ---
     const elements = {
         gameContainer: document.getElementById('game-container'),
+        // Views
+        gameView: document.getElementById('game-view'),
+        quizView: document.getElementById('quiz-view'),
+        // Modals
+        modeModal: document.getElementById('mode-modal-overlay'),
+        playerSetupModal: document.getElementById('player-setup-modal-overlay'),
+        quizSetupModal: document.getElementById('quiz-setup-modal-overlay'),
+        multiplayerModal: document.getElementById('multiplayer-modal-overlay'),
+        multiplayerProficiencyModal: document.getElementById('multiplayer-proficiency-modal-overlay'),
+        waitingRoomModal: document.getElementById('waiting-room-modal-overlay'),
+        gameOverModal: document.getElementById('game-over-modal-overlay'),
+        // Mode Buttons
+        singlePlayerBtn: document.getElementById('single-player-mode-btn'),
+        multiplayerBtn: document.getElementById('multiplayer-mode-btn'),
+        quizBtn: document.getElementById('quiz-mode-btn'),
+        // Card Game Elements
         targetGrammar: document.getElementById('target-grammar'),
         levelIndicator: document.getElementById('level-indicator'),
         questionIndicator: document.getElementById('question-indicator'),
@@ -612,20 +778,20 @@
         checkBtn: document.getElementById('check-btn'),
         resetBtn: document.getElementById('reset-btn'),
         timerDisplay: document.getElementById('timer'),
-        modeModal: document.getElementById('mode-modal-overlay'),
-        singlePlayerBtn: document.getElementById('single-player-mode-btn'),
-        multiplayerBtn: document.getElementById('multiplayer-mode-btn'),
-        playerSetupModal: document.getElementById('player-setup-modal-overlay'),
+        // Single Player Setup
         proficiencyBtns: document.querySelectorAll('.proficiency-btn'),
         resumeGameContainer: document.getElementById('resume-game-container'),
         resumeGameBtn: document.getElementById('resume-game-btn'),
-        multiplayerModal: document.getElementById('multiplayer-modal-overlay'),
+        backFromSetupBtn: document.getElementById('back-from-setup-btn'),
+        // Quiz Setup
+        quizProficiencyBtns: document.querySelectorAll('.quiz-proficiency-btn'),
+        backFromQuizSetupBtn: document.getElementById('back-from-quiz-setup-btn'),
+        // Multiplayer Elements
         nicknameInput: document.getElementById('nickname-input'),
         groupCodeInput: document.getElementById('group-code-input'),
         joinGroupBtn: document.getElementById('join-group-btn'),
         createGroupBtn: document.getElementById('create-group-btn'),
         multiplayerFeedback: document.getElementById('multiplayer-feedback'),
-        waitingRoomModal: document.getElementById('waiting-room-modal-overlay'),
         groupCodeDisplay: document.querySelector('#group-code-display strong'),
         waitingPlayerList: document.getElementById('waiting-room-player-list'),
         startGameBtn: document.getElementById('start-game-btn'),
@@ -633,41 +799,223 @@
         playerScoresList: document.getElementById('player-scores'),
         multiplayerCreateTab: document.getElementById('multiplayer-create-tab'),
         multiplayerJoinTab: document.getElementById('multiplayer-join-tab'),
-        gameOverModal: document.getElementById('game-over-modal-overlay'),
+        backFromMultiplayerBtn: document.getElementById('back-from-multiplayer-btn'),
+        multiplayerProficiencyBtns: document.querySelectorAll('.multiplayer-proficiency-btn'),
+        backFromMultiplayerProficiencyBtn: document.getElementById('back-from-multiplayer-proficiency-btn'),
+        backFromWaitingBtn: document.getElementById('back-from-waiting-btn'),
+        // Game Over Modal
         gameOverTitle: document.getElementById('game-over-title'),
         gameOverMessage: document.getElementById('game-over-message'),
         finalScore: document.getElementById('final-score'),
         playAgainBtn: document.getElementById('play-again-btn'),
+        // Quiz Elements
+        quizLevelIndicator: document.getElementById('quiz-level-indicator'),
+        quizQuestionIndicator: document.getElementById('quiz-question-indicator'),
+        quizProgressBar: document.getElementById('quiz-progress-bar'),
+        quizQuestionText: document.getElementById('quiz-question-text'),
+        quizOptionsArea: document.getElementById('quiz-options-area'),
+        quizFeedbackArea: document.getElementById('quiz-feedback-area'),
+        nextQuestionBtn: document.getElementById('next-question-btn'),
     };
 
     // --- OHM.JS GRAMMAR ---
     const grammar = ohm.grammar(document.getElementById('grammar').textContent);
 
-    // --- GAME LEVELS ---
+    // --- GAME & QUIZ DATA ---
     const levels = {
         beginner: [
-            { rule: "Det_N_V_Punc", words: [{word: "The", type: "Det"}, {word: "dog", type: "Noun"}, {word: "runs", type: "Verb"}, {word: ".", type: "Punc"}] },
-            { rule: "Pronoun_V_Punc", words: [{word: "She", type: "Pronoun"}, {word: "sleeps", type: "Verb"}, {word: ".", type: "Punc"}] },
-            { rule: "Pronoun_V_Det_N_Punc", words: [{word: "He", type: "Pronoun"}, {word: "eats", type: "Verb"}, {word: "an", type: "Det"}, {word: "apple", type: "Noun"}, {word: ".", type: "Punc"}] },
-            { rule: "N_V_Adj_Punc", words: [{word: "You", type: "Noun"}, {word: "are", type: "Verb"}, {word: "smart", type: "Adj"}, {word: ".", type: "Punc"}]},
-            { rule: "Pronoun_V_Adv_Punc", words: [{word: "Birds", type: "Pronoun"}, {word: "fly", type: "Verb"}, {word: "high", type: "Adv"}, {word: ".", type: "Punc"}]},
-            { rule: "Det_Adj_N_V_Punc", words: [{word: "A", type: "Det"}, {word: "big", type: "Adj"}, {word: "cat", type: "Noun"}, {word: "jumps", type: "Verb"}, {word: ".", type: "Punc"}] },
-            { rule: "Pronoun_V_Det_Adj_N_Punc", words: [{word: "I", type: "Pronoun"}, {word: "see", type: "Verb"}, {word: "a", type: "Det"}, {word: "big", type: "Adj"}, {word: "ball", type: "Noun"}, {word: ".", type: "Punc"}]},
-            { rule: "Pronoun_V_N_Punc", words: [{word: "We", type: "Pronoun"}, {word: "play", type: "Verb"}, {word: "games", type: "Noun"}, {word: ".", type: "Punc"}]},
+            { 
+                rule: "Det_N_V_Punc",
+                displayRule: 'S - V - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "dog", type: "Noun"}, {word: "runs", type: "Verb"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Det_N_Punc",
+                displayRule: 'S - V - O - Punc', 
+                words: [{word: "She", type: "Pronoun"}, {word: "ate", type: "Verb"}, {word: "an", type: "Det"}, {word: "apple", type: "Noun"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Det_N_V_Punc",
+                displayRule: 'S - V - Punc', 
+                words: [{word: "A", type: "Det"}, {word: "cat", type: "Noun"}, {word: "slept", type: "Verb"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Adj_Punc",
+                displayRule: 'S - V - Adj - Punc', 
+                words: [{word: "They", type: "Pronoun"}, {word: "are", type: "Verb"}, {word: "happy", type: "Adj"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Det_N_Punc",
+                displayRule: 'S - V - O - Punc', 
+                words: [{word: "He", type: "Pronoun"}, {word: "kicked", type: "Verb"}, {word: "the", type: "Det"}, {word: "ball", type: "Noun"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "N_V_Punc",
+                displayRule: 'S - V - Punc', 
+                words: [{word: "Birds", type: "Noun"}, {word: "fly", type: "Verb"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Det_N_V_Punc",
+                displayRule: 'S - V - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "wind", type: "Noun"}, {word: "howled", type: "Verb"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Det_N_V_Det_N_Punc",
+                displayRule: 'S - V - O - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "girl", type: "Noun"}, {word: "wrote", type: "Verb"}, {word: "a", type: "Det"}, {word: "letter", type: "Noun"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Adj_Punc",
+                displayRule: 'S - V - Punc', 
+                words: [{word: "I", type: "Pronoun"}, {word: "am", type: "Verb"}, {word: "tired", type: "Adj"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Adj_N_Punc",
+                displayRule: 'S - V - O - Punc', 
+                words: [{word: "We", type: "Pronoun"}, {word: "play", type: "Verb"}, {word: "video", type: "Adj"}, {word: "games", type: "Noun"}, {word: ".", type: "Punc"}] 
+            },
         ],
         advanced: [
-            { rule: "Pronoun_V_Ving_Det_Adj_N_Punc", words: [{word: "She", type: "Pronoun"}, {word: "is", type: "Verb"}, {word: "reading", type: "Ving"}, {word: "a", type: "Det"}, {word: "good", type: "Adj"}, {word: "book", type: "Noun"}, {word: ".", type: "Punc"}] },
-            { rule: "Pronoun_V_Prep_Det_N_Punc", words: [{word: "He", type: "Pronoun"}, {word: "walked", type: "Verb"}, {word: "to", type: "Prep"}, {word: "the", type: "Det"}, {word: "store", type: "Noun"}, {word: ".", type: "Punc"}] },
-            { rule: "Poss_N_V_Det_Adj_N_Punc", words: [{word: "My", type: "Poss"}, {word: "friend", type: "Noun"}, {word: "has", type: "Verb"}, {word: "a", type: "Det"}, {word: "new", type: "Adj"}, {word: "car", type: "Noun"}, {word: ".", type: "Punc"}] },
-            { rule: "Det_Adj_N_V_Adv_Punc", words: [{word: "The", type: "Det"}, {word: "little", type: "Adj"}, {word: "dog", type: "Noun"}, {word: "barks", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ".", type: "Punc"}] },
-            { rule: "Pronoun_V_Det_Adj_N_Punc", words: [{word: "She", type: "Pronoun"}, {word: "wrote", type: "Verb"}, {word: "a", type: "Det"}, {word: "long", type: "Adj"}, {word: "letter", type: "Noun"}, {word: ".", type: "Punc"}] },
-            { rule: "Pronoun_V_Adj_Conj_Pronoun_V_Adj_Punc", words: [{word:"I", type: "Pronoun"}, {word:"was", type: "Verb"}, {word:"tired", type: "Adj"}, {word:"but", type: "Conj"}, {word:"I", type: "Pronoun"}, {word:"was", type: "Verb"}, {word:"happy", type: "Adj"}, {word:".", type: "Punc"}]}
+            { 
+                rule: "Pronoun_V_Prep_Det_N_Punc",
+                displayRule: 'S - V - Prep - Det - N - Punc', 
+                words: [{word: "He", type: "Pronoun"}, {word: "walked", type: "Verb"}, {word: "to", type: "Prep"}, {word: "the", type: "Det"}, {word: "store", type: "Noun"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Det_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - Prep - Det - N - Punc', 
+                words: [{word: "She", type: "Pronoun"}, {word: "put", type: "Verb"}, {word: "the", type: "Det"}, {word: "keys", type: "Noun"}, {word: "on", type: "Prep"}, {word: "the", type: "Det"}, {word: "table", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Pronoun_V_Adj_Comma_Conj_Pronoun_V_Adj_Punc",
+                displayRule: 'S - V - Adj - Conj - S - V - Adj - Punc', 
+                words: [{word:"I", type: "Pronoun"}, {word:"was", type: "Verb"}, {word:"tired", type: "Adj"}, {word:",", type: "Comma"}, {word:"but", type: "Conj"}, {word:"I", type: "Pronoun"}, {word:"was", type: "Verb"}, {word:"happy", type: "Adj"}, {word:".", type: "Punc"}]
+            },
+            { 
+                rule: "Pronoun_V_Conj_V_Punc",
+                displayRule: 'S - V - Conj - S - V - Punc', 
+                words: [{word: "He", type: "Pronoun"}, {word: "sang", type: "Verb"}, {word: "and", type: "Conj"}, {word: "danced", type: "Verb"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Det_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "He", type: "Pronoun"}, {word: "read", type: "Verb"}, {word: "the", type: "Det"}, {word: "book", type: "Noun"}, {word: "in", type: "Prep"}, {word: "the", type: "Det"}, {word: "park", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Pronoun_V_V_Conj_Pronoun_V_Ving_Punc",
+                displayRule: 'S - V - SC - Punc', 
+                words: [{word: "We", type: "Pronoun"}, {word: "will", type: "Verb"}, {word: "go", type: "Verb"}, {word: "if", type: "Conj"}, {word: "it", type: "Pronoun"}, {word: "stops", type: "Verb"}, {word: "raining", type: "Ving"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Det_N_V_Adv_Punc",
+                displayRule: 'S - V - Adv - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "dog", type: "Noun"}, {word: "barked", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Pronoun_Det_N_Punc",
+                displayRule: 'S - V - O - Punc', 
+                words: [{word: "He", type: "Pronoun"}, {word: "gave", type: "Verb"}, {word: "her", type: "Pronoun"}, {word: "a", type: "Det"}, {word: "gift", type: "Noun"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Det_N_V_Det_N_Punc",
+                displayRule: 'S - V - O - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "student", type: "Noun"}, {word: "passed", type: "Verb"}, {word: "the", type: "Det"}, {word: "test", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Det_N_V_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "artist", type: "Noun"}, {word: "painted", type: "Verb"}, {word: "with", type: "Prep"}, {word: "a", type: "Det"}, {word: "brush", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
         ],
         professional: [
-            { rule: "Det_Adj_Adj_N_V_Prep_Det_Adj_N_Punc", words: [{word: "The", type: "Det"}, {word: "quick", type: "Adj"}, {word: "brown", type: "Adj"}, {word: "fox", type: "Noun"}, {word: "jumps", type: "Verb"}, {word: "over", type: "Prep"}, {word: "the", type: "Det"}, {word: "lazy", type: "Adj"}, {word: "dog", type: "Noun"}, {word: ".", type: "Punc"}] },
-            { rule: "Pronoun_V_Adv_Prep_Poss_N_Punc", words: [{word:"She", type: "Pronoun"}, {word:"organized", type: "Verb"}, {word:"files", type: "Noun"}, {word:"meticulously", type: "Adv"}, {word:"on", type: "Prep"}, {word:"her", type: "Poss"}, {word:"computer", type: "Noun"}, {word:".", type: "Punc"}]},
-            { rule: "Conj_Clause_Clause_Punc", words: [{word:"Despite", type: "Prep"}, {word:"the", type: "Det"}, {word:"rain", type: "Noun"}, {word:",", type: "Comma"}, {word:"we", type: "Pronoun"}, {word:"decided", type: "Verb"}, {word:"to", type: "Prep"}, {word:"go", type: "Verb"}, {word:"for", type: "Prep"}, {word:"a", type: "Det"}, {word:"walk", type: "Noun"}, {word:".", type: "Punc"}]},
-            { rule: "Sentence_With_Comma", words: [{word: "The", type: "Det"}, {word: "concert", type: "Noun"}, {word: "was", type: "Verb"}, {word: "fantastic", type: "Adj"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "the", type: "Det"}, {word: "tickets", type: "Noun"}, {word: "were", type: "Verb"}, {word: "quite", type: "Adv"}, {word: "expensive", type: "Adj"}, {word: ".", type: "Punc"}]}
+            { 
+                rule: "Pronoun_V_Ving_Prep_Det_N_Punc",
+                displayRule: 'S - V - Gerund - PP - Punc', 
+                words: [{word: "She", type: "Pronoun"}, {word: "enjoys", type: "Verb"}, {word: "running", type: "Ving"}, {word: "in", type: "Prep"}, {word: "the", type: "Det"}, {word: "morning", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Pronoun_V_Prep_V_Punc",
+                displayRule: 'S - V - Inf - Punc', 
+                words: [{word: "They", type: "Pronoun"}, {word: "want", type: "Verb"}, {word: "to", type: "Prep"}, {word: "eat", type: "Verb"}, {word: ".", type: "Punc"}] 
+            },
+            { 
+                rule: "Pronoun_V_Conj_Det_N_V_Adj_Punc",
+                displayRule: 'S - V - SC - Punc', 
+                words: [{word: "He", type: "Pronoun"}, {word: "knew", type: "Verb"}, {word: "that", type: "Conj"}, {word: "the", type: "Det"}, {word: "project", type: "Noun"}, {word: "was", type: "Verb"}, {word: "late", type: "Adj"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Det_N_V_Det_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "man", type: "Noun"}, {word: "saw", type: "Verb"}, {word: "the", type: "Det"}, {word: "boy", type: "Noun"}, {word: "with", type: "Prep"}, {word: "the", type: "Det"}, {word: "telescope", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Det_N_V_Det_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "chef", type: "Noun"}, {word: "baked", type: "Verb"}, {word: "a", type: "Det"}, {word: "cake", type: "Noun"}, {word: "in", type: "Prep"}, {word: "the", type: "Det"}, {word: "oven", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Pronoun_V_Det_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "She", type: "Pronoun"}, {word: "read", type: "Verb"}, {word: "a", type: "Det"}, {word: "book", type: "Noun"}, {word: "on", type: "Prep"}, {word: "the", type: "Det"}, {word: "train", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Pronoun_V_Det_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "He", type: "Pronoun"}, {word: "wrote", type: "Verb"}, {word: "a", type: "Det"}, {word: "letter", type: "Noun"}, {word: "with", type: "Prep"}, {word: "a", type: "Det"}, {word: "pencil", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Det_N_V_Det_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "The", type: "Det"}, {word: "dog", type: "Noun"}, {word: "chased", type: "Verb"}, {word: "the", type: "Det"}, {word: "cat", type: "Noun"}, {word: "up", type: "Prep"}, {word: "a", type: "Det"}, {word: "tree", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Pronoun_V_Det_Adj_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "We", type: "Pronoun"}, {word: "had", type: "Verb"}, {word: "a", type: "Det"}, {word: "great", type: "Adj"}, {word: "time", type: "Noun"}, {word: "at", type: "Prep"}, {word: "the", type: "Det"}, {word: "party", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+            { 
+                rule: "Pronoun_V_Det_N_Prep_Det_N_Punc",
+                displayRule: 'S - V - O - PP - Punc', 
+                words: [{word: "She", type: "Pronoun"}, {word: "brought", type: "Verb"}, {word: "a", type: "Det"}, {word: "pizza", type: "Noun"}, {word: "to", type: "Prep"}, {word: "the", type: "Det"}, {word: "party", type: "Noun"}, {word: ".", type: "Punc"}]
+            },
+        ]
+    };
+    const quizData = {
+        beginner: [
+            { question: 'Which part of speech is the subject in the sentence, "The dog runs."?', options: ["dog", "runs", "The", "sentence"], answer: "dog" },
+            { question: 'In the sentence, "She ate an apple.", what is the object?', options: ["She", "ate", "an", "apple"], answer: "apple" },
+            { question: 'Arrange the words "sings", "birds", and "." to form a grammatically correct sentence.', options: ["Sings birds.", "Birds sings.", "Birds. sings", ".Sings birds"], answer: "Birds sings." },
+            { question: "A sentence must contain at least a subject and a verb. True or False?", options: ["True", "False"], answer: "True" },
+            { question: "What is the rule for a basic sentence structure in English?", options: ["Verb-Subject (V-S)", "Subject-Verb (S-V)", "Object-Verb (O-V)", "Subject-Object (S-O)"], answer: "Subject-Verb (S-V)" },
+            { question: "Which of these words is a verb?", options: ["Quickly", "Jumped", "Happy", "Under"], answer: "Jumped" },
+            { question: 'Correct the punctuation in the sentence, "The cat sat on the mat".', options: ["The cat, sat on the mat", "The cat sat on the mat!", "The cat sat on the mat?", "The cat sat on the mat."], answer: "The cat sat on the mat." },
+            { question: "Which of these sentences is an example of a Subject-Verb-Object (S-V-O) structure?", options: ["He ran.", "She likes chocolate.", "They are happy.", "Go away."], answer: "She likes chocolate." },
+            { question: 'Arrange the words "The", "barks", and "dog" to form a correct S-V sentence.', options: ["The barks dog.", "Barks the dog.", "The dog barks.", "Dog the barks."], answer: "The dog barks." },
+            { question: 'What is the function of the word "beautiful" in the sentence "The beautiful flower bloomed."?', options: ["Noun", "Verb", "Adverb", "Adjective"], answer: "Adjective" }
+        ],
+        advanced: [
+            { question: 'In the sentence, "He walked to the store.", what is the prepositional phrase?', options: ["He walked", "to the store", "the store", "walked to"], answer: "to the store" },
+            { question: 'In the sentence, "I was tired, but I was happy.", what is "but I was happy"?', options: ["An independent clause", "A subordinate clause", "A prepositional phrase", "A noun phrase"], answer: "An independent clause" },
+            { question: 'Correct the punctuation in the sentence, "The sun shone brightly but we stayed indoors".', options: ["The sun shone brightly, but we stayed indoors.", "The sun shone brightly but, we stayed indoors.", "The sun shone brightly; but we stayed indoors.", "The sun shone brightly but we, stayed indoors."], answer: "The sun shone brightly, but we stayed indoors." },
+            { question: "Which of these sentences is an example of an S-V-O (Subject-Verb-Object) structure?", options: ["He ran quickly.", "She gave him the book.", "They are happy.", "Is she here?"], answer: "She gave him the book." },
+            { question: "What is the purpose of a conjunction?", options: ["To describe a noun", "To show action", "To connect clauses or words", "To modify a verb"], answer: "To connect clauses or words" },
+            { question: 'Identify the subordinate conjunction in the sentence, "We will go to the park if it stops raining."', options: ["We", "go", "if", "stops"], answer: "if" },
+            { question: 'How would you correctly connect two simple sentences, "He studied hard." and "He passed the test."?', options: ["He studied hard, and he passed the test.", "He studied hard he passed the test.", "He studied hard, he passed the test.", "He studied hard and, he passed the test."], answer: "He studied hard, and he passed the test." },
+            { question: 'In the sentence, "The cat, which was black, slept soundly.", what is the function of "which was black"?', options: ["Adverbial phrase", "Prepositional phrase", "Relative clause", "Independent clause"], answer: "Relative clause" },
+            { question: 'Identify the prepositional phrase in the sentence, "She put the keys on the table."', options: ["She put", "the keys", "on the table", "put the keys"], answer: "on the table" },
+            { question: "What is the difference between an independent clause and a dependent clause?", options: ["An independent clause has a verb, a dependent one does not.", "An independent clause can stand alone as a sentence, a dependent one cannot.", "A dependent clause is always at the beginning of a sentence.", "There is no difference."], answer: "An independent clause can stand alone as a sentence, a dependent one cannot." }
+        ],
+        professional: [
+            { question: 'Identify the gerund in the sentence, "She loves running in the morning."', options: ["She", "loves", "running", "morning"], answer: "running" },
+            { question: 'What type of clause is "who was wearing a red hat" in the sentence, "The woman, who was wearing a red hat, ran away."?', options: ["Adverbial clause", "Noun clause", "Relative clause", "Subordinate clause"], answer: "Relative clause" },
+            { question: "Which sentence contains a dangling modifier?", options: ["Walking to the store, the sky grew dark.", "The dog barked loudly at the mailman.", "After finishing the pizza, we watched a movie.", "The book on the table is mine."], answer: "Walking to the store, the sky grew dark." },
+            { question: 'Identify the elliptical construction in the sentence, "John can run faster than Bill."', options: ["John can run", "faster than", "Bill", "The entire sentence is elliptical"], answer: "Bill" },
+            { question: 'What is the purpose of a comma in the sentence, "The food was good, but the service was slow."?', options: ["To separate items in a list", "To set off a non-essential clause", "To separate two independent clauses joined by a conjunction", "To indicate a pause for breath"], answer: "To separate two independent clauses joined by a conjunction" },
+            { question: "Which sentence contains an infinitive?", options: ["She loves cooking.", "We went to the park.", "They want to eat.", "I am happy."], answer: "They want to eat." },
+            { question: 'What is the function of the subordinate clause in the sentence, "I will not go unless you come with me."?', options: ["Noun clause", "Adjectival clause", "Adverbial clause", "Relative clause"], answer: "Adverbial clause" },
+            { question: 'Correct the comma splice in the sentence, "It was a beautiful day, we went for a walk."', options: ["It was a beautiful day we went for a walk.", "It was a beautiful day; we went for a walk.", "It was a beautiful day, and, we went for a walk.", "It was a beautiful, day we went for a walk."], answer: "It was a beautiful day; we went for a walk." },
+            { question: 'Identify the ambiguous phrase in the sentence, "The man saw the boy with the telescope."', options: ["The man", "saw the boy", "with the telescope", "The entire sentence"], answer: "with the telescope" },
+            { question: "What is the difference between a phrase and a clause?", options: ["A phrase has a verb, but a clause does not.", "A clause contains both a subject and a verb, while a phrase does not.", "A phrase is longer than a clause.", "There is no difference."], answer: "A clause contains both a subject and a verb, while a phrase does not." }
         ]
     };
 
@@ -696,9 +1044,7 @@
             state.groupCode = groupCode;
             state.players = players;
             elements.multiplayerModal.style.display = 'none';
-            elements.waitingRoomModal.style.display = 'flex';
-            elements.groupCodeDisplay.textContent = groupCode;
-            updateWaitingRoom(players);
+            elements.multiplayerProficiencyModal.style.display = 'flex';
         });
         state.socket.on('joinSuccess', ({ groupCode }) => {
             state.groupCode = groupCode;
@@ -712,7 +1058,13 @@
             updateWaitingRoom(players);
             if (state.gameMode === 'multi') updateMultiplayerScoreboard(players);
         });
-        state.socket.on('gameStarted', () => {
+        state.socket.on('gameStarted', (data) => {
+            if (!data || !data.proficiency) {
+                console.error('Invalid gameStarted event received:', data);
+                elements.multiplayerFeedback.textContent = 'Error starting game. Please try again.';
+                return;
+            }
+            state.proficiency = data.proficiency;
             elements.waitingRoomModal.style.display = 'none';
             startGame();
         });
@@ -733,11 +1085,23 @@
         elements.multiplayerModal.style.display = 'flex';
         connectToServer();
     });
+    elements.quizBtn.addEventListener('click', () => {
+        state.gameMode = 'quiz';
+        elements.modeModal.style.display = 'none';
+        elements.quizSetupModal.style.display = 'flex';
+    });
     elements.proficiencyBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             state.proficiency = btn.dataset.level;
             elements.playerSetupModal.style.display = 'none';
             startGame();
+        });
+    });
+     elements.quizProficiencyBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.quizProficiency = btn.dataset.level;
+            elements.quizSetupModal.style.display = 'none';
+            startQuiz();
         });
     });
     elements.resumeGameBtn.addEventListener('click', () => {
@@ -775,11 +1139,42 @@
         elements.multiplayerFeedback.textContent = '';
         state.socket.emit('joinGroup', { playerData: state.playerData, groupCode });
     });
+    elements.multiplayerProficiencyBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const proficiency = btn.dataset.level;
+            state.proficiency = proficiency;
+            // The setProficiency event is no longer needed as proficiency is sent with startGameRequest
+            elements.multiplayerProficiencyModal.style.display = 'none';
+            elements.waitingRoomModal.style.display = 'flex';
+            elements.groupCodeDisplay.textContent = state.groupCode;
+            updateWaitingRoom(state.players);
+        });
+    });
     elements.startGameBtn.addEventListener('click', () => {
-        if(state.socket && state.groupCode) state.socket.emit('startGameRequest', state.groupCode);
+        if(state.socket && state.groupCode) state.socket.emit('startGameRequest', { groupCode: state.groupCode, proficiency: state.proficiency });
     });
     elements.checkBtn.addEventListener('click', checkSentence);
     elements.resetBtn.addEventListener('click', resetWordPositions);
+    elements.nextQuestionBtn.addEventListener('click', nextQuizQuestion);
+
+    // Back buttons
+    elements.backFromSetupBtn.addEventListener('click', () => {
+        elements.playerSetupModal.style.display = 'none';
+        elements.modeModal.style.display = 'flex';
+    });
+    elements.backFromQuizSetupBtn.addEventListener('click', () => {
+        elements.quizSetupModal.style.display = 'none';
+        elements.modeModal.style.display = 'flex';
+    });
+    elements.backFromMultiplayerBtn.addEventListener('click', () => {
+        elements.multiplayerModal.style.display = 'none';
+        elements.modeModal.style.display = 'flex';
+        if (state.socket && state.socket.connected) {
+            state.socket.disconnect();
+        }
+    });
+    elements.backFromWaitingBtn.addEventListener('click', () => window.location.reload());
+    elements.backFromMultiplayerProficiencyBtn.addEventListener('click', () => window.location.reload());
 
     // --- DRAG AND DROP LOGIC ---
     function initializeDragAndDrop() {
@@ -815,9 +1210,12 @@
         }, { distance: Number.POSITIVE_INFINITY }).element;
     }
 
-    // --- GAME LOGIC FUNCTIONS ---
+    // --- CARD GAME LOGIC ---
     function startGame(isResuming = false) {
+        elements.gameView.style.display = 'block';
+        elements.quizView.style.display = 'none';
         elements.gameContainer.style.display = 'block';
+
         if (state.gameMode === 'multi') {
             elements.multiplayerScoreboard.style.display = 'block';
             updateMultiplayerScoreboard(state.players);
@@ -837,10 +1235,10 @@
         }
         const levelData = levels[state.proficiency][state.currentQuestionIndex];
         state.currentWords = [...levelData.words].sort(() => Math.random() - 0.5);
-        elements.targetGrammar.textContent = levelData.rule.replace(/_/g, ' - ');
+        elements.targetGrammar.textContent = levelData.displayRule;
         elements.checkBtn.disabled = false;
         renderWords();
-        updateUI();
+        updateGameUI();
         startTimer();
     }
 
@@ -873,27 +1271,19 @@
             if (wordPoolHasTiles) {
                 feedback = `Hint: You haven't used all the words yet.`;
             } else if (match.failed()) {
-                const friendlyRule = level.rule.replace(/_/g, ' - ');
-                feedback = `Hint: The word order is incorrect. Remember the target: ${friendlyRule}.`;
+                feedback = `Hint: The word order is incorrect. Remember the target: ${level.displayRule}.`;
             }
             elements.feedbackArea.textContent = feedback;
             elements.feedbackArea.className = 'feedback-incorrect';
             setTimeout(() => { elements.checkBtn.disabled = false; }, 1000);
         }
-        updateUI();
+        updateGameUI();
     }
     
     function nextQuestion() {
         state.currentQuestionIndex++;
         if (state.gameMode === 'single') saveState();
         loadQuestion();
-    }
-    
-    function endGame() {
-        clearInterval(state.timerInterval);
-        elements.finalScore.textContent = state.score;
-        elements.gameOverModal.style.display = 'flex';
-        if (state.gameMode === 'single') localStorage.removeItem('syntaxGameState');
     }
 
     function startTimer() {
@@ -918,7 +1308,83 @@
         sentenceTiles.forEach(tile => elements.wordPool.appendChild(tile));
     }
 
-    // --- PROGRESS SAVING ---
+    // --- QUIZ LOGIC ---
+    function startQuiz() {
+        elements.gameView.style.display = 'none';
+        elements.quizView.style.display = 'block';
+        elements.gameContainer.style.display = 'block';
+
+        state.quizQuestions = quizData[state.quizProficiency];
+        state.currentQuizQuestionIndex = 0;
+        state.quizScore = 0;
+        loadQuizQuestion();
+    }
+
+    function loadQuizQuestion() {
+        if (state.currentQuizQuestionIndex >= state.quizQuestions.length) {
+            endQuiz();
+            return;
+        }
+
+        updateQuizUI();
+        elements.quizFeedbackArea.innerHTML = '';
+        elements.nextQuestionBtn.style.display = 'none';
+        
+        const questionData = state.quizQuestions[state.currentQuizQuestionIndex];
+        elements.quizQuestionText.textContent = questionData.question;
+        elements.quizOptionsArea.innerHTML = '';
+
+        questionData.options.forEach(option => {
+            const button = document.createElement('button');
+            button.className = 'quiz-option-btn';
+            button.textContent = option;
+            button.addEventListener('click', () => selectQuizAnswer(button, questionData.answer));
+            elements.quizOptionsArea.appendChild(button);
+        });
+    }
+
+    function selectQuizAnswer(button, correctAnswer) {
+        document.querySelectorAll('.quiz-option-btn').forEach(btn => btn.disabled = true);
+        
+        if (button.textContent === correctAnswer) {
+            button.classList.add('correct');
+            elements.quizFeedbackArea.textContent = 'Correct!';
+            elements.quizFeedbackArea.className = 'feedback-correct';
+            state.quizScore++;
+        } else {
+            button.classList.add('incorrect');
+            elements.quizFeedbackArea.textContent = `Incorrect. The correct answer is: ${correctAnswer}`;
+            elements.quizFeedbackArea.className = 'feedback-incorrect';
+            // Highlight the correct answer
+            document.querySelectorAll('.quiz-option-btn').forEach(btn => {
+                if(btn.textContent === correctAnswer) btn.classList.add('correct');
+            });
+        }
+        elements.nextQuestionBtn.style.display = 'block';
+    }
+
+    function nextQuizQuestion() {
+        state.currentQuizQuestionIndex++;
+        loadQuizQuestion();
+    }
+
+    function endQuiz() {
+        elements.gameOverTitle.textContent = "Quiz Complete!";
+        elements.gameOverMessage.textContent = `You've answered all questions for the ${state.quizProficiency} level.`;
+        elements.finalScore.textContent = `${state.quizScore} / ${state.quizQuestions.length}`;
+        elements.gameOverModal.style.display = 'flex';
+    }
+
+    // --- GENERAL & UTILITY FUNCTIONS ---
+    function endGame() {
+        clearInterval(state.timerInterval);
+        elements.gameOverTitle.textContent = "Level Complete!";
+        elements.gameOverMessage.textContent = "You've finished all questions for this proficiency level.";
+        elements.finalScore.textContent = state.score;
+        elements.gameOverModal.style.display = 'flex';
+        if (state.gameMode === 'single') localStorage.removeItem('syntaxGameState');
+    }
+
     function saveState() {
         localStorage.setItem('syntaxGameState', JSON.stringify({
             proficiency: state.proficiency,
@@ -936,7 +1402,6 @@
         }
     }
 
-    // --- UI UPDATE FUNCTIONS ---
     function renderWords() {
         elements.wordPool.innerHTML = '';
         elements.sentenceTray.innerHTML = '';
@@ -952,12 +1417,21 @@
         initializeDragAndDrop();
     }
 
-    function updateUI() {
+    function updateGameUI() {
         const capitalizedProficiency = state.proficiency.charAt(0).toUpperCase() + state.proficiency.slice(1);
         elements.levelIndicator.textContent = `Proficiency: ${capitalizedProficiency}`;
         elements.questionIndicator.textContent = `Question: ${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
         const progress = (state.currentQuestionIndex / state.totalQuestions) * 100;
         elements.progressBar.style.width = `${progress}%`;
+    }
+
+    function updateQuizUI() {
+        const capitalizedProficiency = state.quizProficiency.charAt(0).toUpperCase() + state.quizProficiency.slice(1);
+        elements.quizLevelIndicator.textContent = `Difficulty: ${capitalizedProficiency}`;
+        const total = state.quizQuestions.length;
+        elements.quizQuestionIndicator.textContent = `Question: ${state.currentQuizQuestionIndex + 1}/${total}`;
+        const progress = (state.currentQuizQuestionIndex / total) * 100;
+        elements.quizProgressBar.style.width = `${progress}%`;
     }
 
     function updateWaitingRoom(players) {
@@ -967,6 +1441,21 @@
             li.textContent = player.nickname;
             elements.waitingPlayerList.appendChild(li);
         });
+
+        const isHost = players.length > 0 && players[0].id === state.playerData.id;
+
+        if (isHost) {
+            elements.startGameBtn.style.display = 'block';
+            if (players.length >= 2) {
+                elements.startGameBtn.disabled = false;
+                elements.startGameBtn.textContent = 'Start Game';
+            } else {
+                elements.startGameBtn.disabled = true;
+                elements.startGameBtn.textContent = 'Waiting for players...';
+            }
+        } else {
+            elements.startGameBtn.style.display = 'none';
+        }
     }
 
     function updateMultiplayerScoreboard(players) {

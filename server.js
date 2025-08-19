@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -49,7 +50,8 @@ io.on('connection', (socket) => {
         };
         groups[groupCode] = {
             players: [newPlayer],
-            gameStarted: false
+            gameStarted: false,
+            proficiency: 'beginner' // Default proficiency
         };
         socket.join(groupCode);
         console.log(`Group created by ${finalNickname} with code ${groupCode}`);
@@ -99,15 +101,59 @@ io.on('connection', (socket) => {
         io.to(trimmedGroupCode).emit('updatePlayers', group.players);
     });
 
-    socket.on('startGameRequest', (groupCode) => {
-        if (groups[groupCode]) {
-            groups[groupCode].gameStarted = true;
-            console.log(`Start game request received for group ${groupCode}. Starting game.`);
-            io.to(groupCode).emit('gameStarted');
+    socket.on('setProficiency', (data) => {
+        if (!data || !data.groupCode || !data.proficiency) {
+            console.error('Received invalid setProficiency event payload:', data);
+            return;
+        }
+        const { groupCode, proficiency } = data;
+        const group = groups[groupCode];
+        if (group) {
+            // Ensure the person setting proficiency is the host (first player)
+            if (group.players[0] && group.players[0].id === socket.id) {
+                group.proficiency = proficiency;
+                console.log(`Proficiency for group ${groupCode} set to ${proficiency} by host.`);
+            }
         }
     });
 
+    socket.on('startGameRequest', (data) => {
+        if (!data || !data.groupCode) {
+            console.warn(`Invalid startGameRequest payload received: ${data}`);
+            return;
+        }
+        const { groupCode, proficiency } = data;
+        const group = groups[groupCode];
+        
+        // Centralized validation for the request
+        if (!group) {
+            console.warn(`Start game request for non-existent group: ${groupCode}`);
+            return;
+        }
+        if (!group.players[0] || group.players[0].id !== socket.id) {
+            console.warn(`Unauthorized start game request for group: ${groupCode} by socket: ${socket.id}`);
+            return;
+        }
+        if (group.gameStarted) {
+            console.warn(`Game already started for group: ${groupCode}`);
+            return;
+        }
+
+        // Use proficiency from host's request, fallback to group state, then to a default.
+        const finalProficiency = proficiency || group.proficiency || 'beginner';
+        group.proficiency = finalProficiency;
+
+        // Mark game as started and notify players
+        group.gameStarted = true;
+        console.log(`Starting game for group ${groupCode} with proficiency: ${group.proficiency}`);
+        io.to(groupCode).emit('gameStarted', { proficiency: group.proficiency });
+    });
+
     socket.on('updateScore', (playerData) => {
+        if (!playerData || !playerData.groupCode || !playerData.id || typeof playerData.score === 'undefined') {
+            console.error('Invalid updateScore payload received:', playerData);
+            return;
+        }
         const { groupCode, id, score } = playerData;
         const group = groups[groupCode];
         if (group) {
