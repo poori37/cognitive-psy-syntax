@@ -488,6 +488,93 @@
             justify-content: center;
             margin-top: 1rem;
         }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .modal-content {
+                padding: 25px;
+                max-width: 95%;
+            }
+            
+            .modal-content h2 {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            #game-container {
+                padding: 1rem;
+            }
+
+            header {
+                margin-bottom: 1rem;
+                position: static;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            #challenge-display {
+                padding: 0.75rem 1rem;
+                margin-bottom: 1rem;
+            }
+
+            #challenge-display h2 {
+                font-size: 1rem;
+            }
+
+            #timer {
+                position: static;
+                margin-top: 0.5rem;
+                text-align: center;
+                width: 100%;
+                background-color: transparent;
+                padding: 0.5rem 0;
+                font-size: 1.1rem;
+            }
+
+            #sentence-tray, #word-pool {
+                min-height: 70px;
+                padding: 0.75rem;
+                gap: 0.5rem;
+            }
+
+            .word-tile {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            #action-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            .btn {
+                width: 100%;
+            }
+
+            #quiz-options-area {
+                gap: 0.75rem;
+                margin: 1.5rem 0;
+            }
+            #quiz-question-area {
+                padding: 1rem 1.25rem;
+            }
+             #quiz-question-text {
+                font-size: 1.1rem;
+            }
+            .quiz-option-btn {
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1186,11 +1273,14 @@
             container.addEventListener('dragover', e => {
                 e.preventDefault();
                 container.classList.add('drag-over');
-                const afterElement = getDragAfterElement(container, e.clientX, e.clientY);
                 const draggable = document.querySelector('.dragging');
                 if (draggable) {
-                   if (afterElement == null) container.appendChild(draggable);
-                   else container.insertBefore(draggable, afterElement);
+                    const afterElement = getDragAfterElement(container, e.clientX);
+                    if (afterElement == null) {
+                        container.appendChild(draggable);
+                    } else {
+                        container.insertBefore(draggable, afterElement);
+                    }
                 }
             });
             container.addEventListener('dragleave', () => container.classList.remove('drag-over'));
@@ -1198,16 +1288,17 @@
         });
     }
     
-    function getDragAfterElement(container, x, y) {
+    function getDragAfterElement(container, x) {
         const draggableElements = [...container.querySelectorAll('.word-tile:not(.dragging)')];
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
-            const offsetX = x - box.left - box.width / 2;
-            const offsetY = y - box.top - box.height / 2;
-            const distance = Math.sqrt(offsetX*offsetX + offsetY*offsetY);
-            if (distance < closest.distance) return { distance: distance, element: child };
-            else return closest;
-        }, { distance: Number.POSITIVE_INFINITY }).element;
+            const offset = x - box.left - box.width / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
     // --- CARD GAME LOGIC ---
