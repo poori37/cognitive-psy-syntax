@@ -206,19 +206,6 @@
             border-bottom: none;
         }
 
-
-        #change-level-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background-color: var(--bg-light);
-            color: var(--text-light);
-            z-index: 10;
-        }
-        #change-level-btn:hover {
-            background-color: #5a6b87;
-        }
-
         #game-container {
             width: 100%;
             max-width: 800px;
@@ -232,7 +219,7 @@
 
         header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             position: relative;
         }
 
@@ -249,13 +236,28 @@
             margin-top: 0.5rem;
         }
 
+        #challenge-display {
+            background-color: rgba(0,0,0,0.2);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        #challenge-display h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
         #progress-tracker {
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: var(--text-dark);
             font-weight: 600;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
         }
 
         #progress-bar-container {
@@ -273,10 +275,6 @@
             background: linear-gradient(90deg, var(--accent-dark), var(--accent));
             border-radius: 99px;
             transition: width 0.3s ease-in-out;
-        }
-
-        #score-display {
-            font-size: 1.2rem;
         }
 
         #timer {
@@ -300,7 +298,11 @@
             gap: 0.5rem;
             align-items: center;
             margin: 1.5rem 0;
-            transition: border-color 0.3s;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        #sentence-tray.drag-over {
+            border-color: var(--accent);
+            background-color: #3c4a61;
         }
 
         #word-pool {
@@ -311,6 +313,7 @@
             padding: 1rem;
             background-color: var(--bg-dark);
             border-radius: 0.5rem;
+            min-height: 80px;
         }
 
         .word-tile {
@@ -320,7 +323,7 @@
             border-radius: 0.375rem;
             font-weight: 600;
             cursor: grab;
-            transition: background-color 0.3s, transform 0.2s;
+            transition: background-color 0.3s, transform 0.2s, opacity 0.2s;
             user-select: none;
         }
 
@@ -373,8 +376,12 @@
             background-color: var(--accent);
             color: var(--bg-dark);
         }
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background-color: var(--accent-dark);
+        }
+        .btn-primary:disabled {
+             background-color: #555;
+             cursor: not-allowed;
         }
 
         .btn-secondary {
@@ -422,6 +429,7 @@
     </style>
 </head>
 <body>
+    <!-- MODALS -->
     <div id="mode-modal-overlay" class="modal-overlay">
         <div class="modal-content">
             <h2>Welcome to The Syntax Card Game!</h2>
@@ -442,6 +450,10 @@
                 <button class="proficiency-btn" data-level="advanced">Advanced</button>
                 <button class="proficiency-btn" data-level="professional">Professional</button>
             </div>
+            <div id="resume-game-container" style="margin-top: 20px; display: none;">
+                <p>Or</p>
+                <button id="resume-game-btn" class="secondary">Resume Previous Game</button>
+            </div>
         </div>
     </div>
 
@@ -452,8 +464,8 @@
                 <button id="multiplayer-create-tab" class="active">Create Group</button>
                 <button id="multiplayer-join-tab">Join Group</button>
             </div>
-            <input type="text" id="nickname-input" placeholder="Enter your nickname (max 15 chars)">
-            <input type="text" id="group-code-input" placeholder="Enter 3-digit group code" style="display: none;">
+            <input type="text" id="nickname-input" placeholder="Enter your nickname (max 15 chars)" maxlength="15">
+            <input type="text" id="group-code-input" placeholder="Enter 3-digit group code" style="display: none;" maxlength="3">
             <div id="multiplayer-feedback">Connecting to server...</div>
             <div class="button-group">
                 <button id="join-group-btn" class="secondary" disabled style="display: none;">Join Group</button>
@@ -469,24 +481,37 @@
             <div id="group-code-display">Group Code: <strong>...</strong></div>
             <h3>Players Joined:</h3>
             <ul id="waiting-room-player-list">
-                <!-- Player names will be injected here -->
             </ul>
             <button id="start-game-btn">Start Game</button>
         </div>
     </div>
 
+    <div id="game-over-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="game-over-title">Level Complete!</h2>
+            <p id="game-over-message">You've finished all questions for this proficiency level.</p>
+            <h3>Final Score: <span id="final-score">0</span></h3>
+            <div class="button-group">
+                <button id="play-again-btn">Play Again</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- GAME CONTAINER -->
     <div id="game-container">
         <header>
             <h1 id="game-title">The Syntax Card Game</h1>
-            <p id="game-subtitle">Arrange the words to form a correct sentence.</p>
+            <p id="game-subtitle">Arrange the words to match the target sentence structure.</p>
             <div id="timer">Time: 50</div>
         </header>
 
         <main>
+            <div id="challenge-display">
+                <h2>TARGET: <span id="target-grammar"></span></h2>
+            </div>
             <div id="progress-tracker">
-                <div id="level-indicator">Level: 1/50</div>
-                <div id="question-indicator">Question: 1/30</div>
+                <div id="level-indicator">Proficiency: Beginner</div>
+                <div id="question-indicator">Question: 1/8</div>
             </div>
             <div id="progress-bar-container">
                 <div id="progress-bar"></div>
@@ -509,20 +534,64 @@
             </div>
         </main>
     </div>
+
+<script type="ohm-js" id="grammar">
+  SyntaxCardGame {
+    // Top-level rules correspond to level targets
+    // Noun, Pronoun, Verb, Det(erminer), Adj(ective), Adv(erb), 
+    // Prep(osition), Conj(unction), Punc(tuation), Comma
+
+    // Beginner
+    Det_N_V_Punc = Det Noun Verb Punc
+    Pronoun_V_Punc = Pronoun Verb Punc
+    Pronoun_V_Det_N_Punc = Pronoun Verb Det Noun Punc
+    N_V_Adj_Punc = Noun Verb Adj Punc
+    Pronoun_V_Adv_Punc = Pronoun Verb Adv Punc
+    Det_Adj_N_V_Punc = Det Adj Noun Verb Punc
+    Pronoun_V_Det_Adj_N_Punc = Pronoun Verb Det Adj Noun Punc
+    Pronoun_V_N_Punc = Pronoun Verb Noun Punc
+
+    // Advanced
+    Pronoun_V_Ving_Det_Adj_N_Punc = Pronoun Verb Ving Det Adj Noun Punc
+    Pronoun_V_Prep_Det_N_Punc = Pronoun Verb Prep Det Noun Punc
+    Poss_N_V_Det_Adj_N_Punc = Poss Noun Verb Det Adj Noun Punc
+    Det_Adj_N_V_Adv_Punc = Det Adj Noun Verb Adv Punc
+    Pronoun_V_Adj_Conj_Pronoun_V_Adj_Punc = Pronoun Verb Adj Conj Pronoun Verb Adj Punc
+
+    // Professional
+    Det_Adj_Adj_N_V_Prep_Det_Adj_N_Punc = Det Adj Adj Noun Verb Prep Det Adj Noun Punc
+    Pronoun_V_Adv_Prep_Poss_N_Punc = Pronoun Verb Noun Adv Prep Poss Noun Punc
+    Conj_Clause_Clause_Punc = Prep Det Noun Comma Pronoun Verb Prep Verb Prep Det Noun Punc
+    Sentence_With_Comma = Det_Noun_Clause Comma Conj Noun_Clause Punc
+    Det_Noun_Clause = Det Noun Verb Adj
+    Noun_Clause = Det Noun Verb Adv Adj
+    
+    // Parts of Speech Definitions (terminals)
+    Noun = "Noun"
+    Pronoun = "Pronoun"
+    Verb = "Verb"
+    Ving = "Ving" // Gerund/Participle
+    Det = "Det"
+    Adj = "Adj"
+    Adv = "Adv"
+    Prep = "Prep"
+    Conj = "Conj"
+    Poss = "Poss"
+    Punc = "Punc"
+    Comma = "Comma"
+  }
+</script>
     
 <script type="module">
     // --- STATE MANAGEMENT ---
     const state = {
         gameMode: 'single', // 'single' or 'multi'
-        proficiency: 'beginner', // 'beginner', 'advanced', 'professional'
-        currentLevel: 1,
-        currentQuestion: 1,
-        totalLevels: 50,
-        totalQuestionsPerLevel: 30,
+        proficiency: 'beginner',
+        currentQuestionIndex: 0,
+        totalQuestions: 0,
         score: 0,
         timer: 50,
         timerInterval: null,
-        currentSentence: '',
         currentWords: [],
         playerData: { id: null, nickname: '', score: 0 },
         groupCode: null,
@@ -533,6 +602,7 @@
     // --- DOM ELEMENTS ---
     const elements = {
         gameContainer: document.getElementById('game-container'),
+        targetGrammar: document.getElementById('target-grammar'),
         levelIndicator: document.getElementById('level-indicator'),
         questionIndicator: document.getElementById('question-indicator'),
         progressBar: document.getElementById('progress-bar'),
@@ -542,12 +612,13 @@
         checkBtn: document.getElementById('check-btn'),
         resetBtn: document.getElementById('reset-btn'),
         timerDisplay: document.getElementById('timer'),
-        scoreDisplay: document.getElementById('score-display'),
         modeModal: document.getElementById('mode-modal-overlay'),
         singlePlayerBtn: document.getElementById('single-player-mode-btn'),
         multiplayerBtn: document.getElementById('multiplayer-mode-btn'),
         playerSetupModal: document.getElementById('player-setup-modal-overlay'),
         proficiencyBtns: document.querySelectorAll('.proficiency-btn'),
+        resumeGameContainer: document.getElementById('resume-game-container'),
+        resumeGameBtn: document.getElementById('resume-game-btn'),
         multiplayerModal: document.getElementById('multiplayer-modal-overlay'),
         nicknameInput: document.getElementById('nickname-input'),
         groupCodeInput: document.getElementById('group-code-input'),
@@ -562,33 +633,41 @@
         playerScoresList: document.getElementById('player-scores'),
         multiplayerCreateTab: document.getElementById('multiplayer-create-tab'),
         multiplayerJoinTab: document.getElementById('multiplayer-join-tab'),
+        gameOverModal: document.getElementById('game-over-modal-overlay'),
+        gameOverTitle: document.getElementById('game-over-title'),
+        gameOverMessage: document.getElementById('game-over-message'),
+        finalScore: document.getElementById('final-score'),
+        playAgainBtn: document.getElementById('play-again-btn'),
     };
 
     // --- OHM.JS GRAMMAR ---
-    const grammarSource = `
-        SentenceGrammar {
-            Sentence = Subject Verb Object Punctuation
-            Subject = Noun | Pronoun
-            Verb = "runs" | "jumps" | "eats" | "sleeps" | "is" | "are" | "was" | "were" | "has" | "have" | "likes" | "sees"
-            Object = Noun | Pronoun
-            Noun = "dog" | "cat" | "man" | "woman" | "boy" | "girl" | "apple" | "ball"
-            Pronoun = "he" | "she" | "it" | "they" | "we" | "i" | "you"
-            Punctuation = "." | "?" | "!"
-        }
-    `;
-    const grammar = ohm.grammar(grammarSource);
+    const grammar = ohm.grammar(document.getElementById('grammar').textContent);
 
     // --- GAME LEVELS ---
     const levels = {
         beginner: [
-            { sentence: "the dog runs.", words: ["dog", "the", "runs", "."] },
-            { sentence: "she sleeps.", words: ["she", "sleeps", "."] },
+            { rule: "Det_N_V_Punc", words: [{word: "The", type: "Det"}, {word: "dog", type: "Noun"}, {word: "runs", type: "Verb"}, {word: ".", type: "Punc"}] },
+            { rule: "Pronoun_V_Punc", words: [{word: "She", type: "Pronoun"}, {word: "sleeps", type: "Verb"}, {word: ".", type: "Punc"}] },
+            { rule: "Pronoun_V_Det_N_Punc", words: [{word: "He", type: "Pronoun"}, {word: "eats", type: "Verb"}, {word: "an", type: "Det"}, {word: "apple", type: "Noun"}, {word: ".", type: "Punc"}] },
+            { rule: "N_V_Adj_Punc", words: [{word: "You", type: "Noun"}, {word: "are", type: "Verb"}, {word: "smart", type: "Adj"}, {word: ".", type: "Punc"}]},
+            { rule: "Pronoun_V_Adv_Punc", words: [{word: "Birds", type: "Pronoun"}, {word: "fly", type: "Verb"}, {word: "high", type: "Adv"}, {word: ".", type: "Punc"}]},
+            { rule: "Det_Adj_N_V_Punc", words: [{word: "A", type: "Det"}, {word: "big", type: "Adj"}, {word: "cat", type: "Noun"}, {word: "jumps", type: "Verb"}, {word: ".", type: "Punc"}] },
+            { rule: "Pronoun_V_Det_Adj_N_Punc", words: [{word: "I", type: "Pronoun"}, {word: "see", type: "Verb"}, {word: "a", type: "Det"}, {word: "big", type: "Adj"}, {word: "ball", type: "Noun"}, {word: ".", type: "Punc"}]},
+            { rule: "Pronoun_V_N_Punc", words: [{word: "We", type: "Pronoun"}, {word: "play", type: "Verb"}, {word: "games", type: "Noun"}, {word: ".", type: "Punc"}]},
         ],
         advanced: [
-            { sentence: "the cat sees a ball.", words: ["a", "sees", "cat", "the", "ball", "."] },
+            { rule: "Pronoun_V_Ving_Det_Adj_N_Punc", words: [{word: "She", type: "Pronoun"}, {word: "is", type: "Verb"}, {word: "reading", type: "Ving"}, {word: "a", type: "Det"}, {word: "good", type: "Adj"}, {word: "book", type: "Noun"}, {word: ".", type: "Punc"}] },
+            { rule: "Pronoun_V_Prep_Det_N_Punc", words: [{word: "He", type: "Pronoun"}, {word: "walked", type: "Verb"}, {word: "to", type: "Prep"}, {word: "the", type: "Det"}, {word: "store", type: "Noun"}, {word: ".", type: "Punc"}] },
+            { rule: "Poss_N_V_Det_Adj_N_Punc", words: [{word: "My", type: "Poss"}, {word: "friend", type: "Noun"}, {word: "has", type: "Verb"}, {word: "a", type: "Det"}, {word: "new", type: "Adj"}, {word: "car", type: "Noun"}, {word: ".", type: "Punc"}] },
+            { rule: "Det_Adj_N_V_Adv_Punc", words: [{word: "The", type: "Det"}, {word: "little", type: "Adj"}, {word: "dog", type: "Noun"}, {word: "barks", type: "Verb"}, {word: "loudly", type: "Adv"}, {word: ".", type: "Punc"}] },
+            { rule: "Pronoun_V_Det_Adj_N_Punc", words: [{word: "She", type: "Pronoun"}, {word: "wrote", type: "Verb"}, {word: "a", type: "Det"}, {word: "long", type: "Adj"}, {word: "letter", type: "Noun"}, {word: ".", type: "Punc"}] },
+            { rule: "Pronoun_V_Adj_Conj_Pronoun_V_Adj_Punc", words: [{word:"I", type: "Pronoun"}, {word:"was", type: "Verb"}, {word:"tired", type: "Adj"}, {word:"but", type: "Conj"}, {word:"I", type: "Pronoun"}, {word:"was", type: "Verb"}, {word:"happy", type: "Adj"}, {word:".", type: "Punc"}]}
         ],
         professional: [
-            { sentence: "the quick brown fox jumps over the lazy dog.", words: ["the", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog", "."]},
+            { rule: "Det_Adj_Adj_N_V_Prep_Det_Adj_N_Punc", words: [{word: "The", type: "Det"}, {word: "quick", type: "Adj"}, {word: "brown", type: "Adj"}, {word: "fox", type: "Noun"}, {word: "jumps", type: "Verb"}, {word: "over", type: "Prep"}, {word: "the", type: "Det"}, {word: "lazy", type: "Adj"}, {word: "dog", type: "Noun"}, {word: ".", type: "Punc"}] },
+            { rule: "Pronoun_V_Adv_Prep_Poss_N_Punc", words: [{word:"She", type: "Pronoun"}, {word:"organized", type: "Verb"}, {word:"files", type: "Noun"}, {word:"meticulously", type: "Adv"}, {word:"on", type: "Prep"}, {word:"her", type: "Poss"}, {word:"computer", type: "Noun"}, {word:".", type: "Punc"}]},
+            { rule: "Conj_Clause_Clause_Punc", words: [{word:"Despite", type: "Prep"}, {word:"the", type: "Det"}, {word:"rain", type: "Noun"}, {word:",", type: "Comma"}, {word:"we", type: "Pronoun"}, {word:"decided", type: "Verb"}, {word:"to", type: "Prep"}, {word:"go", type: "Verb"}, {word:"for", type: "Prep"}, {word:"a", type: "Det"}, {word:"walk", type: "Noun"}, {word:".", type: "Punc"}]},
+            { rule: "Sentence_With_Comma", words: [{word: "The", type: "Det"}, {word: "concert", type: "Noun"}, {word: "was", type: "Verb"}, {word: "fantastic", type: "Adj"}, {word: ",", type: "Comma"}, {word: "but", type: "Conj"}, {word: "the", type: "Det"}, {word: "tickets", type: "Noun"}, {word: "were", type: "Verb"}, {word: "quite", type: "Adv"}, {word: "expensive", type: "Adj"}, {word: ".", type: "Punc"}]}
         ]
     };
 
@@ -597,12 +676,7 @@
 
     function connectToServer() {
         if (state.socket && state.socket.connected) return;
-
-        // Use default transport negotiation (polling -> websocket) for better reliability
-        state.socket = io(SERVER_URL, {
-            reconnectionAttempts: 5,
-            timeout: 60000, 
-        });
+        state.socket = io(SERVER_URL, { reconnectionAttempts: 5, timeout: 10000 });
 
         elements.multiplayerFeedback.textContent = 'Connecting to server...';
         elements.joinGroupBtn.disabled = true;
@@ -616,16 +690,8 @@
             elements.createGroupBtn.disabled = false;
         });
 
-        state.socket.on('connect_error', (err) => {
-            console.error('Connection failed:', err.message);
-            elements.multiplayerFeedback.textContent = `Connection failed. Retrying...`;
-        });
-
-        state.socket.on('disconnect', () => {
-            console.log('Disconnected from server.');
-            elements.multiplayerFeedback.textContent = 'Connection lost. Reconnecting...';
-        });
-
+        state.socket.on('connect_error', () => elements.multiplayerFeedback.textContent = `Connection failed. Please check your network.`);
+        state.socket.on('disconnect', () => elements.multiplayerFeedback.textContent = 'Connection lost.');
         state.socket.on('groupCreated', ({ groupCode, players }) => {
             state.groupCode = groupCode;
             state.players = players;
@@ -634,50 +700,39 @@
             elements.groupCodeDisplay.textContent = groupCode;
             updateWaitingRoom(players);
         });
-
         state.socket.on('joinSuccess', ({ groupCode }) => {
             state.groupCode = groupCode;
             elements.multiplayerModal.style.display = 'none';
             elements.waitingRoomModal.style.display = 'flex';
             elements.groupCodeDisplay.textContent = groupCode;
         });
-        
-        state.socket.on('joinError', (message) => {
-            elements.multiplayerFeedback.textContent = message;
-        });
-
+        state.socket.on('joinError', (message) => elements.multiplayerFeedback.textContent = message);
         state.socket.on('updatePlayers', (players) => {
             state.players = players;
             updateWaitingRoom(players);
-            if (state.gameMode === 'multi') {
-                updateMultiplayerScoreboard(players);
-            }
+            if (state.gameMode === 'multi') updateMultiplayerScoreboard(players);
         });
-
         state.socket.on('gameStarted', () => {
             elements.waitingRoomModal.style.display = 'none';
             startGame();
         });
     }
 
-
     // --- UI & EVENT LISTENERS ---
-    
-    // Mode Selection
     elements.singlePlayerBtn.addEventListener('click', () => {
         state.gameMode = 'single';
         elements.modeModal.style.display = 'none';
         elements.playerSetupModal.style.display = 'flex';
+        if (localStorage.getItem('syntaxGameState')) {
+            elements.resumeGameContainer.style.display = 'block';
+        }
     });
-    
     elements.multiplayerBtn.addEventListener('click', () => {
         state.gameMode = 'multi';
         elements.modeModal.style.display = 'none';
         elements.multiplayerModal.style.display = 'flex';
         connectToServer();
     });
-
-    // Proficiency Selection
     elements.proficiencyBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             state.proficiency = btn.dataset.level;
@@ -685,122 +740,105 @@
             startGame();
         });
     });
-
-    // Multiplayer Setup
+    elements.resumeGameBtn.addEventListener('click', () => {
+        loadState();
+        elements.playerSetupModal.style.display = 'none';
+        startGame(true); // Pass flag to indicate resuming
+    });
+    elements.playAgainBtn.addEventListener('click', () => window.location.reload());
     elements.multiplayerCreateTab.addEventListener('click', () => {
         elements.multiplayerCreateTab.classList.add('active');
         elements.multiplayerJoinTab.classList.remove('active');
-        
         elements.groupCodeInput.style.display = 'none';
         elements.createGroupBtn.style.display = 'block';
         elements.joinGroupBtn.style.display = 'none';
     });
-
     elements.multiplayerJoinTab.addEventListener('click', () => {
         elements.multiplayerJoinTab.classList.add('active');
         elements.multiplayerCreateTab.classList.remove('active');
-
         elements.groupCodeInput.style.display = 'block';
         elements.createGroupBtn.style.display = 'none';
         elements.joinGroupBtn.style.display = 'block';
     });
-
     elements.createGroupBtn.addEventListener('click', () => {
         const nickname = elements.nicknameInput.value;
-        if (!nickname.trim()) {
-            elements.multiplayerFeedback.textContent = 'Please enter a nickname.';
-            return;
-        }
+        if (!nickname.trim()) return elements.multiplayerFeedback.textContent = 'Please enter a nickname.';
         state.playerData.nickname = nickname.slice(0, 15);
         elements.multiplayerFeedback.textContent = '';
         state.socket.emit('createGroup', state.playerData);
     });
-
     elements.joinGroupBtn.addEventListener('click', () => {
         const nickname = elements.nicknameInput.value;
         const groupCode = elements.groupCodeInput.value;
-        if (!nickname.trim() || !groupCode.trim()) {
-            elements.multiplayerFeedback.textContent = 'Nickname and group code are required.';
-            return;
-        }
+        if (!nickname.trim() || !groupCode.trim()) return elements.multiplayerFeedback.textContent = 'Nickname and group code are required.';
         state.playerData.nickname = nickname.slice(0, 15);
         elements.multiplayerFeedback.textContent = '';
         state.socket.emit('joinGroup', { playerData: state.playerData, groupCode });
     });
-
-    // Waiting Room
     elements.startGameBtn.addEventListener('click', () => {
-        if(state.socket && state.groupCode) {
-            state.socket.emit('startGameRequest', state.groupCode);
-        }
+        if(state.socket && state.groupCode) state.socket.emit('startGameRequest', state.groupCode);
     });
-
-    // In-Game Actions
     elements.checkBtn.addEventListener('click', checkSentence);
     elements.resetBtn.addEventListener('click', resetWordPositions);
 
     // --- DRAG AND DROP LOGIC ---
     function initializeDragAndDrop() {
-        const draggables = document.querySelectorAll('.word-tile');
-        const droppables = document.querySelectorAll('.droppable');
-
-        draggables.forEach(draggable => {
-            draggable.addEventListener('dragstart', () => {
-                draggable.classList.add('dragging');
-            });
-
-            draggable.addEventListener('dragend', () => {
-                draggable.classList.remove('dragging');
-            });
+        document.querySelectorAll('.word-tile').forEach(draggable => {
+            draggable.addEventListener('dragstart', () => draggable.classList.add('dragging'));
+            draggable.addEventListener('dragend', () => draggable.classList.remove('dragging'));
         });
-
-        droppables.forEach(container => {
+        document.querySelectorAll('.droppable').forEach(container => {
             container.addEventListener('dragover', e => {
                 e.preventDefault();
-                const afterElement = getDragAfterElement(container, e.clientY);
+                container.classList.add('drag-over');
+                const afterElement = getDragAfterElement(container, e.clientX, e.clientY);
                 const draggable = document.querySelector('.dragging');
                 if (draggable) {
-                   if (afterElement == null) {
-                        container.appendChild(draggable);
-                    } else {
-                        container.insertBefore(draggable, afterElement);
-                    }
+                   if (afterElement == null) container.appendChild(draggable);
+                   else container.insertBefore(draggable, afterElement);
                 }
             });
+            container.addEventListener('dragleave', () => container.classList.remove('drag-over'));
+            container.addEventListener('drop', () => container.classList.remove('drag-over'));
         });
     }
     
-    function getDragAfterElement(container, y) {
+    function getDragAfterElement(container, x, y) {
         const draggableElements = [...container.querySelectorAll('.word-tile:not(.dragging)')];
-
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
+            const offsetX = x - box.left - box.width / 2;
+            const offsetY = y - box.top - box.height / 2;
+            const distance = Math.sqrt(offsetX*offsetX + offsetY*offsetY);
+            if (distance < closest.distance) return { distance: distance, element: child };
+            else return closest;
+        }, { distance: Number.POSITIVE_INFINITY }).element;
     }
 
-
     // --- GAME LOGIC FUNCTIONS ---
-    function startGame() {
+    function startGame(isResuming = false) {
         elements.gameContainer.style.display = 'block';
         if (state.gameMode === 'multi') {
             elements.multiplayerScoreboard.style.display = 'block';
             updateMultiplayerScoreboard(state.players);
         }
+        state.totalQuestions = levels[state.proficiency].length;
+        if (!isResuming) {
+            state.currentQuestionIndex = 0;
+            state.score = 0;
+        }
         loadQuestion();
     }
     
     function loadQuestion() {
-        // Simple logic for now, will expand to 50 levels / 30 questions
-        const levelData = levels[state.proficiency][0]; // Simplified
-        state.currentSentence = levelData.sentence;
+        if (state.currentQuestionIndex >= state.totalQuestions) {
+            endGame();
+            return;
+        }
+        const levelData = levels[state.proficiency][state.currentQuestionIndex];
         state.currentWords = [...levelData.words].sort(() => Math.random() - 0.5);
-
+        elements.targetGrammar.textContent = levelData.rule.replace(/_/g, ' - ');
+        elements.checkBtn.disabled = false;
         renderWords();
         updateUI();
         startTimer();
@@ -808,58 +846,58 @@
 
     function checkSentence() {
         clearInterval(state.timerInterval);
-        const sentenceTrayWords = Array.from(elements.sentenceTray.querySelectorAll('.word-tile'));
-        const userSentence = sentenceTrayWords.map(tile => tile.textContent).join(' ').toLowerCase();
+        elements.checkBtn.disabled = true;
+        const sentenceTiles = Array.from(elements.sentenceTray.querySelectorAll('.word-tile'));
+        const wordPoolHasTiles = elements.wordPool.children.length > 0;
 
-        if (userSentence === state.currentSentence.toLowerCase()) {
+        if (sentenceTiles.length === 0) {
+            elements.checkBtn.disabled = false;
+            return;
+        }
+
+        const level = levels[state.proficiency][state.currentQuestionIndex];
+        const typeSequence = sentenceTiles.map(tile => tile.dataset.type).join(' ');
+        const match = grammar.match(typeSequence, level.rule);
+
+        if (match.succeeded() && !wordPoolHasTiles) {
             elements.feedbackArea.textContent = "Correct!";
             elements.feedbackArea.className = 'feedback-correct';
-            state.score += state.timer; // Score is based on remaining time
+            state.score += state.timer;
             if(state.gameMode === 'multi' && state.socket) {
                 state.playerData.score = state.score;
-                // Send score update with group code for server to identify the group
-                state.socket.emit('updateScore', {
-                    id: state.playerData.id,
-                    score: state.playerData.score,
-                    groupCode: state.groupCode
-                });
+                state.socket.emit('updateScore', { id: state.playerData.id, score: state.playerData.score, groupCode: state.groupCode });
             }
-            // Move to next question after a delay
             setTimeout(nextQuestion, 1500);
         } else {
-            const match = grammar.match(userSentence);
-            let feedback = "Incorrect. Try again!";
-            if(match.failed()) {
-                const failure = match.message;
-                const expected = failure.match(/Expected (.+)/);
-                 if (expected) {
-                    feedback = `Hint: Something is missing or in the wrong place. The grammar expected ${expected[1].replace(/_/g, ' ')}.`;
-                 }
+            let feedback = "That's not quite right. Try again!";
+            if (wordPoolHasTiles) {
+                feedback = `Hint: You haven't used all the words yet.`;
+            } else if (match.failed()) {
+                const friendlyRule = level.rule.replace(/_/g, ' - ');
+                feedback = `Hint: The word order is incorrect. Remember the target: ${friendlyRule}.`;
             }
             elements.feedbackArea.textContent = feedback;
             elements.feedbackArea.className = 'feedback-incorrect';
+            setTimeout(() => { elements.checkBtn.disabled = false; }, 1000);
         }
         updateUI();
     }
     
     function nextQuestion() {
-        if (state.currentQuestion < state.totalQuestionsPerLevel) {
-            state.currentQuestion++;
-        } else {
-            state.currentQuestion = 1;
-            if(state.currentLevel < state.totalLevels) {
-                state.currentLevel++;
-            } else {
-                // Game Over
-                elements.feedbackArea.textContent = `Congratulations! You've completed all levels! Final Score: ${state.score}`;
-                return;
-            }
-        }
+        state.currentQuestionIndex++;
+        if (state.gameMode === 'single') saveState();
         loadQuestion();
+    }
+    
+    function endGame() {
+        clearInterval(state.timerInterval);
+        elements.finalScore.textContent = state.score;
+        elements.gameOverModal.style.display = 'flex';
+        if (state.gameMode === 'single') localStorage.removeItem('syntaxGameState');
     }
 
     function startTimer() {
-        state.timer = 50; // Set timer to 50 seconds
+        state.timer = 50;
         elements.timerDisplay.textContent = `Time: ${state.timer}`;
         clearInterval(state.timerInterval);
         state.timerInterval = setInterval(() => {
@@ -867,18 +905,35 @@
             elements.timerDisplay.textContent = `Time: ${state.timer}`;
             if (state.timer <= 0) {
                 clearInterval(state.timerInterval);
-                elements.feedbackArea.textContent = "Time's up! No points awarded. Moving on...";
+                elements.feedbackArea.textContent = "Time's up! No points awarded.";
                 elements.feedbackArea.className = 'feedback-incorrect';
-                // Automatically move to the next question
-                setTimeout(nextQuestion, 1500);
+                elements.checkBtn.disabled = true;
+                setTimeout(nextQuestion, 2000);
             }
         }, 1000);
     }
     
     function resetWordPositions() {
-        // Move all tiles from sentence tray back to word pool
         const sentenceTiles = elements.sentenceTray.querySelectorAll('.word-tile');
         sentenceTiles.forEach(tile => elements.wordPool.appendChild(tile));
+    }
+
+    // --- PROGRESS SAVING ---
+    function saveState() {
+        localStorage.setItem('syntaxGameState', JSON.stringify({
+            proficiency: state.proficiency,
+            currentQuestionIndex: state.currentQuestionIndex,
+            score: state.score,
+        }));
+    }
+
+    function loadState() {
+        const savedState = JSON.parse(localStorage.getItem('syntaxGameState'));
+        if (savedState) {
+            state.proficiency = savedState.proficiency;
+            state.currentQuestionIndex = savedState.currentQuestionIndex;
+            state.score = savedState.score;
+        }
     }
 
     // --- UI UPDATE FUNCTIONS ---
@@ -886,10 +941,11 @@
         elements.wordPool.innerHTML = '';
         elements.sentenceTray.innerHTML = '';
         elements.feedbackArea.innerHTML = '';
-        state.currentWords.forEach(word => {
+        state.currentWords.forEach(wordData => {
             const tile = document.createElement('div');
             tile.className = 'word-tile';
-            tile.textContent = word;
+            tile.textContent = wordData.word;
+            tile.dataset.type = wordData.type;
             tile.draggable = true;
             elements.wordPool.appendChild(tile);
         });
@@ -897,11 +953,11 @@
     }
 
     function updateUI() {
-        elements.levelIndicator.textContent = `Level: ${state.currentLevel}/${state.totalLevels}`;
-        elements.questionIndicator.textContent = `Question: ${state.currentQuestion}/${state.totalQuestionsPerLevel}`;
-        const progress = (state.currentQuestion / state.totalQuestionsPerLevel) * 100;
+        const capitalizedProficiency = state.proficiency.charAt(0).toUpperCase() + state.proficiency.slice(1);
+        elements.levelIndicator.textContent = `Proficiency: ${capitalizedProficiency}`;
+        elements.questionIndicator.textContent = `Question: ${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
+        const progress = (state.currentQuestionIndex / state.totalQuestions) * 100;
         elements.progressBar.style.width = `${progress}%`;
-        // In single player, a score display could be added to the header
     }
 
     function updateWaitingRoom(players) {
