@@ -936,10 +936,8 @@ function resumeGame() {
 
 // --- MULTIPLAYER LOGIC ---
 function initializeSocket() {
-    // Connect to the local server, prioritizing websockets
-    state.socket = io({
-        transports: ['websocket']
-    }); 
+    // Connect to the local server, allowing fallback to long-polling
+    state.socket = io(); 
     elements.multiplayerFeedback.textContent = 'Connecting to server...';
 
     state.socket.on('connect', () => {
