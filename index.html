@@ -1,10 +1,12 @@
 <script type="importmap">
 {
   "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.1.1/client",
+    "react/jsx-runtime": "https://aistudiocdn.com/react@^19.1.1/jsx-runtime",
     "react": "https://aistudiocdn.com/react@^19.1.1",
-    "socket.io-client": "https://aistudiocdn.com/socket.io-client@^4.8.1"
+    "socket.io-client": "https://aistudiocdn.com/socket.io-client@^4.8.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
   }
 }
 </script>
@@ -216,4 +218,302 @@
             background-color: var(--bg-medium);
             border-radius: 1rem;
             padding: 2rem;
-            box-
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        #game-container header {
+            text-align: center;
+            position: relative;
+        }
+        #game-container header h1 {
+            margin: 0 0 0.5rem 0;
+        }
+        #game-container header p {
+            margin: 0;
+            color: var(--text-dark);
+        }
+        .menu-btn {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--accent-dark);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+        }
+        .btn-secondary:hover {
+            background-color: #5a6b87;
+        }
+
+        #timer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: var(--bg-light);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        .progress-tracker {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 10px;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        #challenge-display {
+            background-color: var(--bg-dark);
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+        #challenge-display h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+        }
+        #challenge-display span {
+            color: var(--accent);
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+        
+        #typing-challenge-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #typing-prompt-area, #typing-word-set-area {
+            background: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 5px;
+        }
+        #typing-prompt-area h3, #typing-word-set-area h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--accent);
+        }
+        #typing-prompt-area p, #typing-word-set-area p {
+            margin: 0;
+            font-size: 1rem;
+        }
+        #typing-word-set-area p {
+            color: var(--text-dark);
+            font-style: italic;
+        }
+        #typing-input {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 5px;
+            border: 2px solid var(--bg-light);
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-family: 'Poppins', sans-serif;
+            resize: vertical;
+        }
+
+        .droppable {
+            padding: 1rem;
+            border-radius: 5px;
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .sentence-tray {
+            background-color: var(--bg-dark);
+            border: 2px dashed var(--bg-light);
+        }
+        .word-pool {
+            background-color: transparent;
+            border: 2px solid transparent;
+        }
+        .word-tile {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .word-tile:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .feedback-area {
+            min-height: 24px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .feedback-correct { color: var(--success); }
+        .feedback-incorrect { color: var(--error); }
+        
+        #action-buttons, #quiz-action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        #multiplayer-scoreboard {
+            margin-top: 1rem;
+            background: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 5px;
+        }
+        #multiplayer-scoreboard h3 {
+            margin-top: 0;
+            text-align: center;
+            color: var(--accent);
+        }
+        #player-scores {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #player-scores li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--bg-light);
+            font-weight: 600;
+        }
+        #player-scores li:last-child { border-bottom: none; }
+
+        /* Quiz Specific Styles */
+        #quiz-question-area {
+            background-color: var(--bg-dark);
+            padding: 2rem;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        #quiz-question-text {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        #quiz-options-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .quiz-option-btn {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .quiz-option-btn:not(:disabled):hover {
+            background-color: #5a6b87;
+        }
+        .quiz-option-btn.correct { background-color: var(--success); color: var(--bg-dark); }
+        .quiz-option-btn.incorrect { background-color: var(--error); color: var(--bg-dark); }
+        .quiz-option-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+
+        #quiz-feedback-area {
+            min-height: 24px;
+            margin: 1.5rem 0;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        #final-score {
+            color: var(--accent);
+        }
+
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script id="grammar" type="text/ohm-js">
+    Sentence {
+      // Easy
+      Determiner_Noun_Verb_Punctuation = Determiner Noun Verb Punctuation
+      Pronoun_Verb_Determiner_Noun_Punctuation = Pronoun Verb Determiner Noun Punctuation
+      Pronoun_Verb_Adjective_Punctuation = Pronoun Verb Adjective Punctuation
+      Noun_Verb_Punctuation = Noun Verb Punctuation
+      Determiner_Noun_Verb_Determiner_Noun_Punctuation = Determiner Noun Verb Determiner Noun Punctuation
+      Pronoun_Verb_Adjective_Noun_Punctuation = Pronoun Verb Adjective Noun Punctuation
+
+      // Medium
+      Determiner_Noun_Verb_Determiner_Noun_Conjunction_Verb_Adverb_Punctuation = Determiner Noun Verb Determiner Noun Conjunction Verb Adverb Punctuation
+      Pronoun_Verb_Preposition_Determiner_Noun_Preposition_Determiner_Noun_Preposition_Noun_Punctuation = Pronoun Verb Preposition Determiner Noun Preposition Determiner Noun Preposition Noun Punctuation
+      Pronoun_Verb_Determiner_Noun_Comma_Conjunction_Pronoun_Verb_Adjective_Preposition_Determiner_Noun_Punctuation = Pronoun Verb Determiner Noun Comma Conjunction Pronoun Verb Adjective Preposition Determiner Noun Punctuation
+      Determiner_Noun_Verb_Conjunction_Determiner_Noun_Verb_Adjective_Punctuation = Determiner Noun Verb Conjunction Determiner Noun Verb Adjective Punctuation
+      Conjunction_Pronoun_Verb_Ving_Determiner_Adjective_Noun_Comma_Pronoun_Verb_Preposition_Verb_Punctuation = Conjunction Pronoun Verb Ving Determiner Adjective Noun Comma Pronoun Verb Preposition Verb Punctuation
+      Determiner_Noun_Comma_Pronoun_Verb_Verb_Preposition_Noun_Comma_Verb_Determiner_Adjective_Noun_Punctuation = Determiner Noun Comma Pronoun Verb Verb Preposition Noun Comma Verb Determiner Adjective Noun Punctuation
+      Determiner_Adjective_Comma_Adjective_Noun_Verb_Preposition_Determiner_Noun_Punctuation = Determiner Adjective Comma Adjective Noun Verb Preposition Determiner Noun Punctuation
+      Determiner_Noun_Verb_Adverb_Verb_Determiner_Noun_Conjunction_Pronoun_Verb_Determiner_Noun_Punctuation = Determiner Noun Verb Adverb Verb Determiner Noun Conjunction Pronoun Verb Determiner Noun Punctuation
+      Pronoun_Verb_Ving_Preposition_Determiner_Noun_Punctuation = Pronoun Verb Ving Preposition Determiner Noun Punctuation
+      Determiner_Noun_Verb_Preposition_Determiner_Noun_Punctuation = Determiner Noun Verb Preposition Determiner Noun Punctuation
+      
+      // Terminals
+      Determiner = "Determiner"
+      Noun = "Noun"
+      Verb = "Verb"
+      Punctuation = "Punctuation"
+      Pronoun = "Pronoun"
+      Adjective = "Adjective"
+      Conjunction = "Conjunction"
+      Adverb = "Adverb"
+      Preposition = "Preposition"
+      Possessive = "Possessive"
+      Comma = "Comma"
+      Ving = "Ving"
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel" data-type="module" src="index.tsx"></script>
+</body>
+</html>
