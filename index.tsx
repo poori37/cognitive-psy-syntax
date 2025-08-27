@@ -299,7 +299,7 @@ const quizData: QuizData = {
         { question: 'Which sentence contains a dangling modifier?', options: ["Walking to the store, the sky grew dark.", "After we finished the pizza, we watched a movie.", "While running, she tripped.", "He saw the boy with the telescope."], answer: "Walking to the store, the sky grew dark." },
         { question: 'Identify the elliptical construction in the sentence, "John can run faster than Bill."', options: ["John", "run faster", "than Bill", "Bill"], answer: "than Bill" },
         { question: 'Which sentence contains an infinitive?', options: ["She loves cooking.", "We went to the park.", "They want to eat.", "Running is fun."], answer: "They want to eat." },
-        { question: 'What is the function of the subordinate clause in the sentence, "I will not go unless you come with me."?', options: ["It is a noun clause.", "It is a prepositional phrase.", "It is an adverbial clause.", "It is a relative clause."], answer: "It is an adverbial clause." },
+        { question: 'What is the function of the subordinate clause in the sentence, "I will not go unless you come with me."?', options: ["It is a noun clause.", "It is a prepositional phrase.", "It is an adverbial clause.", "It is a relative clause."], answer: "An adverbial clause." },
         { question: 'Which sentence has a comma splice?', options: ["It was a beautiful day, we went for a walk.", "It was a beautiful day; we went for a walk.", "It was a beautiful day, and we went for a walk.", "It was a beautiful day. We went for a walk."], answer: "It was a beautiful day, we went for a walk." },
         { question: 'Identify the ambiguous phrase in the sentence, "The man saw the boy with the telescope."', options: ["The man", "saw the boy", "with the telescope", "the boy"], answer: "with the telescope" },
         { question: 'What is the difference between a phrase and a clause?', options: ["A phrase contains a subject and a verb.", "A clause does not contain a subject and a verb.", "A clause contains a subject and a verb, while a phrase does not.", "A phrase is a type of clause."], answer: "A clause contains a subject and a verb, while a phrase does not." },
@@ -331,9 +331,6 @@ interface SavedGameState {
 interface IdentifiedWord extends Word {
     id: string;
 }
-
-// Global declarations for external libraries
-declare const ohm: any;
 
 const App: React.FC = () => {
     // Game State
@@ -382,9 +379,9 @@ const App: React.FC = () => {
     useEffect(() => {
         try {
             const grammarScript = document.getElementById('grammar');
-            if (grammarScript && typeof ohm !== 'undefined' && grammarScript.textContent) {
-                setGrammar(ohm.grammar(grammarScript.textContent));
-            } else if (typeof ohm === 'undefined') {
+            if (grammarScript && typeof (window as any).ohm !== 'undefined' && grammarScript.textContent) {
+                setGrammar((window as any).ohm.grammar(grammarScript.textContent));
+            } else if (typeof (window as any).ohm === 'undefined') {
                 console.error("ohm.js library is not loaded.");
             } else {
                 console.error("Grammar script tag not found in the DOM or is empty.");
