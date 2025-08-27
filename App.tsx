@@ -290,10 +290,8 @@ const App: React.FC = () => {
     };
 
     const checkAnswer = () => {
-        if(timerInterval.current) clearInterval(timerInterval.current);
-        setIsAnswerChecked(true);
-
         let isCorrect = false;
+        
         if (proficiency === 'hard') {
             const correctAnswer = (levels.hard[currentQuestionIndex] as HardQuestion).answer;
             const normalize = (str: string) => str.toLowerCase().replace(/[.,?]$/, '').trim().replace(/\s+/g, ' ');
@@ -301,8 +299,7 @@ const App: React.FC = () => {
         } else {
             if (trayWords.length === 0) {
               setFeedback({ message: 'Please build a sentence first.', type: 'incorrect'});
-              startTimer();
-              setIsAnswerChecked(false);
+              setTimeout(() => setFeedback(null), 2000);
               return;
             }
             const sentenceTypes = trayWords.map(w => w.type).join(' ');
@@ -312,10 +309,14 @@ const App: React.FC = () => {
         }
 
         if (isCorrect) {
+            if(timerInterval.current) clearInterval(timerInterval.current);
+            setIsAnswerChecked(true);
+
             const points = 100 + Math.max(0, timer * 2);
             const newScore = score + points;
             setScore(newScore);
             setFeedback({ message: `Correct! +${points} points`, type: 'correct' });
+            
             if (gameMode === 'multi' && socket) {
                 const updatedPlayerData = { ...playerData, score: newScore };
                 setPlayerData(updatedPlayerData);
@@ -324,7 +325,7 @@ const App: React.FC = () => {
             setTimeout(nextQuestion, 1500);
         } else {
             setFeedback({ message: "That's not quite right. Try again!", type: 'incorrect' });
-            // Allow retry, so don't move to next question automatically
+            setTimeout(() => setFeedback(null), 2000);
         }
     };
     
