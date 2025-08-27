@@ -341,7 +341,7 @@ const App: React.FC = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [timer, setTimer] = useState(50);
-    const timerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+    const timerInterval = useRef(null);
     const [grammar, setGrammar] = useState<any>(null);
 
     // Card Game State
