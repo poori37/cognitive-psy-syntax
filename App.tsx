@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { levels, quizData } from './constants.ts';
-import { Word, Player, Proficiency, GameMode, QuizQuestion, HardQuestion, CardQuestion } from './types.ts';
+import { levels, quizData } from './constants';
+import { Word, Player, Proficiency, GameMode, QuizQuestion, HardQuestion, CardQuestion } from './types';
 
 // Helper function to shuffle arrays
 const shuffleArray = (array: any[]) => {

@@ -1,4 +1,4 @@
-import { CardQuestion, HardQuestion, Proficiency, QuizQuestion } from './types.ts';
+import { CardQuestion, HardQuestion, Proficiency, QuizQuestion } from './types';
 
 type Levels = {
     [key in Proficiency]: (CardQuestion | HardQuestion)[];
@@ -70,7 +70,7 @@ export const levels: Levels = {
                 {word: "The", type: "Determiner"}, {word: "dog", type: "Noun"}, {word: "chased", type: "Verb"},
                 {word: "the", type: "Determiner"}, {word: "ball", type: "Noun"}, {word: "and", type: "Conjunction"},
                 {word: "barked", type: "Verb"}, {word: "loudly", type: "Adverb"}, {word: ".", type: "Punctuation"},
-                {word: "on", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "the", type: "Determiner"}, {word: "lawn", type: "Noun"} // Distractors
+                {word: "on", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "lawn", type: "Noun"} // Distractors
             ]
         },
         // Prompt 2: Prepositional phrase of purpose
