@@ -16,7 +16,14 @@ const io = new Server(server, {
 });
 
 // Serve static files from the project's root directory.
-app.use(express.static(__dirname));
+// Set correct MIME type for TypeScript/TSX files to be processed by Babel on the client-side.
+app.use(express.static(__dirname, {
+    setHeaders: function (res, filePath) {
+        if (filePath.endsWith('.tsx') || filePath.endsWith('.ts') || filePath.endsWith('.jsx') || filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+}));
 
 // Add a health check route for the hosting platform
 app.get("/health", (req, res) => {
