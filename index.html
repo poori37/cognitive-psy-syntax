@@ -410,6 +410,13 @@
             background-color: #5a6b87;
         }
 
+        .menu-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 10;
+        }
+
         #multiplayer-scoreboard {
             display: none;
             margin-top: 2rem;
@@ -442,6 +449,48 @@
          #player-scores .player-score {
             font-weight: 700;
             color: var(--success);
+        }
+
+        /* --- TYPING GAME STYLES --- */
+        #typing-challenge-container {
+            display: none; /* Initially hidden */
+            margin: 1.5rem 0;
+        }
+        #typing-prompt-area, #typing-word-set-area {
+            background-color: var(--bg-dark);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent);
+        }
+        #typing-prompt-area h3, #typing-word-set-area h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--accent);
+        }
+        #typing-prompt-area p, #typing-word-set-area p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+        #typing-word-set-area p {
+            font-style: italic;
+            color: var(--text-dark);
+            font-size: 1rem;
+        }
+        #typing-input {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid var(--bg-light);
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-family: 'Poppins', sans-serif;
+            resize: vertical;
+        }
+        #typing-input:focus {
+            outline: none;
+            border-color: var(--accent);
         }
 
         /* --- QUIZ STYLES --- */
@@ -578,6 +627,12 @@
                 width: 100%;
             }
 
+            .menu-btn {
+                position: relative;
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+
             #quiz-options-area {
                 gap: 0.75rem;
                 margin: 1.5rem 0;
@@ -697,7 +752,7 @@
             <p id="game-over-message">You've finished all questions for this proficiency level.</p>
             <h3>Final Score: <span id="final-score">0</span></h3>
             <div class="button-group">
-                <button id="play-again-btn">Play Again</button>
+                <button id="play-again-btn">Back to Menu</button>
             </div>
         </div>
     </div>
@@ -706,6 +761,7 @@
     <div id="game-container">
         <div id="game-view">
             <header>
+                <button id="back-to-menu-btn" class="menu-btn btn btn-secondary">Menu</button>
                 <h1 id="game-title">The Syntax Card Game</h1>
                 <p id="game-subtitle">Arrange the words to match the target sentence structure.</p>
                 <div id="timer">Time: 50</div>
@@ -725,6 +781,20 @@
 
                 <div id="sentence-tray" class="droppable"></div>
                 <div id="word-pool" class="droppable"></div>
+                
+                <!-- Typing-based gameplay container (for Professional level) -->
+                <div id="typing-challenge-container">
+                    <div id="typing-prompt-area">
+                        <h3>Prompt:</h3>
+                        <p id="typing-prompt"></p>
+                    </div>
+                    <div id="typing-word-set-area">
+                        <h4>Word Set (Hint):</h4>
+                        <p id="typing-word-set"></p>
+                    </div>
+                    <textarea id="typing-input" rows="3" placeholder="Type your sentence here..."></textarea>
+                </div>
+
 
                 <div id="feedback-area"></div>
 
@@ -742,6 +812,7 @@
         </div>
         <div id="quiz-view" style="display: none;">
              <header>
+                <button id="quiz-back-to-menu-btn" class="menu-btn btn btn-secondary">Menu</button>
                 <h1>Syntax Quiz</h1>
                 <p>Test your grammar knowledge.</p>
             </header>
@@ -798,13 +869,17 @@
     Determiner_Noun_Verb_Conjunction_Verb_Determiner_Noun_Punctuation = Determiner Noun Verb Conjunction Verb Determiner Noun Punctuation
     Conjunction_Determiner_Noun_Verb_Comma_Possessive_Noun_Verb_Punctuation = Conjunction Determiner Noun Verb Comma Possessive Noun Verb Punctuation
 
-    // Professional
-    Determiner_Adjective_Adjective_Noun_Verb_Preposition_Determiner_Adjective_Noun_Punctuation = Determiner Adjective Adjective Noun Verb Preposition Determiner Adjective Noun Punctuation
-    Pronoun_Verb_Noun_Adverb_Preposition_Possessive_Noun_Punctuation = Pronoun Verb Noun Adverb Preposition Possessive Noun Punctuation
-    Conjunction_Clause_Clause_Punctuation = Preposition Determiner Noun Comma Pronoun Verb Preposition Verb Preposition Determiner Noun Punctuation
-    Sentence_With_Comma = Determiner_Noun_Clause Comma Conjunction Noun_Clause Punctuation
-    Determiner_Noun_Clause = Determiner Noun Verb Adjective
-    Noun_Clause = Determiner Noun Verb Adverb Adjective
+    // Professional (These rules are legacy, not used by new typing mechanic)
+    Prof_Complex_Subordinate = Conjunction Determiner Noun Verb Determiner Noun Comma Pronoun Verb Determiner Noun Verb Adjective Punctuation
+    Prof_Conditional_Unless = Determiner Noun Verb Determiner Noun Conjunction Determiner Noun Verb Verb Punctuation
+    Prof_Past_Perfect = Determiner Noun Verb Verb Determiner Noun Conjunction Pronoun Verb Verb Determiner Noun Punctuation
+    Prof_Interrogative_Subordinate = Adverb Verb Determiner Noun Verb Determiner Noun Conjunction Determiner Noun Verb Verb Determiner Noun Punctuation
+    Prof_Although_Start = Conjunction Possessive Noun Verb Determiner Noun Comma Pronoun Verb Preposition Determiner Noun Punctuation
+    Prof_Because_Join = Determiner Noun Verb Determiner Noun Conjunction Pronoun Verb Adverb Verb Determiner Noun Punctuation
+    Prof_Relative_Clause = Determiner Noun Verb Determiner Noun Pronoun Verb Determiner Noun Punctuation
+    Prof_Two_Actions = Determiner Noun Verb Determiner Noun Conjunction Verb Determiner Noun Punctuation
+    Prof_Adverbial_Time = Determiner Noun Verb Preposition Determiner Noun Conjunction Pronoun Verb Determiner Noun Punctuation
+    Prof_Irrelevant_Word = Determiner Noun Verb Determiner Noun Conjunction Pronoun Verb Determiner Noun Punctuation
 
     // Expanded Rules
     Pronoun_Verb_Adjective_Punctuation = Pronoun Verb Adjective Punctuation
@@ -893,6 +968,11 @@
         checkBtn: document.getElementById('check-btn'),
         resetBtn: document.getElementById('reset-btn'),
         timerDisplay: document.getElementById('timer'),
+        // Typing Game Elements
+        typingChallengeContainer: document.getElementById('typing-challenge-container'),
+        typingPrompt: document.getElementById('typing-prompt'),
+        typingWordSet: document.getElementById('typing-word-set'),
+        typingInput: document.getElementById('typing-input'),
         // Single Player Setup
         proficiencyBtns: document.querySelectorAll('.proficiency-btn'),
         resumeGameContainer: document.getElementById('resume-game-container'),
@@ -931,6 +1011,9 @@
         quizOptionsArea: document.getElementById('quiz-options-area'),
         quizFeedbackArea: document.getElementById('quiz-feedback-area'),
         nextQuestionBtn: document.getElementById('next-question-btn'),
+        // Menu Buttons
+        backToMenuBtn: document.getElementById('back-to-menu-btn'),
+        quizBackToMenuBtn: document.getElementById('quiz-back-to-menu-btn'),
     };
 
     // --- OHM.JS GRAMMAR ---
@@ -1096,56 +1179,56 @@
             }
         ],
         professional: [
-            { 
-                rule: "Pronoun_Verb_Ving_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Gerund - Prepositional Phrase - Punctuation', 
-                words: [{word: "She", type: "Pronoun"}, {word: "enjoys", type: "Verb"}, {word: "running", type: "Ving"}, {word: "in", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "morning", type: "Noun"}, {word: ".", type: "Punctuation"}]
+            {
+                prompt: "Form a complex sentence using a subordinate clause.",
+                wordSet: ["The professor", "discovered", "imagined", "a theory", "the experiment", "although", "because", "towel", "obscure"],
+                answer: "Although the professor imagined a theory, he discovered the experiment was obscure."
             },
-            { 
-                rule: "Pronoun_Verb_Preposition_Verb_Punctuation",
-                displayRule: 'Subject - Verb - Infinitive - Punctuation', 
-                words: [{word: "They", type: "Pronoun"}, {word: "want", type: "Verb"}, {word: "to", type: "Preposition"}, {word: "eat", type: "Verb"}, {word: ".", type: "Punctuation"}] 
+            {
+                prompt: "Create a conditional sentence using “if” or “unless.”",
+                wordSet: ["The politician", "announced", "delayed", "the election", "the policy", "unless", "because", "spoon"],
+                answer: "The politician delayed the election unless the policy was announced."
             },
-            { 
-                rule: "Pronoun_Verb_Conjunction_Determiner_Noun_Verb_Adjective_Punctuation",
-                displayRule: 'Subject - Verb - Subordinate Clause - Punctuation', 
-                words: [{word: "He", type: "Pronoun"}, {word: "knew", type: "Verb"}, {word: "that", type: "Conjunction"}, {word: "the", type: "Determiner"}, {word: "project", type: "Noun"}, {word: "was", type: "Verb"}, {word: "late", type: "Adjective"}, {word: ".", type: "Punctuation"}]
+            {
+                prompt: "Make a sentence using the past perfect tense.",
+                wordSet: ["The scientist", "had completed", "had observed", "the results", "the stars", "before", "while", "banana"],
+                answer: "The scientist had completed the results before he had observed the stars."
             },
-            { 
-                rule: "Determiner_Noun_Verb_Determiner_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "The", type: "Determiner"}, {word: "man", type: "Noun"}, {word: "saw", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "boy", type: "Noun"}, {word: "with", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "telescope", type: "Noun"}, {word: ".", type: "Punctuation"}]
+            {
+                prompt: "Form an interrogative sentence with a subordinate clause.",
+                wordSet: ["The teacher", "explained", "completed", "the project", "the homework", "why", "although", "balloon"],
+                answer: "Why did the teacher explain the project although the students had completed the homework?"
             },
-            { 
-                rule: "Determiner_Noun_Verb_Determiner_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "The", type: "Determiner"}, {word: "chef", type: "Noun"}, {word: "baked", type: "Verb"}, {word: "a", type: "Determiner"}, {word: "cake", type: "Noun"}, {word: "in", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "oven", type: "Noun"}, {word: ".", type: "Punctuation"}]
+            {
+                prompt: "Write a sentence that begins with “Although...”.",
+                wordSet: ["My neighbor", "chased", "hid", "the dog", "under the table", "although", "when", "umbrella"],
+                answer: "Although my neighbor chased the dog, it hid under the table."
             },
-            { 
-                rule: "Pronoun_Verb_Determiner_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "She", type: "Pronoun"}, {word: "read", type: "Verb"}, {word: "a", type: "Determiner"}, {word: "book", type: "Noun"}, {word: "on", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "train", type: "Noun"}, {word: ".", type: "Punctuation"}]
+            {
+                prompt: "Construct a sentence with two clauses joined by “because.”",
+                wordSet: ["The engineer", "designed", "repaired", "the bridge", "the machine", "because", "although", "candle"],
+                answer: "The engineer repaired the machine because he had already designed the bridge."
             },
-            { 
-                rule: "Pronoun_Verb_Determiner_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "He", type: "Pronoun"}, {word: "wrote", type: "Verb"}, {word: "a", type: "Determiner"}, {word: "letter", type: "Noun"}, {word: "with", type: "Preposition"}, {word: "a", type: "Determiner"}, {word: "pencil", type: "Noun"}, {word: ".", type: "Punctuation"}]
+            {
+                prompt: "Form a sentence that uses a relative clause (e.g., who, which, that).",
+                wordSet: ["The artist", "created", "inspired", "the painting", "the audience", "which", "who", "sandwich"],
+                answer: "The artist created the painting which inspired the audience."
             },
-            { 
-                rule: "Determiner_Noun_Verb_Determiner_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "The", type: "Determiner"}, {word: "dog", type: "Noun"}, {word: "chased", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "cat", type: "Noun"}, {word: "up", type: "Preposition"}, {word: "a", type: "Determiner"}, {word: "tree", type: "Noun"}, {word: ".", type: "Punctuation"}]
+            {
+                prompt: "Write a sentence where the subject performs two different actions.",
+                wordSet: ["The student", "studied", "wrote", "the exam", "the essay", "and", "although", "pencil"],
+                answer: "The student studied the exam and wrote the essay."
             },
-            { 
-                rule: "Pronoun_Verb_Determiner_Adjective_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "We", type: "Pronoun"}, {word: "had", type: "Verb"}, {word: "a", type: "Determiner"}, {word: "great", type: "Adjective"}, {word: "time", type: "Noun"}, {word: "at", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "party", type: "Noun"}, {word: ".", type: "Punctuation"}]
+            {
+                prompt: "Create a sentence using an adverbial clause of time (e.g., when, while, before).",
+                wordSet: ["The children", "played", "watched", "the rain", "the cartoon", "while", "before", "kite"],
+                answer: "The children played in the rain while they watched the cartoon."
             },
-            { 
-                rule: "Determiner_Noun_Verb_Determiner_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "The", type: "Determiner"}, {word: "cat", type: "Noun"}, {word: "jumped", type: "Verb"}, {word: "over", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "fence", type: "Noun"}, {word: ".", type: "Punctuation"}]
-            },
+            {
+                prompt: "Form a sentence that includes one irrelevant/trap word (must be ignored).",
+                wordSet: ["The manager", "organized", "attended", "the meeting", "the conference", "because", "when", "toothbrush"],
+                answer: "The manager organized the meeting because he attended the conference."
+            }
         ]
     };
 
@@ -1346,53 +1429,104 @@
         state.totalQuestions = levelData.length;
         const questionData = levelData[index];
 
-        state.currentWords = [...questionData.words];
-
-        elements.targetGrammar.textContent = questionData.displayRule;
+        // Common UI updates
         elements.levelIndicator.textContent = `Proficiency: ${state.proficiency.charAt(0).toUpperCase() + state.proficiency.slice(1)}`;
         elements.questionIndicator.textContent = `Question: ${index + 1}/${state.totalQuestions}`;
         elements.progressBar.style.width = `${((index + 1) / state.totalQuestions) * 100}%`;
 
-        elements.sentenceTray.innerHTML = '';
-        elements.wordPool.innerHTML = '';
+        if (state.proficiency === 'professional') {
+            // --- PROFESSIONAL TYPING MODE ---
+            elements.typingChallengeContainer.style.display = 'block';
+            elements.targetGrammar.parentElement.style.display = 'none'; // Hides #challenge-display
+            elements.sentenceTray.style.display = 'none';
+            elements.wordPool.style.display = 'none';
+            
+            elements.typingPrompt.textContent = questionData.prompt;
+            elements.typingWordSet.textContent = questionData.wordSet.join(', ');
+            elements.typingInput.value = '';
+            elements.gameSubtitle.textContent = "Type the sentence based on the prompt below.";
 
-        const shuffledWords = [...questionData.words];
-        shuffleArray(shuffledWords);
-        shuffledWords.forEach(word => {
-            elements.wordPool.appendChild(createWordTile(word));
-        });
+        } else {
+            // --- BEGINNER/ADVANCED CARD MODE ---
+            elements.typingChallengeContainer.style.display = 'none';
+            elements.targetGrammar.parentElement.style.display = 'block';
+            elements.sentenceTray.style.display = 'flex';
+            elements.wordPool.style.display = 'flex';
 
+            state.currentWords = [...questionData.words];
+            elements.targetGrammar.textContent = questionData.displayRule;
+            elements.gameSubtitle.textContent = "Arrange the words to match the target sentence structure.";
+
+            elements.sentenceTray.innerHTML = '';
+            elements.wordPool.innerHTML = '';
+            const shuffledWords = [...questionData.words];
+            shuffleArray(shuffledWords);
+            shuffledWords.forEach(word => elements.wordPool.appendChild(createWordTile(word)));
+        }
+        
         resetTimer();
         startTimer();
     }
 
     function checkAnswer() {
         clearInterval(state.timerInterval);
-        const sentenceTiles = elements.sentenceTray.querySelectorAll('.word-tile');
-        if (sentenceTiles.length === 0) {
-            showFeedback("Please build a sentence first.", 'incorrect');
-            startTimer(); // Resume timer if no answer submitted
-            return;
-        }
 
-        const sentenceTypes = Array.from(sentenceTiles).map(tile => tile.dataset.type);
-        const sentenceString = sentenceTypes.join(' ');
-        const currentRule = levels[state.proficiency][state.currentQuestionIndex].rule;
-
-        const match = grammar.match(sentenceString, currentRule);
-
-        if (match.succeeded()) {
-            const points = calculateScore();
-            state.score += points;
-            showFeedback(`Correct! +${points} points`, 'correct');
-            if (state.gameMode === 'multi' && state.socket) {
-                state.playerData.score = state.score;
-                state.socket.emit('updateScore', state.playerData);
+        if (state.proficiency === 'professional') {
+            // --- PROFESSIONAL TYPING VALIDATION ---
+            const userAnswer = elements.typingInput.value.trim();
+            if (userAnswer === '') {
+                showFeedback("Please type a sentence first.", 'incorrect');
+                startTimer(); // Resume timer
+                return;
             }
-            elements.checkBtn.disabled = true;
-            setTimeout(nextQuestion, 1500);
+
+            const correctAnswer = levels.professional[state.currentQuestionIndex].answer;
+            
+            // Normalization: lowercase, remove trailing punctuation, collapse multiple spaces
+            const normalize = (str) => str.toLowerCase().replace(/[.,?]$/, '').trim().replace(/\s+/g, ' ');
+            
+            if (normalize(userAnswer) === normalize(correctAnswer)) {
+                const points = calculateScore();
+                state.score += points;
+                showFeedback(`Correct! +${points} points`, 'correct');
+                if (state.gameMode === 'multi' && state.socket) {
+                    state.playerData.score = state.score;
+                    state.socket.emit('updateScore', state.playerData);
+                }
+                elements.checkBtn.disabled = true;
+                setTimeout(nextQuestion, 1500);
+            } else {
+                showFeedback("That's not quite right. Try again!", 'incorrect');
+            }
+
         } else {
-            showFeedback("That's not quite right. Try again!", 'incorrect');
+            // --- BEGINNER/ADVANCED CARD VALIDATION ---
+            const sentenceTiles = elements.sentenceTray.querySelectorAll('.word-tile');
+            if (sentenceTiles.length === 0) {
+                showFeedback("Please build a sentence first.", 'incorrect');
+                startTimer(); // Resume timer if no answer submitted
+                return;
+            }
+
+            const sentenceTypes = Array.from(sentenceTiles).map(tile => tile.dataset.type);
+            const sentenceString = sentenceTypes.join(' ');
+            const currentRule = levels[state.proficiency][state.currentQuestionIndex].rule;
+
+            const match = grammar.match(sentenceString, currentRule);
+
+            if (match.succeeded()) {
+                const points = calculateScore();
+                state.score += points;
+                showFeedback(`Correct! +${points} points`, 'correct');
+                if (state.gameMode === 'multi' && state.socket) {
+                    state.playerData.score = state.score;
+                    state.socket.emit('updateScore', state.playerData);
+                }
+                elements.checkBtn.disabled = true;
+                setTimeout(nextQuestion, 1500);
+            } else {
+                showFeedback("That's not quite right. Try again!", 'incorrect');
+            }
         }
     }
     
@@ -1413,6 +1547,7 @@
     }
 
     function resetCurrentQuestion() {
+        // For professional, this will clear the input. For others, it reloads the tiles.
         clearInterval(state.timerInterval);
         loadQuestion(state.currentQuestionIndex);
     }
@@ -1452,6 +1587,67 @@
 
     function hideModal(modal) {
         modal.style.display = 'none';
+    }
+
+    function resetToMenu() {
+        // Stop any game timers
+        clearInterval(state.timerInterval);
+        if (state.socket) {
+            state.socket.disconnect();
+        }
+        
+        // Hide game/quiz containers
+        elements.gameContainer.style.display = 'none';
+        elements.gameView.style.display = 'block'; // reset to default
+        elements.quizView.style.display = 'none';  // reset to default
+
+        // Hide all modals
+        hideModal(elements.playerSetupModal);
+        hideModal(elements.quizSetupModal);
+        hideModal(elements.multiplayerModal);
+        hideModal(elements.multiplayerProficiencyModal);
+        hideModal(elements.waitingRoomModal);
+        hideModal(elements.gameOverModal);
+        
+        // Explicitly reset game view UI to default (card view)
+        elements.typingChallengeContainer.style.display = 'none';
+        elements.targetGrammar.parentElement.style.display = 'block';
+        elements.sentenceTray.style.display = 'flex';
+        elements.wordPool.style.display = 'flex';
+        
+        // Show the main menu modal
+        showModal(elements.modeModal);
+
+        // Reset state object to its initial values
+        state.gameMode = null;
+        state.proficiency = 'beginner';
+        state.currentQuestionIndex = 0;
+        state.totalQuestions = 0;
+        state.score = 0;
+        state.timer = 50;
+        state.timerInterval = null;
+        state.currentWords = [];
+        state.playerData = { id: null, nickname: '', score: 0 };
+        state.groupCode = null;
+        state.players = [];
+        state.socket = null;
+        state.quizProficiency = 'beginner';
+        state.currentQuizQuestionIndex = 0;
+        state.quizScore = 0;
+        state.quizQuestions = [];
+        
+        // Reset UI elements that might hold old state
+        elements.multiplayerScoreboard.style.display = 'none';
+        elements.playerScoresList.innerHTML = '';
+        elements.feedbackArea.innerHTML = '';
+        elements.quizFeedbackArea.innerHTML = '';
+        elements.nicknameInput.value = '';
+        elements.groupCodeInput.value = '';
+
+        // Also remove the beforeunload listener if it was set
+        window.removeEventListener('beforeunload', saveGameState);
+        // And clear saved game from local storage to prevent resuming a game that was 'backed out' of.
+        localStorage.removeItem('syntaxGameState');
     }
 
     function setupUI() {
@@ -1552,15 +1748,10 @@
                 state.socket.emit('startGameRequest', { groupCode: state.groupCode, proficiency: state.proficiency });
             }
         });
-        elements.backFromWaitingBtn.addEventListener('click', () => {
-            // Disconnect and return to main menu
-            location.reload(); 
-        });
+        elements.backFromWaitingBtn.addEventListener('click', resetToMenu);
         
         // Game Over
-        elements.playAgainBtn.addEventListener('click', () => {
-            location.reload(); // Simple way to restart
-        });
+        elements.playAgainBtn.addEventListener('click', resetToMenu);
 
         // Save/Resume Logic
         elements.resumeGameBtn.addEventListener('click', resumeGame);
@@ -1576,6 +1767,10 @@
             hideModal(elements.quizSetupModal);
             showModal(elements.modeModal);
         });
+
+        // Menu Buttons
+        elements.backToMenuBtn.addEventListener('click', resetToMenu);
+        elements.quizBackToMenuBtn.addEventListener('click', resetToMenu);
     }
 
     function startGame() {
@@ -1609,6 +1804,8 @@
     
     // --- LOCAL STORAGE (SINGLE PLAYER) ---
     function saveGameState() {
+        // Do not save professional level games as they are a different format
+        if (state.proficiency === 'professional') return;
         const gameState = {
             proficiency: state.proficiency,
             currentQuestionIndex: state.currentQuestionIndex,
