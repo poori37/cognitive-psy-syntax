@@ -1,19 +1,25 @@
 
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const cors = require('cors');
+const path = require('path');
 
 const app = express();
-app.use(cors());
 
-// Add a health check route for the hosting platform
-app.get("/", (req, res) => {
+// Serve static files from the project's root directory.
+// This allows the server to host the frontend (index.html, etc.).
+app.use(express.static(__dirname));
+
+// Add a health check route for the hosting platform, moved to /health to avoid conflict with index.html
+app.get("/health", (req, res) => {
     res.status(200).send({ status: "ok" });
 });
 
 const server = http.createServer(app);
 const io = new Server(server, {
+  pingTimeout: 60000, // Increase timeout to handle network latency
+  cookie: false, // Disable cookies as they are not used and can cause issues with some proxies
   cors: {
     origin: "*", // Allow all origins for simplicity
     methods: ["GET", "POST"]

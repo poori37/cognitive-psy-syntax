@@ -1580,12 +1580,8 @@
 
     // --- MULTIPLAYER LOGIC ---
     function initializeSocket() {
-        // Use a placeholder URL for local development, which will be replaced by the hosting environment.
-        const serverUrl = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
-                        ? 'http://localhost:3000' 
-                        : 'https://syntax-card-game-server.onrender.com';
-        
-        state.socket = io(serverUrl);
+        // Force WebSocket transport to avoid issues with HTTP long-polling in some environments.
+        state.socket = io({ transports: ['websocket'] });
         elements.multiplayerFeedback.textContent = 'Connecting to server...';
 
         state.socket.on('connect', () => {
