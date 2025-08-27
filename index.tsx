@@ -3,34 +3,34 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { io, Socket } from 'socket.io-client';
 
-// --- START OF types.ts ---
-export interface Word {
+// --- CONSOLIDATED FROM types.ts ---
+interface Word {
     word: string;
     type: string;
 }
 
-export interface CardQuestion {
+interface CardQuestion {
     rule: string;
     displayRule: string;
     words: Word[];
 }
 
-export interface HardQuestion {
+interface HardQuestion {
     prompt: string;
     wordSet: string[];
     answer: string;
 }
 
-export interface QuizQuestion {
+interface QuizQuestion {
     question: string;
     options: string[];
     answer: string;
 }
 
-export type Proficiency = 'easy' | 'medium' | 'hard';
-export type GameMode = 'single' | 'multi' | 'quiz' | null;
+type Proficiency = 'easy' | 'medium' | 'hard';
+type GameMode = 'single' | 'multi' | 'quiz' | null;
 
-export interface Player {
+interface Player {
     id: string;
     nickname: string;
     score: number;
@@ -38,22 +38,22 @@ export interface Player {
 // --- END OF types.ts ---
 
 
-// --- START OF constants.ts ---
-// Mapped type was causing a Babel parsing error. Replaced with an explicit type.
+// --- CONSOLIDATED FROM constants.ts ---
+// Mapped type `[key in Proficiency]` was causing a Babel parsing error in the browser.
+// Replaced with an explicit type definition for compatibility.
 type Levels = {
     easy: (CardQuestion | HardQuestion)[];
     medium: (CardQuestion | HardQuestion)[];
     hard: (CardQuestion | HardQuestion)[];
 };
 
-// Mapped type was causing a Babel parsing error. Replaced with an explicit type.
 type QuizData = {
     easy: QuizQuestion[];
     medium: QuizQuestion[];
     hard: QuizQuestion[];
 };
 
-export const levels: Levels = {
+const levels: Levels = {
     easy: [
         { 
             rule: "Determiner_Noun_Verb_Punctuation",
@@ -268,7 +268,7 @@ export const levels: Levels = {
     ]
 };
 
-export const quizData: QuizData = {
+const quizData: QuizData = {
     easy: [
         { question: 'In the sentence, "The student solved the problem.", which word is the object?', options: ["The", "student", "solved", "problem"], answer: "problem" },
         { question: 'What is the correct word order for the sentence, "ran, dog, The."?', options: ["Ran dog the.", "The ran dog.", "The dog ran.", "Dog the ran."], answer: "The dog ran." },
@@ -309,7 +309,7 @@ export const quizData: QuizData = {
 // --- END OF constants.ts ---
 
 
-// --- START OF App.tsx ---
+// --- CONSOLIDATED FROM App.tsx ---
 // Helper function to shuffle arrays
 const shuffleArray = (array: any[]) => {
   for (let i = array.length - 1; i > 0; i--) {
@@ -1005,7 +1005,7 @@ const App: React.FC = () => {
 // --- END OF App.tsx ---
 
 
-// --- Final Render ---
+// --- RENDER CALL ---
 const rootElement = document.getElementById('root');
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
