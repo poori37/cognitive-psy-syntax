@@ -140,6 +140,18 @@
             margin-top: 1rem;
         }
 
+        .modal-content .instructions-list {
+            text-align: left;
+            padding-left: 20px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+        .modal-content .instructions-list li {
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
         #multiplayer-feedback {
             min-height: 24px;
             margin-top: 1rem;
@@ -838,7 +850,7 @@
         const App = () => {
             // Game State
             const [view, setView] = useState('menu');
-            const [modal, setModal] = useState('mode');
+            const [modal, setModal] = useState('instructions');
             const [gameMode, setGameMode] = useState(null);
             const [proficiency, setProficiency] = useState('easy');
             const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -1281,6 +1293,20 @@
                 );
 
                 switch (modal) {
+                    case 'instructions':
+                        return baseModal('How to play Syntax Scramble?', <>
+                            <ol className="instructions-list">
+                                <li>Choose your game mode: Single Player/ Multiplayer/ Syntax Quiz</li>
+                                <li>Select a difficulty level: Easy / Medium / Hard.</li>
+                                <li>The system will randomly assign you a prompt card and a set of word cards from the chosen level.</li>
+                                <li>Tap to select the words to build a meaningful sentence in the sentence box.</li>
+                                <li>Make sure your sentence is grammatically correct and matches the prompt.</li>
+                                <li>Submit your answer to lock it in.</li>
+                            </ol>
+                            <div className="button-group">
+                                <button onClick={() => setModal('mode')}>Continue</button>
+                            </div>
+                        </>);
                     case 'mode':
                         return baseModal('Welcome to The Syntax Card Game!', <>
                             <h3>Choose Your Mode</h3>
