@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { io, Socket } from 'socket.io-client';
@@ -38,12 +39,18 @@ export interface Player {
 
 
 // --- START OF constants.ts ---
+// Mapped type was causing a Babel parsing error. Replaced with an explicit type.
 type Levels = {
-    [key in Proficiency]: (CardQuestion | HardQuestion)[];
+    easy: (CardQuestion | HardQuestion)[];
+    medium: (CardQuestion | HardQuestion)[];
+    hard: (CardQuestion | HardQuestion)[];
 };
 
+// Mapped type was causing a Babel parsing error. Replaced with an explicit type.
 type QuizData = {
-    [key in Proficiency]: QuizQuestion[];
+    easy: QuizQuestion[];
+    medium: QuizQuestion[];
+    hard: QuizQuestion[];
 };
 
 export const levels: Levels = {
