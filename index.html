@@ -1841,8 +1841,8 @@
 
     // --- MULTIPLAYER LOGIC ---
     function initializeSocket() {
-        // Connect to the remote server, prioritizing websockets
-        state.socket = io('https://cognitive-psy-assessment.onrender.com', {
+        // Connect to the server that served the page
+        state.socket = io({
             transports: ['websocket']
         }); 
         elements.multiplayerFeedback.textContent = 'Connecting to server...';
