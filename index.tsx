@@ -1,4 +1,5 @@
-// Fix: Add declarations for external libraries 'ohm-js' and 'socket.io-client' to resolve 'Cannot find name' errors.
+
+// Fix for: Cannot find name 'ohm' and Cannot find name 'io'.
 declare var ohm: any;
 declare var io: any;
 
@@ -14,8 +15,7 @@ const state = {
     timerInterval: null,
     currentWords: [],
     // Multiplayer State
-    // Fix: Add groupCode to playerData state to resolve property assignment errors.
-    playerData: { id: null, nickname: '', score: 0, groupCode: null as string | null },
+    playerData: { id: null, nickname: '', score: 0, groupCode: null },
     groupCode: null,
     players: [],
     socket: null,
@@ -27,85 +27,92 @@ const state = {
 };
 
 // --- DOM ELEMENTS ---
-// Fix: Cast DOM elements to their specific HTML element types to prevent property access errors (e.g., .value, .disabled).
 const elements = {
-    gameContainer: document.getElementById('game-container') as HTMLElement,
+    gameContainer: document.getElementById('game-container'),
     // Views
-    gameView: document.getElementById('game-view') as HTMLElement,
-    quizView: document.getElementById('quiz-view') as HTMLElement,
+    gameView: document.getElementById('game-view'),
+    quizView: document.getElementById('quiz-view'),
     // Modals
-    modeModal: document.getElementById('mode-modal-overlay') as HTMLElement,
-    playerSetupModal: document.getElementById('player-setup-modal-overlay') as HTMLElement,
-    quizSetupModal: document.getElementById('quiz-setup-modal-overlay') as HTMLElement,
-    multiplayerModal: document.getElementById('multiplayer-modal-overlay') as HTMLElement,
-    multiplayerProficiencyModal: document.getElementById('multiplayer-proficiency-modal-overlay') as HTMLElement,
-    waitingRoomModal: document.getElementById('waiting-room-modal-overlay') as HTMLElement,
-    gameOverModal: document.getElementById('game-over-modal-overlay') as HTMLElement,
+    modeModal: document.getElementById('mode-modal-overlay'),
+    playerSetupModal: document.getElementById('player-setup-modal-overlay'),
+    quizSetupModal: document.getElementById('quiz-setup-modal-overlay'),
+    multiplayerModal: document.getElementById('multiplayer-modal-overlay'),
+    multiplayerProficiencyModal: document.getElementById('multiplayer-proficiency-modal-overlay'),
+    waitingRoomModal: document.getElementById('waiting-room-modal-overlay'),
+    gameOverModal: document.getElementById('game-over-modal-overlay'),
     // Mode Buttons
-    singlePlayerBtn: document.getElementById('single-player-mode-btn') as HTMLButtonElement,
-    multiplayerBtn: document.getElementById('multiplayer-mode-btn') as HTMLButtonElement,
-    quizBtn: document.getElementById('quiz-mode-btn') as HTMLButtonElement,
+    singlePlayerBtn: document.getElementById('single-player-mode-btn'),
+    multiplayerBtn: document.getElementById('multiplayer-mode-btn'),
+    quizBtn: document.getElementById('quiz-mode-btn'),
     // Card Game Elements
-    gameSubtitle: document.getElementById('game-subtitle') as HTMLElement,
-    targetGrammar: document.getElementById('target-grammar') as HTMLElement,
-    levelIndicator: document.getElementById('level-indicator') as HTMLElement,
-    questionIndicator: document.getElementById('question-indicator') as HTMLElement,
-    progressBar: document.getElementById('progress-bar') as HTMLElement,
-    sentenceTray: document.getElementById('sentence-tray') as HTMLElement,
-    wordPool: document.getElementById('word-pool') as HTMLElement,
-    feedbackArea: document.getElementById('feedback-area') as HTMLElement,
+    gameSubtitle: document.getElementById('game-subtitle'),
+    targetGrammar: document.getElementById('target-grammar'),
+    levelIndicator: document.getElementById('level-indicator'),
+    questionIndicator: document.getElementById('question-indicator'),
+    progressBar: document.getElementById('progress-bar'),
+    sentenceTray: document.getElementById('sentence-tray'),
+    wordPool: document.getElementById('word-pool'),
+    feedbackArea: document.getElementById('feedback-area'),
+    // Fix for: Property 'disabled' does not exist on type 'HTMLElement'.
     checkBtn: document.getElementById('check-btn') as HTMLButtonElement,
-    resetBtn: document.getElementById('reset-btn') as HTMLButtonElement,
-    timerDisplay: document.getElementById('timer') as HTMLElement,
+    resetBtn: document.getElementById('reset-btn'),
+    timerDisplay: document.getElementById('timer'),
     // Typing Game Elements
-    typingChallengeContainer: document.getElementById('typing-challenge-container') as HTMLElement,
-    typingPrompt: document.getElementById('typing-prompt') as HTMLElement,
-    typingWordSet: document.getElementById('typing-word-set') as HTMLElement,
+    typingChallengeContainer: document.getElementById('typing-challenge-container'),
+    typingPrompt: document.getElementById('typing-prompt'),
+    typingWordSet: document.getElementById('typing-word-set'),
+    // Fix for: Property 'value' does not exist on type 'HTMLElement'.
     typingInput: document.getElementById('typing-input') as HTMLInputElement,
     // Single Player Setup
     proficiencyBtns: document.querySelectorAll('.proficiency-btn'),
-    resumeGameContainer: document.getElementById('resume-game-container') as HTMLElement,
-    resumeGameBtn: document.getElementById('resume-game-btn') as HTMLButtonElement,
-    backFromSetupBtn: document.getElementById('back-from-setup-btn') as HTMLButtonElement,
+    resumeGameContainer: document.getElementById('resume-game-container'),
+    resumeGameBtn: document.getElementById('resume-game-btn'),
+    backFromSetupBtn: document.getElementById('back-from-setup-btn'),
     // Quiz Setup
     quizProficiencyBtns: document.querySelectorAll('.quiz-proficiency-btn'),
-    backFromQuizSetupBtn: document.getElementById('back-from-quiz-setup-btn') as HTMLButtonElement,
+    backFromQuizSetupBtn: document.getElementById('back-from-quiz-setup-btn'),
     // Multiplayer Elements
+    // Fix for: Property 'value' does not exist on type 'HTMLElement'.
     nicknameInput: document.getElementById('nickname-input') as HTMLInputElement,
+    // Fix for: Property 'value' does not exist on type 'HTMLElement'.
     groupCodeInput: document.getElementById('group-code-input') as HTMLInputElement,
+    // Fix for: Property 'disabled' does not exist on type 'HTMLElement'.
     joinGroupBtn: document.getElementById('join-group-btn') as HTMLButtonElement,
+    // Fix for: Property 'disabled' does not exist on type 'HTMLElement'.
     createGroupBtn: document.getElementById('create-group-btn') as HTMLButtonElement,
-    multiplayerFeedback: document.getElementById('multiplayer-feedback') as HTMLElement,
-    groupCodeDisplay: document.querySelector('#group-code-display strong') as HTMLElement,
-    waitingPlayerList: document.getElementById('waiting-room-player-list') as HTMLElement,
+    multiplayerFeedback: document.getElementById('multiplayer-feedback'),
+    groupCodeDisplay: document.querySelector('#group-code-display strong'),
+    waitingPlayerList: document.getElementById('waiting-room-player-list'),
+    // Fix for: Property 'disabled' does not exist on type 'HTMLElement'.
     startGameBtn: document.getElementById('start-game-btn') as HTMLButtonElement,
-    multiplayerScoreboard: document.getElementById('multiplayer-scoreboard') as HTMLElement,
-    playerScoresList: document.getElementById('player-scores') as HTMLElement,
-    multiplayerCreateTab: document.getElementById('multiplayer-create-tab') as HTMLElement,
-    multiplayerJoinTab: document.getElementById('multiplayer-join-tab') as HTMLElement,
-    backFromMultiplayerBtn: document.getElementById('back-from-multiplayer-btn') as HTMLButtonElement,
+    multiplayerScoreboard: document.getElementById('multiplayer-scoreboard'),
+    playerScoresList: document.getElementById('player-scores'),
+    multiplayerCreateTab: document.getElementById('multiplayer-create-tab'),
+    multiplayerJoinTab: document.getElementById('multiplayer-join-tab'),
+    backFromMultiplayerBtn: document.getElementById('back-from-multiplayer-btn'),
     multiplayerProficiencyBtns: document.querySelectorAll('.multiplayer-proficiency-btn'),
-    backFromMultiplayerProficiencyBtn: document.getElementById('back-from-multiplayer-proficiency-btn') as HTMLButtonElement,
-    backFromWaitingBtn: document.getElementById('back-from-waiting-btn') as HTMLButtonElement,
+    backFromMultiplayerProficiencyBtn: document.getElementById('back-from-multiplayer-proficiency-btn'),
+    backFromWaitingBtn: document.getElementById('back-from-waiting-btn'),
     // Game Over Modal
-    gameOverTitle: document.getElementById('game-over-title') as HTMLElement,
-    gameOverMessage: document.getElementById('game-over-message') as HTMLElement,
-    finalScore: document.getElementById('final-score') as HTMLElement,
-    playAgainBtn: document.getElementById('play-again-btn') as HTMLButtonElement,
+    gameOverTitle: document.getElementById('game-over-title'),
+    gameOverMessage: document.getElementById('game-over-message'),
+    finalScore: document.getElementById('final-score'),
+    playAgainBtn: document.getElementById('play-again-btn'),
     // Quiz Elements
-    quizLevelIndicator: document.getElementById('quiz-level-indicator') as HTMLElement,
-    quizQuestionIndicator: document.getElementById('quiz-question-indicator') as HTMLElement,
-    quizProgressBar: document.getElementById('quiz-progress-bar') as HTMLElement,
-    quizQuestionText: document.getElementById('quiz-question-text') as HTMLElement,
-    quizOptionsArea: document.getElementById('quiz-options-area') as HTMLElement,
-    quizFeedbackArea: document.getElementById('quiz-feedback-area') as HTMLElement,
-    nextQuestionBtn: document.getElementById('next-question-btn') as HTMLButtonElement,
+    quizLevelIndicator: document.getElementById('quiz-level-indicator'),
+    quizQuestionIndicator: document.getElementById('quiz-question-indicator'),
+    quizProgressBar: document.getElementById('quiz-progress-bar'),
+    quizQuestionText: document.getElementById('quiz-question-text'),
+    quizOptionsArea: document.getElementById('quiz-options-area'),
+    quizFeedbackArea: document.getElementById('quiz-feedback-area'),
+    nextQuestionBtn: document.getElementById('next-question-btn'),
     // Menu Buttons
-    backToMenuBtn: document.getElementById('back-to-menu-btn') as HTMLButtonElement,
-    quizBackToMenuBtn: document.getElementById('quiz-back-to-menu-btn') as HTMLButtonElement,
+    backToMenuBtn: document.getElementById('back-to-menu-btn'),
+    quizBackToMenuBtn: document.getElementById('quiz-back-to-menu-btn'),
 };
 
 // --- OHM.JS GRAMMAR ---
+// Fix for: Cannot find name 'ohm'.
 const grammar = ohm.grammar(document.getElementById('grammar').textContent);
 
 // --- GAME & QUIZ DATA ---
@@ -246,257 +253,122 @@ const levels = {
                 {word: "essay", type: "Noun"}, {word: ".", type: "Punctuation"}
             ]
         },
-        // Prompt 9: Adverbial clause of time
+        // Prompt 9: Adverbial clause
         { 
             rule: "Conjunction_Determiner_Noun_Verb_Comma_Possessive_Noun_Verb_Punctuation",
-            displayRule: 'Adverbial Clause of Time (e.g., while)', 
+            displayRule: 'Sentence with Adverbial Clause of Time', 
             words: [
-                {word: "While", type: "Conjunction"}, {word: "the", type: "Determiner"}, {word: "children", type: "Noun"}, 
-                {word: "played", type: "Verb"}, {word: ",", type: "Comma"}, {word: "their", type: "Possessive"}, 
-                {word: "parents", type: "Noun"}, {word: "watched", type: "Verb"}, {word: ".", type: "Punctuation"}
+                {word: "After", type: "Conjunction"}, {word: "the", type: "Determiner"}, {word: "storm", type: "Noun"}, 
+                {word: "passed", type: "Verb"}, {word: ",", type: "Comma"}, {word: "our", type: "Possessive"}, 
+                {word: "power", type: "Noun"}, {word: "returned", type: "Verb"}, {word: ".", type: "Punctuation"}
             ]
         },
-        // Prompt 10: Irrelevant word
+        // Prompt 10: Two clauses joined by "but"
         { 
-            rule: "Determiner_Noun_Verb_Determiner_Noun_Punctuation",
-            displayRule: 'Simple Sentence (ignore one word)', 
+            rule: "Pronoun_Verb_Determiner_Noun_Conjunction_Pronoun_Verb_Adjective_Punctuation",
+            displayRule: 'Two clauses joined by "but"', 
             words: [
-                {word: "The", type: "Determiner"}, {word: "manager", type: "Noun"}, {word: "organized", type: "Verb"}, 
-                {word: "the", type: "Determiner"}, {word: "meeting", type: "Noun"}, {word: ".", type: "Punctuation"}, 
-                {word: "toothbrush", type: "Noun"}
+                {word: "She", type: "Pronoun"}, {word: "wanted", type: "Verb"}, {word: "the", type: "Determiner"}, 
+                {word: "dress", type: "Noun"}, {word: "but", type: "Conjunction"}, {word: "it", type: "Pronoun"}, 
+                {word: "was", type: "Verb"}, {word: "expensive", type: "Adjective"}, {word: ".", type: "Punctuation"}
             ]
         }
     ],
     hard: [
         {
-            prompt: "Form a complex sentence using a subordinate clause.",
-            wordSet: ["The professor", "discovered", "imagined", "a theory", "the experiment", "although", "because", "towel", "obscure"],
-            answer: "Although the professor imagined a theory, he discovered the experiment was obscure."
+            prompt: "Describe the process of photosynthesis using the following words. Be sure to form a complete, grammatically correct sentence.",
+            words: ["plants", "sunlight", "water", "carbon-dioxide", "oxygen", "energy", "convert"],
+            rule: "Hard_Complex_Subordinate" // This rule is just a placeholder for validation logic
         },
         {
-            prompt: "Create a conditional sentence using “if” or “unless.”",
-            wordSet: ["The politician", "announced", "delayed", "the election", "the policy", "unless", "because", "spoon"],
-            answer: "The politician delayed the election unless the policy was announced."
+            prompt: "Explain the importance of recycling using the words provided. Construct a single, well-formed sentence.",
+            words: ["recycling", "reduces", "waste", "conserves", "resources", "protects", "environment"],
+            rule: "Hard_Because_Join"
         },
         {
-            prompt: "Make a sentence using the past perfect tense.",
-            wordSet: ["The scientist", "had completed", "had observed", "the results", "the stars", "before", "while", "banana"],
-            answer: "The scientist had completed the results before he had observed the stars."
+            prompt: "Using the words below, write a sentence that explains a consequence of not getting enough sleep.",
+            words: ["sleep-deprivation", "impairs", "cognitive", "function", "concentration", "affects", "mood"],
+            rule: "Hard_Relative_Clause"
         },
         {
-            prompt: "Form an interrogative sentence with a subordinate clause.",
-            wordSet: ["The teacher", "explained", "completed", "the project", "the homework", "why", "although", "balloon"],
-            answer: "Why did the teacher explain the project although the students had completed the homework?"
+            prompt: "Construct a sentence about the solar system using the following words.",
+            words: ["Earth", "planets", "revolve", "around", "sun", "gravity", "holds"],
+            rule: "Hard_Two_Actions"
         },
         {
-            prompt: "Write a sentence that begins with “Although...”.",
-            wordSet: ["My neighbor", "chased", "hid", "the dog", "under the table", "although", "when", "umbrella"],
-            answer: "Although my neighbor chased the dog, it hid under the table."
+            prompt: "Form a sentence that describes the water cycle using the given vocabulary.",
+            words: ["water", "evaporates", "condenses", "clouds", "precipitation", "forms", "returns"],
+            rule: "Hard_Adverbial_Time"
         },
         {
-            prompt: "Construct a sentence with two clauses joined by “because.”",
-            wordSet: ["The engineer", "designed", "repaired", "the bridge", "the machine", "because", "although", "candle"],
-            answer: "The engineer repaired the machine because he had already designed the bridge."
+            prompt: "Write a sentence explaining the function of the heart in the human body with the provided words.",
+            words: ["heart", "pumps", "blood", "throughout", "body", "delivering", "oxygen"],
+            rule: "Hard_Complex_Subordinate"
         },
         {
-            prompt: "Form a sentence that uses a relative clause (e.g., who, which, that).",
-            wordSet: ["The artist", "created", "inspired", "the painting", "the audience", "which", "who", "sandwich"],
-            answer: "The artist created the painting which inspired the audience."
+            prompt: "Using the following words, create a sentence that describes the impact of technology on communication.",
+            words: ["technology", "revolutionized", "communication", "making", "world", "more", "connected"],
+            rule: "Hard_Because_Join"
         },
         {
-            prompt: "Write a sentence where the subject performs two different actions.",
-            wordSet: ["The student", "studied", "wrote", "the exam", "the essay", "and", "although", "pencil"],
-            answer: "The student studied the exam and wrote the essay."
+            prompt: "Construct a sentence about the benefits of a balanced diet using the words given.",
+            words: ["balanced-diet", "provides", "essential", "nutrients", "maintains", "health", "prevents-disease"],
+            rule: "Hard_Two_Actions"
         },
         {
-            prompt: "Create a sentence using an adverbial clause of time (e.g., when, while, before).",
-            wordSet: ["The children", "played", "watched", "the rain", "the cartoon", "while", "before", "kite"],
-            answer: "The children played in the rain while they watched the cartoon."
+            prompt: "Form a sentence that explains the concept of supply and demand with the vocabulary below.",
+            words: ["supply", "demand", "determine", "price", "goods", "services", "market"],
+            rule: "Hard_Relative_Clause"
         },
         {
-            prompt: "Form a sentence that includes one irrelevant/trap word (must be ignored).",
-            wordSet: ["The manager", "organized", "attended", "the meeting", "the conference", "because", "when", "toothbrush"],
-            answer: "The manager organized the meeting because he attended the conference."
+            prompt: "Write a sentence describing the role of bees in pollination using the provided words.",
+            words: ["bees", "play", "crucial", "role", "pollinating", "flowers", "enabling-reproduction"],
+            rule: "Hard_Adverbial_Time"
         }
     ]
 };
 
 const quizData = {
     easy: [
-        { question: "Which word is the NOUN in the sentence: 'The cat sat on the mat.'?", options: ["The", "cat", "sat", "on"], answer: "cat" },
-        { question: "Identify the VERB: 'Birds fly high in the sky.'", options: ["Birds", "fly", "high", "sky"], answer: "fly" },
-        { question: "What part of speech is 'happy' in 'She is a happy girl.'?", options: ["Noun", "Verb", "Adjective", "Adverb"], answer: "Adjective" },
-        { question: "Find the PRONOUN: 'He threw the ball to them.'", options: ["threw", "ball", "to", "He"], answer: "He" },
-        { question: "Which word is a DETERMINER in 'An apple a day keeps the doctor away.'?", options: ["apple", "day", "An", "away"], answer: "An" },
-        { question: "What is the PUNCTUATION in the sentence: 'Hello!'?", options: [".", ",", "!", "?"], answer: "!" },
-        { question: "Identify the NOUN: 'My dog has a fluffy tail.'", options: ["My", "has", "fluffy", "dog"], answer: "dog" },
-        { question: "Which is the VERB in 'They quickly ran home.'?", options: ["They", "quickly", "ran", "home"], answer: "ran" },
-        { question: "Find the ADJECTIVE: 'It was a beautiful day.'", options: ["It", "was", "beautiful", "day"], answer: "beautiful" },
-        { question: "What part of speech is 'I' in 'I love this game.'?", options: ["Noun", "Pronoun", "Verb", "Adjective"], answer: "Pronoun" }
+        { question: "Which word is a noun?", options: ["run", "quickly", "book", "happy"], answer: "book" },
+        { question: "Identify the verb in the sentence: 'The cat sleeps.'", options: ["The", "cat", "sleeps", "."], answer: "sleeps" },
+        { question: "Which of the following is an adjective?", options: ["eat", "beautiful", "she", "soundly"], answer: "beautiful" },
+        { question: "Choose the pronoun in the sentence: 'He threw the ball.'", options: ["threw", "the", "ball", "He"], answer: "He" },
+        { question: "What is the subject of the sentence: 'Dogs bark loudly.'?", options: ["Dogs", "bark", "loudly", "."], answer: "Dogs" },
+        { question: "Find the determiner: 'An apple a day keeps the doctor away.'", options: ["apple", "day", "away", "An"], answer: "An" },
+        { question: "Which word completes the sentence correctly? 'They ___ playing in the park.'", options: ["is", "are", "am", "be"], answer: "are" },
+        { question: "Identify the punctuation mark that ends a question.", options: [".", ",", "!", "?"], answer: "?" },
+        { question: "Which word is an adverb? 'The turtle walks slowly.'", options: ["turtle", "walks", "the", "slowly"], answer: "slowly" },
+        { question: "What part of speech is 'and'?", options: ["Verb", "Preposition", "Conjunction", "Adjective"], answer: "Conjunction" }
     ],
     medium: [
-        { question: "What is the ADVERB in 'She sings beautifully.'?", options: ["She", "sings", "beautifully", "."], answer: "beautifully" },
-        { question: "Identify the PREPOSITION: 'The book is on the table.'", options: ["book", "is", "on", "table"], answer: "on" },
-        { question: "Which word is the CONJUNCTION in 'I am tired, but I will finish.'?", options: ["am", "tired", "but", "finish"], answer: "but" },
-        { question: "What role does 'running' play in 'Running is good exercise.'?", options: ["Verb", "Adjective", "Noun (Gerund)", "Adverb"], answer: "Noun (Gerund)" },
-        { question: "Find the PREPOSITIONAL PHRASE: 'The man with the yellow hat smiled.'", options: ["The man", "with the yellow hat", "yellow hat", "smiled"], answer: "with the yellow hat" },
-        { question: "Identify the ADVERB: 'He works very hard.'", options: ["He", "works", "very", "hard"], answer: "very" },
-        { question: "What part of speech is 'although' in 'Although it was raining, we went out.'?", options: ["Adverb", "Preposition", "Conjunction", "Pronoun"], answer: "Conjunction" },
-        { question: "Find the POSSESSIVE pronoun: 'That blue car is hers.'", options: ["That", "blue", "is", "hers"], answer: "hers" },
-        { question: "What is the object of the preposition in 'She walked through the door.'?", options: ["She", "walked", "through", "door"], answer: "door" },
-        { question: "Identify the CONJUNCTION: 'He is not only smart but also funny.'", options: ["not", "only", "but", "also"], answer: "but" }
+        { question: "Identify the preposition in the sentence: 'The book is on the table.'", options: ["book", "is", "on", "table"], answer: "on" },
+        { question: "What type of sentence is this? 'Although it was raining, we went for a walk.'", options: ["Simple", "Compound", "Complex", "Imperative"], answer: "Complex" },
+        { question: "Which sentence uses the past perfect tense correctly?", options: ["He has finished his work.", "He had finished his work before she arrived.", "He will finish his work.", "He is finishing his work."], answer: "He had finished his work before she arrived." },
+        { question: "Find the subordinate clause: 'I will call you when I get home.'", options: ["I will call you", "when I get home", "call you when", "I will"], answer: "when I get home" },
+        { question: "Which conjunction best joins these two clauses? 'She studied hard, ___ she passed the exam.'", options: ["but", "or", "so", "if"], answer: "so" },
+        { question: "Identify the relative pronoun: 'The man who called you is my brother.'", options: ["man", "who", "is", "my"], answer: "who" },
+        { question: "What is the function of the comma in this sentence? 'After the movie, we went for ice cream.'", options: ["To separate items in a list", "To join two independent clauses", "To separate an introductory clause", "To show possession"], answer: "To separate an introductory clause" },
+        { question: "Which of the following is a compound sentence?", options: ["The sun is shining.", "I like tea, and he likes coffee.", "Because he was tired, he went to bed.", "What a beautiful day!"], answer: "I like tea, and he likes coffee." },
+        { question: "Identify the adverbial phrase: 'He ran with great speed.'", options: ["He ran", "with great speed", "great speed", "ran with"], answer: "with great speed" },
+        { question: "Choose the correct form of the verb: 'Neither of the students ___ the answer.'", options: ["know", "knows", "have known", "are knowing"], answer: "knows" }
     ],
     hard: [
-        { question: "What type of clause is 'who is my best friend' in 'John, who is my best friend, is a doctor.'?", options: ["Adverbial Clause", "Noun Clause", "Relative Clause", "Main Clause"], answer: "Relative Clause" },
-        { question: "Identify the part of speech for 'however' in 'The task was difficult; however, we succeeded.'", options: ["Subordinating Conjunction", "Coordinating Conjunction", "Conjunctive Adverb", "Adjective"], answer: "Conjunctive Adverb" },
-        { question: "What is the grammatical function of 'to win' in 'Her goal is to win.'?", options: ["Adjective", "Adverb", "Infinitive as Noun", "Prepositional Phrase"], answer: "Infinitive as Noun" },
-        { question: "Which term describes the phrase 'Having finished her work' in 'Having finished her work, she went home.'?", options: ["Gerund Phrase", "Infinitive Phrase", "Participial Phrase", "Prepositional Phrase"], answer: "Participial Phrase" },
-        { question: "In 'I made him the captain,' what is 'the captain'?", options: ["Direct Object", "Indirect Object", "Predicate Nominative", "Object Complement"], answer: "Object Complement" },
-        { question: "What mood is the verb in 'If I were you, I would not go.'?", options: ["Indicative", "Imperative", "Subjunctive", "Conditional"], answer: "Subjunctive" },
-        { question: "Identify the gerund in the sentence: 'I enjoy swimming.'", options: ["I", "enjoy", "swimming", "."], answer: "swimming" },
-        { question: "What is the function of the noun clause in 'I know that you are right.'?", options: ["Subject", "Direct Object", "Appositive", "Predicate Nominative"], answer: "Direct Object" },
-        { question: "Which of the following is an example of an appositive phrase: 'My brother, a talented artist, won the award.'?", options: ["My brother", "a talented artist", "won the award", "the award"], answer: "a talented artist" },
-        { question: "What is the verb tense in 'She will have finished by noon.'?", options: ["Future Simple", "Future Continuous", "Future Perfect", "Future Perfect Continuous"], answer: "Future Perfect" }
+        { question: "What is the grammatical mood of this sentence? 'If I were you, I would apologize.'", options: ["Indicative", "Imperative", "Subjunctive", "Interrogative"], answer: "Subjunctive" },
+        { question: "Identify the participle phrase: 'Having finished her homework, she watched a movie.'", options: ["she watched a movie", "a movie", "Having finished her homework", "her homework"], answer: "Having finished her homework" },
+        { question: "Which of these sentences contains a dangling modifier?", options: ["Walking down the street, the trees were beautiful.", "The trees were beautiful as I walked down the street.", "While I was walking down the street, I saw beautiful trees.", "The beautiful trees lined the street I walked down."], answer: "Walking down the street, the trees were beautiful." },
+        { question: "What is the function of 'that' in the sentence: 'The rumor that he was leaving spread quickly.'?", options: ["Relative Pronoun", "Demonstrative Pronoun", "Conjunction", "Appositive Conjunction"], answer: "Appositive Conjunction" },
+        { question: "Identify the sentence with correct parallel structure.", options: ["She likes to swim, hiking, and to ride a bike.", "She likes swimming, hiking, and to ride a bike.", "She likes swimming, hiking, and riding a bike.", "She likes to swim, to hike, and riding a bike."], answer: "She likes swimming, hiking, and riding a bike." },
+        { question: "What type of clause is underlined? '<u>Whoever wins the race</u> will receive a prize.'", options: ["Adjective Clause", "Adverb Clause", "Noun Clause", "Independent Clause"], answer: "Noun Clause" },
+        { question: "Which sentence correctly uses an em dash?", options: ["The verdict-a surprise to everyone-was not guilty.", "The verdict, a surprise to everyone was not guilty.", "The verdict (a surprise to everyone) was not guilty.", "The verdict a surprise to everyone was not guilty."], answer: "The verdict-a surprise to everyone-was not guilty." },
+        { question: "An 'antecedent' is the word that a ___ refers to.", options: ["verb", "adjective", "pronoun", "preposition"], answer: "pronoun" },
+        { question: "Identify the literary device used in the phrase 'deafening silence'.", options: ["Metaphor", "Simile", "Oxymoron", "Hyperbole"], answer: "Oxymoron" },
+        { question: "What is the error in this sentence? 'The reason is because he was late.'", options: ["Split infinitive", "Redundancy", "Comma splice", "Subject-verb disagreement"], answer: "Redundancy" }
     ]
 };
 
-// --- TILE INTERACTION LOGIC ---
-let draggedTile: HTMLElement | null = null;
-let placeholder: HTMLElement | null = null;
 
-function createPlaceholder() {
-    const p = document.createElement('div');
-    p.className = 'placeholder';
-    // Match style with word-tile for sizing
-    p.style.width = draggedTile.offsetWidth + 'px';
-    p.style.height = draggedTile.offsetHeight + 'px';
-    p.style.margin = getComputedStyle(draggedTile).margin;
-    return p;
-}
-
-/**
- * Determines which element the dragged tile should be inserted before.
- * This version is more robust for multi-line flex containers.
- * @param {HTMLElement} container The container being dragged over.
- * @param {number} x The clientX of the mouse event.
- * @param {number} y The clientY of the mouse event.
- * @returns {HTMLElement|null} The element to insert before, or null to append.
- */
-function getDragAfterElement(container, x, y) {
-    const draggableElements = [...container.querySelectorAll('.word-tile:not(.dragging)')];
-    
-    let closestElement = null;
-    let minDistance = Number.POSITIVE_INFINITY;
-
-    // Find the element whose center is geometrically closest to the cursor
-    draggableElements.forEach(child => {
-        const box = child.getBoundingClientRect();
-        const centerX = box.left + box.width / 2;
-        const centerY = box.top + box.height / 2;
-        const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestElement = child;
-        }
-    });
-
-    if (!closestElement) {
-        return null;
-    }
-
-    const closestBox = closestElement.getBoundingClientRect();
-    // Decide whether to insert before or after the closest element based on horizontal position.
-    if (x > closestBox.left + closestBox.width / 2) {
-        // Cursor is to the right of the center, so insert *after* it (by returning its next sibling).
-        return closestElement.nextElementSibling;
-    } else {
-        // Cursor is to the left of the center, so insert *before* it.
-        return closestElement;
-    }
-}
-
-function setupTileInteractions() {
-    // CLICK to move tiles between pool and tray
-    elements.gameContainer.addEventListener('click', (e) => {
-        // Fix: Cast e.target to HTMLElement to safely access its properties.
-        if (!(e.target instanceof HTMLElement) || !e.target.classList.contains('word-tile')) return;
-
-        const tile = e.target;
-        const sourceContainer = tile.parentElement;
-
-        if (sourceContainer.id === 'word-pool') {
-            elements.sentenceTray.appendChild(tile);
-            tile.draggable = true;
-        } else if (sourceContainer.id === 'sentence-tray') {
-            elements.wordPool.appendChild(tile);
-            tile.draggable = false;
-        }
-    });
-
-    // DRAG AND DROP for reordering and returning tiles
-    document.addEventListener('dragstart', (e) => {
-        // Fix: Cast e.target to HTMLElement to safely access its properties.
-        const target = e.target as HTMLElement;
-        if (target.classList.contains('word-tile') && target.draggable) {
-            draggedTile = target;
-            setTimeout(() => target.classList.add('dragging'), 0);
-            placeholder = createPlaceholder();
-        }
-    });
-
-    document.addEventListener('dragend', () => {
-        if (draggedTile) {
-            draggedTile.classList.remove('dragging');
-            draggedTile = null;
-            if (placeholder && placeholder.parentElement) {
-                placeholder.remove();
-            }
-            placeholder = null;
-        }
-    });
-
-    const droppables = [elements.sentenceTray, elements.wordPool];
-    droppables.forEach(zone => {
-        zone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            zone.classList.add('drag-over');
-            
-            if (draggedTile && zone.id === 'sentence-tray') {
-                const afterElement = getDragAfterElement(zone, e.clientX, e.clientY);
-                if (afterElement) {
-                    zone.insertBefore(placeholder, afterElement);
-                } else {
-                    zone.appendChild(placeholder);
-                }
-            }
-        });
-        zone.addEventListener('dragleave', () => {
-            zone.classList.remove('drag-over');
-        });
-        zone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            zone.classList.remove('drag-over');
-            
-            if (placeholder && placeholder.parentElement) {
-                placeholder.remove();
-            }
-
-            if (draggedTile) {
-                if (zone.id === 'sentence-tray') {
-                    const afterElement = getDragAfterElement(zone, e.clientX, e.clientY);
-                    zone.insertBefore(draggedTile, afterElement); // insertBefore(el, null) appends
-                } 
-                else if (zone.id === 'word-pool') {
-                    zone.appendChild(draggedTile);
-                    draggedTile.draggable = false;
-                }
-            }
-        });
-    });
-}
-
-// --- GAME LOGIC ---
+// --- UTILITY FUNCTIONS ---
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -504,629 +376,606 @@ function shuffleArray(array) {
     }
 }
 
+function showModal(modal) {
+    if(modal) modal.style.display = 'flex';
+}
+
+function hideModal(modal) {
+    if(modal) modal.style.display = 'none';
+}
+
+// --- TIMER FUNCTIONS ---
+function startTimer() {
+    stopTimer();
+    state.timer = 50;
+    updateTimerDisplay();
+    state.timerInterval = setInterval(() => {
+        state.timer--;
+        updateTimerDisplay();
+        if (state.timer <= 0) {
+            stopTimer();
+            checkAnswer(true); // Auto-check answer when time is up
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(state.timerInterval);
+}
+
+function updateTimerDisplay() {
+    if (elements.timerDisplay) elements.timerDisplay.textContent = `Time: ${state.timer}`;
+}
+
+
+// --- UI UPDATE FUNCTIONS ---
+function updateProgressBar(current, total) {
+    const percentage = total > 0 ? (current / total) * 100 : 0;
+    if(elements.progressBar) elements.progressBar.style.width = `${percentage}%`;
+    if(elements.quizProgressBar) elements.quizProgressBar.style.width = `${percentage}%`;
+}
+
+function displayFeedback(message, isCorrect) {
+    if (!elements.feedbackArea) return;
+    elements.feedbackArea.textContent = message;
+    elements.feedbackArea.className = isCorrect ? 'feedback-correct' : 'feedback-incorrect';
+}
+
+function clearFeedback() {
+    if(elements.feedbackArea) {
+        elements.feedbackArea.textContent = '';
+        elements.feedbackArea.className = '';
+    }
+    if(elements.quizFeedbackArea) {
+        elements.quizFeedbackArea.textContent = '';
+    }
+}
+
+// --- DRAG & DROP LOGIC ---
+let draggedElement = null;
+
+function dragStart(e) {
+    draggedElement = e.target;
+    setTimeout(() => {
+        (e.target as HTMLElement).style.opacity = '0.5';
+    }, 0);
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function dragEnd(e) {
+    (e.target as HTMLElement).style.opacity = '1';
+    draggedElement = null;
+}
+
+function dragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const droppable = (e.target as HTMLElement).closest('.droppable');
+    if (droppable) {
+        droppable.classList.add('drag-over');
+    }
+}
+
+function dragLeave(e) {
+    const droppable = (e.target as HTMLElement).closest('.droppable');
+    if (droppable) {
+        droppable.classList.remove('drag-over');
+    }
+}
+
+function drop(e) {
+    e.preventDefault();
+    const droppable = (e.target as HTMLElement).closest('.droppable');
+    if (droppable && draggedElement) {
+        droppable.classList.remove('drag-over');
+        // If dropping on another tile, insert before it
+        if ((e.target as HTMLElement).classList.contains('word-tile') && e.target !== draggedElement) {
+            const rect = (e.target as HTMLElement).getBoundingClientRect();
+            const nextSibling = (e.clientX - rect.left) > (rect.width / 2) ? (e.target as HTMLElement).nextSibling : e.target;
+            droppable.insertBefore(draggedElement, nextSibling);
+        } else {
+            droppable.appendChild(draggedElement);
+        }
+    }
+}
+
+// --- CARD GAME LOGIC ---
 function createWordTile(wordData) {
     const tile = document.createElement('div');
     tile.classList.add('word-tile');
     tile.textContent = wordData.word;
     tile.dataset.type = wordData.type;
-    tile.draggable = false; // Tiles start as not draggable in the pool
+    tile.draggable = true;
+    tile.addEventListener('dragstart', dragStart);
+    tile.addEventListener('dragend', dragEnd);
     return tile;
 }
 
-function loadQuestion(index) {
+function setupQuestion() {
     clearFeedback();
-    elements.checkBtn.disabled = false;
-    
     const levelData = levels[state.proficiency];
     state.totalQuestions = levelData.length;
-    const questionData = levelData[index];
+    const question = levelData[state.currentQuestionIndex];
+    state.currentWords = [...question.words];
 
-    // Common UI updates
-    elements.levelIndicator.textContent = `Proficiency: ${state.proficiency.charAt(0).toUpperCase() + state.proficiency.slice(1)}`;
-    elements.questionIndicator.textContent = `Question: ${index + 1}/${state.totalQuestions}`;
-    elements.progressBar.style.width = `${((index + 1) / state.totalQuestions) * 100}%`;
+    if (elements.levelIndicator) elements.levelIndicator.textContent = `Proficiency: ${state.proficiency.charAt(0).toUpperCase() + state.proficiency.slice(1)}`;
+    if (elements.questionIndicator) elements.questionIndicator.textContent = `Question: ${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
+    updateProgressBar(state.currentQuestionIndex, state.totalQuestions);
 
+    // Show/hide appropriate game UI
     if (state.proficiency === 'hard') {
-        // --- HARD TYPING MODE ---
-        elements.typingChallengeContainer.style.display = 'block';
-        elements.targetGrammar.parentElement.style.display = 'none'; // Hides #challenge-display
-        elements.sentenceTray.style.display = 'none';
-        elements.wordPool.style.display = 'none';
+        if(elements.typingChallengeContainer) elements.typingChallengeContainer.style.display = 'block';
+        if(elements.sentenceTray) elements.sentenceTray.style.display = 'none';
+        if(elements.wordPool) elements.wordPool.style.display = 'none';
+        setupTypingChallenge(question);
+    } else {
+        if(elements.typingChallengeContainer) elements.typingChallengeContainer.style.display = 'none';
+        if(elements.sentenceTray) elements.sentenceTray.style.display = 'flex';
+        if(elements.wordPool) elements.wordPool.style.display = 'flex';
         
-        elements.typingPrompt.textContent = questionData.prompt;
-        elements.typingWordSet.textContent = questionData.wordSet.join(', ');
-        elements.typingInput.value = '';
-        elements.gameSubtitle.textContent = "Type the sentence based on the prompt below.";
-
-    } else {
-        // --- EASY/MEDIUM CARD MODE ---
-        elements.typingChallengeContainer.style.display = 'none';
-        elements.targetGrammar.parentElement.style.display = 'block';
-        elements.sentenceTray.style.display = 'flex';
-        elements.wordPool.style.display = 'flex';
-
-        state.currentWords = [...questionData.words];
-        elements.targetGrammar.textContent = questionData.displayRule;
-        elements.gameSubtitle.textContent = "Arrange the words to match the target sentence structure.";
-
-        elements.sentenceTray.innerHTML = '';
-        elements.wordPool.innerHTML = '';
-        const shuffledWords = [...questionData.words];
-        shuffleArray(shuffledWords);
-        shuffledWords.forEach(word => elements.wordPool.appendChild(createWordTile(word)));
-    }
-    
-    resetTimer();
-    startTimer();
-}
-
-function checkAnswer() {
-    clearInterval(state.timerInterval);
-
-    if (state.proficiency === 'hard') {
-        // --- HARD TYPING VALIDATION ---
-        const userAnswer = elements.typingInput.value.trim();
-        if (userAnswer === '') {
-            showFeedback("Please type a sentence first.", 'incorrect');
-            startTimer(); // Resume timer
-            return;
-        }
-
-        const correctAnswer = levels.hard[state.currentQuestionIndex].answer;
+        if (elements.targetGrammar) elements.targetGrammar.textContent = question.displayRule;
+        if (elements.sentenceTray) elements.sentenceTray.innerHTML = '';
+        if (elements.wordPool) elements.wordPool.innerHTML = '';
         
-        // Normalization: lowercase, remove trailing punctuation, collapse multiple spaces
-        const normalize = (str) => str.toLowerCase().replace(/[.,?]$/, '').trim().replace(/\s+/g, ' ');
-        
-        if (normalize(userAnswer) === normalize(correctAnswer)) {
-            const points = calculateScore();
-            state.score += points;
-            showFeedback(`Correct! +${points} points`, 'correct');
-            if (state.gameMode === 'multi' && state.socket) {
-                state.playerData.score = state.score;
-                state.socket.emit('updateScore', state.playerData);
-            }
-            elements.checkBtn.disabled = true;
-            setTimeout(nextQuestion, 1500);
-        } else {
-            showFeedback("That's not quite right. Try again!", 'incorrect');
-        }
-
-    } else {
-        // --- EASY/MEDIUM CARD VALIDATION ---
-        const sentenceTiles = elements.sentenceTray.querySelectorAll('.word-tile');
-        if (sentenceTiles.length === 0) {
-            showFeedback("Please build a sentence first.", 'incorrect');
-            startTimer(); // Resume timer if no answer submitted
-            return;
-        }
-
-        const sentenceTypes = Array.from(sentenceTiles).map(tile => (tile as HTMLElement).dataset.type);
-        const sentenceString = sentenceTypes.join(' ');
-        const currentRule = levels[state.proficiency][state.currentQuestionIndex].rule;
-
-        const match = grammar.match(sentenceString, currentRule);
-
-        if (match.succeeded()) {
-            const points = calculateScore();
-            state.score += points;
-            showFeedback(`Correct! +${points} points`, 'correct');
-            if (state.gameMode === 'multi' && state.socket) {
-                state.playerData.score = state.score;
-                state.socket.emit('updateScore', state.playerData);
-            }
-            elements.checkBtn.disabled = true;
-            setTimeout(nextQuestion, 1500);
-        } else {
-            showFeedback("That's not quite right. Try again!", 'incorrect');
-        }
-    }
-}
-
-function calculateScore() {
-    // Base score + time bonus
-    const baseScore = 100;
-    const timeBonus = Math.max(0, state.timer * 2); 
-    return baseScore + timeBonus;
-}
-
-function nextQuestion() {
-    state.currentQuestionIndex++;
-    if (state.currentQuestionIndex < state.totalQuestions) {
-        loadQuestion(state.currentQuestionIndex);
-    } else {
-        endGame('Level Complete!', "You've answered all questions for this level.");
-    }
-}
-
-function resetCurrentQuestion() {
-    // For hard, this will clear the input. For others, it reloads the tiles.
-    clearInterval(state.timerInterval);
-    loadQuestion(state.currentQuestionIndex);
-}
-
-function startTimer() {
-    clearInterval(state.timerInterval); // Ensure no multiple timers running
-    state.timerInterval = setInterval(() => {
-        state.timer--;
-        elements.timerDisplay.textContent = `Time: ${state.timer}`;
-        if (state.timer <= 0) {
-            clearInterval(state.timerInterval);
-            showFeedback("Time's up! Moving to the next question.", 'incorrect');
-            setTimeout(nextQuestion, 2000);
-        }
-    }, 1000);
-}
-
-function resetTimer() {
-    state.timer = 50;
-    elements.timerDisplay.textContent = `Time: ${state.timer}`;
-}
-
-function showFeedback(message, type) {
-    elements.feedbackArea.textContent = message;
-    elements.feedbackArea.className = `feedback-${type}`;
-}
-
-function clearFeedback() {
-    elements.feedbackArea.textContent = '';
-    elements.feedbackArea.className = '';
-}
-
-// --- UI & MODAL MANAGEMENT ---
-function showModal(modal) {
-    modal.style.display = 'flex';
-}
-
-function hideModal(modal) {
-    modal.style.display = 'none';
-}
-
-function resetToMenu() {
-    // Stop any game timers
-    clearInterval(state.timerInterval);
-    if (state.socket) {
-        state.socket.disconnect();
-    }
-    
-    // Hide game/quiz containers
-    elements.gameContainer.style.display = 'none';
-    elements.gameView.style.display = 'block'; // reset to default
-    elements.quizView.style.display = 'none';  // reset to default
-
-    // Hide all modals
-    hideModal(elements.playerSetupModal);
-    hideModal(elements.quizSetupModal);
-    hideModal(elements.multiplayerModal);
-    hideModal(elements.multiplayerProficiencyModal);
-    hideModal(elements.waitingRoomModal);
-    hideModal(elements.gameOverModal);
-    
-    // Explicitly reset game view UI to default (card view)
-    elements.typingChallengeContainer.style.display = 'none';
-    elements.targetGrammar.parentElement.style.display = 'block';
-    elements.sentenceTray.style.display = 'flex';
-    elements.wordPool.style.display = 'flex';
-    
-    // Show the main menu modal
-    showModal(elements.modeModal);
-
-    // Reset state object to its initial values
-    state.gameMode = null;
-    state.proficiency = 'easy';
-    state.currentQuestionIndex = 0;
-    state.totalQuestions = 0;
-    state.score = 0;
-    state.timer = 50;
-    state.timerInterval = null;
-    state.currentWords = [];
-    state.playerData = { id: null, nickname: '', score: 0, groupCode: null };
-    state.groupCode = null;
-    state.players = [];
-    state.socket = null;
-    state.quizProficiency = 'easy';
-    state.currentQuizQuestionIndex = 0;
-    state.quizScore = 0;
-    state.quizQuestions = [];
-    
-    // Reset UI elements that might hold old state
-    elements.multiplayerScoreboard.style.display = 'none';
-    elements.playerScoresList.innerHTML = '';
-    elements.feedbackArea.innerHTML = '';
-    elements.quizFeedbackArea.innerHTML = '';
-    elements.nicknameInput.value = '';
-    elements.groupCodeInput.value = '';
-
-    // Also remove the beforeunload listener if it was set
-    window.removeEventListener('beforeunload', saveGameState);
-    // And clear saved game from local storage to prevent resuming a game that was 'backed out' of.
-    localStorage.removeItem('syntaxGameState');
-}
-
-function setupUI() {
-    elements.checkBtn.addEventListener('click', checkAnswer);
-    elements.resetBtn.addEventListener('click', resetCurrentQuestion);
-
-    // Mode selection
-    elements.singlePlayerBtn.addEventListener('click', () => {
-        state.gameMode = 'single';
-        hideModal(elements.modeModal);
-        showModal(elements.playerSetupModal);
-        checkForSavedGame();
-    });
-    elements.multiplayerBtn.addEventListener('click', () => {
-        state.gameMode = 'multi';
-        hideModal(elements.modeModal);
-        showModal(elements.multiplayerModal);
-        initializeSocket();
-    });
-    elements.quizBtn.addEventListener('click', () => {
-        state.gameMode = 'quiz';
-        hideModal(elements.modeModal);
-        showModal(elements.quizSetupModal);
-    });
-
-    // Single Player Setup
-    elements.proficiencyBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Fix: Cast element to HTMLElement to access the dataset property.
-            state.proficiency = (btn as HTMLElement).dataset.level;
-            startGame();
+        shuffleArray(state.currentWords);
+        state.currentWords.forEach(wordData => {
+            const tile = createWordTile(wordData);
+            elements.wordPool.appendChild(tile);
         });
-    });
-    elements.backFromSetupBtn.addEventListener('click', () => {
-        hideModal(elements.playerSetupModal);
-        showModal(elements.modeModal);
-    });
-
-    // Multiplayer Setup
-    elements.multiplayerCreateTab.addEventListener('click', () => {
-         elements.multiplayerCreateTab.classList.add('active');
-         elements.multiplayerJoinTab.classList.remove('active');
-         elements.groupCodeInput.style.display = 'none';
-         elements.createGroupBtn.style.display = 'block';
-         elements.joinGroupBtn.style.display = 'none';
-    });
-    elements.multiplayerJoinTab.addEventListener('click', () => {
-         elements.multiplayerJoinTab.classList.add('active');
-         elements.multiplayerCreateTab.classList.remove('active');
-         elements.groupCodeInput.style.display = 'block';
-         elements.createGroupBtn.style.display = 'none';
-         elements.joinGroupBtn.style.display = 'block';
-    });
-    elements.createGroupBtn.addEventListener('click', createGroup);
-    elements.joinGroupBtn.addEventListener('click', joinGroup);
-    elements.backFromMultiplayerBtn.addEventListener('click', () => {
-        hideModal(elements.multiplayerModal);
-        showModal(elements.modeModal);
-        if (state.socket) {
-            state.socket.disconnect();
-            state.socket = null;
-        }
-    });
-    elements.nicknameInput.addEventListener('input', () => {
-        const isNicknameValid = elements.nicknameInput.value.trim().length > 0;
-        elements.createGroupBtn.disabled = !isNicknameValid;
-        elements.joinGroupBtn.disabled = !isNicknameValid || elements.groupCodeInput.value.length !== 3;
-    });
-     elements.groupCodeInput.addEventListener('input', () => {
-        const isNicknameValid = elements.nicknameInput.value.trim().length > 0;
-        elements.joinGroupBtn.disabled = !isNicknameValid || elements.groupCodeInput.value.length !== 3;
-    });
-
-    // Multiplayer Proficiency (Host only)
-    elements.multiplayerProficiencyBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Fix: Cast element to HTMLElement to access the dataset property.
-            state.proficiency = (btn as HTMLElement).dataset.level;
-            if (state.socket) {
-                state.socket.emit('setProficiency', { groupCode: state.groupCode, proficiency: state.proficiency });
-            }
-            hideModal(elements.multiplayerProficiencyModal);
-            showModal(elements.waitingRoomModal);
-            elements.startGameBtn.style.display = 'block';
-        });
-    });
-    elements.backFromMultiplayerProficiencyBtn.addEventListener('click', () => {
-        // This should disconnect and go back to the multiplayer setup
-        hideModal(elements.multiplayerProficiencyModal);
-        showModal(elements.multiplayerModal);
-         if (state.socket) {
-            state.socket.emit('disconnect'); // This won't work, need server-side logic to handle group teardown. For now, just disconnect.
-            state.socket.disconnect();
-        }
-    });
-
-    // Waiting Room
-    elements.startGameBtn.addEventListener('click', () => {
-         if (state.socket && state.players.length > 0 && state.players[0].id === state.playerData.id) {
-            state.socket.emit('startGameRequest', { groupCode: state.groupCode, proficiency: state.proficiency });
-        }
-    });
-    elements.backFromWaitingBtn.addEventListener('click', resetToMenu);
-    
-    // Game Over
-    elements.playAgainBtn.addEventListener('click', resetToMenu);
-
-    // Save/Resume Logic
-    elements.resumeGameBtn.addEventListener('click', resumeGame);
-
-    // Quiz Setup
-    elements.quizProficiencyBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Fix: Cast element to HTMLElement to access the dataset property.
-            state.quizProficiency = (btn as HTMLElement).dataset.level;
-            startQuiz();
-        });
-    });
-    elements.backFromQuizSetupBtn.addEventListener('click', () => {
-        hideModal(elements.quizSetupModal);
-        showModal(elements.modeModal);
-    });
-
-    // Menu Buttons
-    elements.backToMenuBtn.addEventListener('click', resetToMenu);
-    elements.quizBackToMenuBtn.addEventListener('click', resetToMenu);
-}
-
-function startGame() {
-    hideModal(elements.playerSetupModal);
-    elements.gameContainer.style.display = 'block';
-    elements.gameView.style.display = 'block';
-    elements.quizView.style.display = 'none';
-
-    state.currentQuestionIndex = 0;
-    state.score = 0;
-    
-    loadQuestion(state.currentQuestionIndex);
-    
-    if (state.gameMode === 'single') {
-        window.addEventListener('beforeunload', saveGameState);
     }
-}
 
-function endGame(title, message) {
-    clearInterval(state.timerInterval);
-    elements.gameOverTitle.textContent = title;
-    elements.gameOverMessage.textContent = message;
-    // Fix: Convert the score number to a string before assigning to textContent.
-    elements.finalScore.textContent = (state.gameMode === 'quiz' ? state.quizScore : state.score).toString();
-    showModal(elements.gameOverModal);
-    
-    if (state.gameMode === 'single') {
-        localStorage.removeItem('syntaxGameState');
-        window.removeEventListener('beforeunload', saveGameState);
-    }
-}
-
-// --- LOCAL STORAGE (SINGLE PLAYER) ---
-function saveGameState() {
-    // Do not save hard level games as they are a different format
-    if (state.proficiency === 'hard') return;
-    const gameState = {
-        proficiency: state.proficiency,
-        currentQuestionIndex: state.currentQuestionIndex,
-        score: state.score,
-        timer: state.timer
-    };
-    localStorage.setItem('syntaxGameState', JSON.stringify(gameState));
-}
-
-function checkForSavedGame() {
-    if (localStorage.getItem('syntaxGameState')) {
-        elements.resumeGameContainer.style.display = 'block';
-    } else {
-        elements.resumeGameContainer.style.display = 'none';
-    }
-}
-
-function resumeGame() {
-    const savedState = JSON.parse(localStorage.getItem('syntaxGameState'));
-    if (savedState) {
-        state.proficiency = savedState.proficiency;
-        state.currentQuestionIndex = savedState.currentQuestionIndex;
-        state.score = savedState.score;
-        state.timer = savedState.timer;
-        startGame();
-        // Override timer from saved state
-        resetTimer();
-        state.timer = savedState.timer > 0 ? savedState.timer : 50;
+    if (elements.checkBtn) elements.checkBtn.disabled = false;
+    if (state.gameMode !== 'multi') {
         startTimer();
     }
 }
 
-// --- MULTIPLAYER LOGIC ---
-function initializeSocket() {
-    // Connect to the local server, allowing fallback to long-polling
-    state.socket = io(); 
-    elements.multiplayerFeedback.textContent = 'Connecting to server...';
+function setupTypingChallenge(question) {
+    if (elements.typingPrompt) elements.typingPrompt.textContent = question.prompt;
+    const shuffledWords = [...question.words].sort(() => Math.random() - 0.5);
+    if (elements.typingWordSet) elements.typingWordSet.textContent = shuffledWords.join(', ');
+    if (elements.typingInput) {
+        elements.typingInput.value = '';
+        elements.typingInput.focus();
+    }
+}
 
-    state.socket.on('connect', () => {
-        console.log('Connected to server with ID:', state.socket.id);
-        state.playerData.id = state.socket.id;
-        elements.multiplayerFeedback.textContent = '';
-        elements.createGroupBtn.disabled = elements.nicknameInput.value.trim().length === 0;
-    });
+
+function checkAnswer(timedOut = false) {
+    if (timedOut && state.timer > 0) return; // Don't check if not actually timed out
+    stopTimer();
     
+    let isCorrect;
+    const levelData = levels[state.proficiency];
+    const question = levelData[state.currentQuestionIndex];
+
+    if (state.proficiency === 'hard') {
+        const userInput = elements.typingInput.value.trim().toLowerCase();
+        // Simple check: see if all required words are present
+        isCorrect = question.words.every(word => userInput.includes(word.toLowerCase()));
+        if (isCorrect) {
+            displayFeedback("Excellent! You used all the required words correctly.", true);
+        } else {
+             displayFeedback("Not quite. Make sure you use all the words from the set.", false);
+        }
+    } else {
+        const sentenceTiles = elements.sentenceTray.querySelectorAll('.word-tile');
+        const submittedTypes = Array.from(sentenceTiles).map(tile => (tile as HTMLElement).dataset.type);
+        const submittedSentence = submittedTypes.join('_');
+        
+        const semantics = grammar.createSemantics().addOperation('eval', {});
+        const match = grammar.match(submittedSentence, question.rule);
+        
+        isCorrect = match.succeeded();
+        
+        if (isCorrect) {
+            displayFeedback("Correct! Well done.", true);
+        } else {
+            displayFeedback("Not quite right. Try again!", false);
+        }
+    }
+    
+    if (isCorrect) {
+        state.score += 10 + Math.max(0, state.timer);
+        if (state.gameMode === 'multi' && state.socket) {
+            state.playerData.score = state.score;
+            state.socket.emit('updateScore', state.playerData);
+        }
+        
+        if (elements.checkBtn) elements.checkBtn.disabled = true;
+        
+        setTimeout(() => {
+            state.currentQuestionIndex++;
+            if (state.currentQuestionIndex < state.totalQuestions) {
+                setupQuestion();
+            } else {
+                endGame(true);
+            }
+        }, 2000);
+    } else {
+        if(timedOut) {
+            displayFeedback("Time's up! Moving to the next question.", false);
+            setTimeout(() => {
+                state.currentQuestionIndex++;
+                if (state.currentQuestionIndex < state.totalQuestions) {
+                    setupQuestion();
+                } else {
+                    endGame(false);
+                }
+            }, 2000);
+        }
+    }
+}
+
+
+function resetWordPositions() {
+    if (!elements.wordPool || !elements.sentenceTray) return;
+    elements.wordPool.innerHTML = '';
+    elements.sentenceTray.innerHTML = '';
+    clearFeedback();
+
+    shuffleArray(state.currentWords);
+    state.currentWords.forEach(wordData => {
+        const tile = createWordTile(wordData);
+        elements.wordPool.appendChild(tile);
+    });
+}
+
+function startGame(proficiency) {
+    state.proficiency = proficiency;
+    state.currentQuestionIndex = 0;
+    state.score = 0;
+    
+    if (state.gameMode === 'multi') {
+        if(elements.multiplayerScoreboard) elements.multiplayerScoreboard.style.display = 'block';
+        if(elements.timerDisplay) elements.timerDisplay.style.display = 'none';
+        updatePlayerScores(state.players);
+    } else {
+        if(elements.multiplayerScoreboard) elements.multiplayerScoreboard.style.display = 'none';
+        if(elements.timerDisplay) elements.timerDisplay.style.display = 'block';
+    }
+    
+    hideModal(elements.modeModal);
+    hideModal(elements.playerSetupModal);
+    hideModal(elements.waitingRoomModal);
+    hideModal(elements.multiplayerProficiencyModal);
+    if(elements.gameContainer) elements.gameContainer.style.display = 'block';
+    if(elements.gameView) elements.gameView.style.display = 'block';
+    if(elements.quizView) elements.quizView.style.display = 'none';
+    
+    setupQuestion();
+}
+
+function endGame(completed) {
+    stopTimer();
+    if(elements.gameOverTitle) elements.gameOverTitle.textContent = completed ? "Level Complete!" : "Game Over";
+    if(elements.gameOverMessage) elements.gameOverMessage.textContent = completed 
+        ? "You've successfully answered all questions." 
+        : "You've completed the session.";
+    // Fix for: Type 'number' is not assignable to type 'string'.
+    if(elements.finalScore) elements.finalScore.textContent = state.score.toString();
+    showModal(elements.gameOverModal);
+}
+
+function backToMenu() {
+    stopTimer();
+    state.gameMode = null;
+    if (state.socket) {
+        state.socket.disconnect();
+        state.socket = null;
+    }
+
+    hideModal(elements.playerSetupModal);
+    hideModal(elements.quizSetupModal);
+    hideModal(elements.multiplayerModal);
+    hideModal(elements.waitingRoomModal);
+    hideModal(elements.gameOverModal);
+    hideModal(elements.multiplayerProficiencyModal);
+    if(elements.gameContainer) elements.gameContainer.style.display = 'none';
+    showModal(elements.modeModal);
+}
+
+// --- QUIZ LOGIC ---
+function startQuiz(proficiency) {
+    state.quizProficiency = proficiency;
+    state.currentQuizQuestionIndex = 0;
+    state.quizScore = 0;
+    state.quizQuestions = [...quizData[proficiency]];
+    shuffleArray(state.quizQuestions);
+
+    hideModal(elements.quizSetupModal);
+    if(elements.gameContainer) elements.gameContainer.style.display = 'block';
+    if(elements.gameView) elements.gameView.style.display = 'none';
+    if(elements.quizView) elements.quizView.style.display = 'block';
+    
+    displayQuizQuestion();
+}
+
+function displayQuizQuestion() {
+    clearFeedback();
+    const questionData = state.quizQuestions[state.currentQuizQuestionIndex];
+    if (!questionData) {
+        endQuiz();
+        return;
+    }
+
+    if(elements.quizLevelIndicator) elements.quizLevelIndicator.textContent = `Difficulty: ${state.quizProficiency.charAt(0).toUpperCase() + state.quizProficiency.slice(1)}`;
+    if(elements.quizQuestionIndicator) elements.quizQuestionIndicator.textContent = `Question: ${state.currentQuizQuestionIndex + 1}/${state.quizQuestions.length}`;
+    updateProgressBar(state.currentQuizQuestionIndex, state.quizQuestions.length);
+
+    if(elements.quizQuestionText) elements.quizQuestionText.textContent = questionData.question;
+    if(elements.quizOptionsArea) elements.quizOptionsArea.innerHTML = '';
+    
+    const options = [...questionData.options];
+    shuffleArray(options);
+
+    options.forEach(option => {
+        const button = document.createElement('button');
+        button.classList.add('quiz-option-btn');
+        button.textContent = option;
+        button.onclick = () => checkQuizAnswer(option, questionData.answer);
+        elements.quizOptionsArea.appendChild(button);
+    });
+
+    if(elements.nextQuestionBtn) (elements.nextQuestionBtn as HTMLElement).style.display = 'none';
+}
+
+function checkQuizAnswer(selectedOption, correctAnswer) {
+    const buttons = elements.quizOptionsArea.querySelectorAll('.quiz-option-btn');
+    let correctButton;
+
+    buttons.forEach(button => {
+        // Fix for: Property 'disabled' does not exist on type 'Element'.
+        (button as HTMLButtonElement).disabled = true;
+        if (button.textContent === correctAnswer) {
+            button.classList.add('correct');
+            correctButton = button;
+        }
+        if (button.textContent === selectedOption && selectedOption !== correctAnswer) {
+            button.classList.add('incorrect');
+        }
+    });
+
+    if (selectedOption === correctAnswer) {
+        if(elements.quizFeedbackArea) elements.quizFeedbackArea.textContent = "Correct!";
+        if(elements.quizFeedbackArea) elements.quizFeedbackArea.className = 'feedback-correct';
+        state.quizScore++;
+    } else {
+        if(elements.quizFeedbackArea) elements.quizFeedbackArea.textContent = `Sorry, the correct answer was "${correctAnswer}".`;
+        if(elements.quizFeedbackArea) elements.quizFeedbackArea.className = 'feedback-incorrect';
+    }
+
+    if(elements.nextQuestionBtn) (elements.nextQuestionBtn as HTMLElement).style.display = 'block';
+}
+
+function nextQuizQuestion() {
+    state.currentQuizQuestionIndex++;
+    if (state.currentQuizQuestionIndex < state.quizQuestions.length) {
+        displayQuizQuestion();
+    } else {
+        endQuiz();
+    }
+}
+
+function endQuiz() {
+    if(elements.gameOverTitle) elements.gameOverTitle.textContent = "Quiz Complete!";
+    if(elements.gameOverMessage) elements.gameOverMessage.textContent = `You answered ${state.quizScore} out of ${state.quizQuestions.length} questions correctly.`;
+    if(elements.finalScore) elements.finalScore.textContent = `${Math.round((state.quizScore / state.quizQuestions.length) * 100)}%`;
+    showModal(elements.gameOverModal);
+}
+
+// --- MULTIPLAYER LOGIC ---
+function connectToServer() {
+    // Connect to the server running on the same host
+    // Fix for: Cannot find name 'io'.
+    state.socket = io({
+        reconnectionAttempts: 3,
+        timeout: 10000,
+    });
+    if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = "Connecting to server...";
+    
+    state.socket.on('connect', () => {
+        console.log("Connected to server with ID:", state.socket.id);
+        if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = "";
+        if(elements.createGroupBtn) elements.createGroupBtn.disabled = false;
+        if(elements.joinGroupBtn) elements.joinGroupBtn.disabled = false;
+        state.playerData.id = state.socket.id;
+    });
+
     state.socket.on('connect_error', (err) => {
-        console.error('Connection Error:', err);
-        elements.multiplayerFeedback.textContent = 'Failed to connect to server.';
-        elements.createGroupBtn.disabled = true;
-        elements.joinGroupBtn.disabled = true;
+        console.error("Connection Error:", err.message);
+        if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = `Connection failed. Retrying...`;
+    });
+
+    state.socket.on('disconnect', () => {
+        console.log("Disconnected from server.");
+        if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = "Disconnected.";
+        if(elements.createGroupBtn) elements.createGroupBtn.disabled = true;
+        if(elements.joinGroupBtn) elements.joinGroupBtn.disabled = true;
     });
 
     state.socket.on('groupCreated', ({ groupCode, players }) => {
         state.groupCode = groupCode;
-        state.players = players;
         state.playerData.groupCode = groupCode;
+        if(elements.groupCodeDisplay) elements.groupCodeDisplay.textContent = groupCode;
         hideModal(elements.multiplayerModal);
-        
-        // Host chooses proficiency
+        // If host, show proficiency selection first
         showModal(elements.multiplayerProficiencyModal);
-        
-        updateWaitingRoom(players);
-        elements.groupCodeDisplay.textContent = groupCode;
+        updateWaitingRoom(players, true); // isHost = true
     });
-    
+
     state.socket.on('joinSuccess', ({ groupCode }) => {
         state.groupCode = groupCode;
         state.playerData.groupCode = groupCode;
         hideModal(elements.multiplayerModal);
         showModal(elements.waitingRoomModal);
-        elements.groupCodeDisplay.textContent = groupCode;
     });
-    
+
     state.socket.on('joinError', (message) => {
-        elements.multiplayerFeedback.textContent = message;
+        if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = message;
     });
-    
+
     state.socket.on('updatePlayers', (players) => {
-        updateWaitingRoom(players);
-        if (state.gameMode === 'multi' && elements.gameContainer.style.display === 'block') {
-            updateScoreboard(players);
+        state.players = players;
+        if ((elements.waitingRoomModal as HTMLElement).style.display === 'flex') {
+            const isHost = players.length > 0 && players[0].id === state.playerData.id;
+            updateWaitingRoom(players, isHost);
+        }
+        if ((elements.gameContainer as HTMLElement).style.display === 'block' && state.gameMode === 'multi') {
+            updatePlayerScores(players);
         }
     });
     
     state.socket.on('gameStarted', ({ proficiency }) => {
-        state.proficiency = proficiency;
-        hideModal(elements.waitingRoomModal);
-        hideModal(elements.multiplayerProficiencyModal);
-        startGame();
-        elements.multiplayerScoreboard.style.display = 'block';
-        updateScoreboard(state.players);
+        startGame(proficiency);
     });
 }
 
-function createGroup() {
-    const nickname = elements.nicknameInput.value.trim();
-    if (nickname && state.socket) {
-        state.playerData.nickname = nickname;
-        state.socket.emit('createGroup', state.playerData);
-    }
-}
-
-function joinGroup() {
-    const nickname = elements.nicknameInput.value.trim();
-    const groupCode = elements.groupCodeInput.value.trim();
-    if (nickname && groupCode && state.socket) {
-        state.playerData.nickname = nickname;
-        state.socket.emit('joinGroup', { playerData: state.playerData, groupCode });
-    }
-}
-
-function updateWaitingRoom(players) {
-    state.players = players;
+function updateWaitingRoom(players, isHost) {
+    if(!elements.waitingPlayerList) return;
     elements.waitingPlayerList.innerHTML = '';
-    players.forEach(p => {
+    players.forEach(player => {
         const li = document.createElement('li');
-        li.textContent = p.nickname + (p.id === state.playerData.id ? ' (You)' : '');
+        li.textContent = player.nickname + (player.id === state.playerData.id ? ' (You)' : '');
         elements.waitingPlayerList.appendChild(li);
     });
     
-    // Host control logic
-    const isHost = state.players.length > 0 && state.players[0].id === state.playerData.id;
-    if (isHost && elements.waitingRoomModal.style.display === 'flex' && elements.multiplayerProficiencyModal.style.display === 'none') {
-        elements.startGameBtn.style.display = 'block';
+    if (isHost) {
+        if(elements.startGameBtn) elements.startGameBtn.style.display = 'block';
+        if(elements.startGameBtn) elements.startGameBtn.disabled = players.length < 1; // Can start with 1 for testing
+    } else {
+        if(elements.startGameBtn) elements.startGameBtn.style.display = 'none';
     }
 }
 
-function updateScoreboard(players) {
-    // Sort players by score descending
-    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-
+function updatePlayerScores(players) {
+    if(!elements.playerScoresList) return;
     elements.playerScoresList.innerHTML = '';
-    sortedPlayers.forEach(p => {
+    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+    sortedPlayers.forEach(player => {
         const li = document.createElement('li');
         const nameSpan = document.createElement('span');
         nameSpan.className = 'player-name';
-        nameSpan.textContent = p.nickname + (p.id === state.playerData.id ? ' (You)' : '');
-        
+        nameSpan.textContent = player.nickname + (player.id === state.playerData.id ? ' (You)' : '');
         const scoreSpan = document.createElement('span');
         scoreSpan.className = 'player-score';
-        scoreSpan.textContent = p.score;
-        
+        scoreSpan.textContent = player.score;
         li.appendChild(nameSpan);
         li.appendChild(scoreSpan);
         elements.playerScoresList.appendChild(li);
     });
 }
 
-// --- QUIZ LOGIC ---
-function startQuiz() {
-    hideModal(elements.quizSetupModal);
-    elements.gameContainer.style.display = 'block';
-    elements.gameView.style.display = 'none';
-    elements.quizView.style.display = 'block';
+// --- EVENT LISTENERS ---
+function init() {
+    // Mode Selection
+    if(elements.singlePlayerBtn) elements.singlePlayerBtn.onclick = () => {
+        state.gameMode = 'single';
+        hideModal(elements.modeModal);
+        showModal(elements.playerSetupModal);
+    };
+    if(elements.multiplayerBtn) elements.multiplayerBtn.onclick = () => {
+        state.gameMode = 'multi';
+        hideModal(elements.modeModal);
+        showModal(elements.multiplayerModal);
+        connectToServer();
+    };
+    if(elements.quizBtn) elements.quizBtn.onclick = () => {
+        state.gameMode = 'quiz';
+        hideModal(elements.modeModal);
+        showModal(elements.quizSetupModal);
+    };
 
-    state.quizQuestions = quizData[state.quizProficiency];
-    state.totalQuestions = state.quizQuestions.length;
-    state.currentQuizQuestionIndex = 0;
-    state.quizScore = 0;
-
-    loadQuizQuestion(state.currentQuizQuestionIndex);
-}
-
-function loadQuizQuestion(index) {
-    elements.quizLevelIndicator.textContent = `Difficulty: ${state.quizProficiency.charAt(0).toUpperCase() + state.quizProficiency.slice(1)}`;
-    elements.quizQuestionIndicator.textContent = `Question: ${index + 1}/${state.totalQuestions}`;
-    elements.quizProgressBar.style.width = `${((index + 1) / state.totalQuestions) * 100}%`;
-    elements.quizFeedbackArea.textContent = '';
-    elements.nextQuestionBtn.style.display = 'none';
-    
-    const question = state.quizQuestions[index];
-    elements.quizQuestionText.textContent = question.question;
-    elements.quizOptionsArea.innerHTML = '';
-
-    const shuffledOptions = [...question.options];
-    shuffleArray(shuffledOptions);
-
-    shuffledOptions.forEach(optionText => {
-        const button = document.createElement('button');
-        button.className = 'quiz-option-btn';
-        button.textContent = optionText;
-        button.addEventListener('click', () => checkQuizAnswer(button, optionText, question.answer));
-        elements.quizOptionsArea.appendChild(button);
+    // Single Player Proficiency
+    elements.proficiencyBtns.forEach(btn => {
+        // Fix for: Property 'onclick' does not exist on type 'Element'. and Property 'dataset' does not exist on type 'Element'.
+        (btn as HTMLElement).onclick = (e) => startGame((e.target as HTMLElement).dataset.level);
     });
-}
+    if(elements.backFromSetupBtn) (elements.backFromSetupBtn as HTMLElement).onclick = backToMenu;
 
-function checkQuizAnswer(button, selectedOption, correctAnswer) {
-    const allOptionBtns = elements.quizOptionsArea.querySelectorAll('.quiz-option-btn');
-    // Fix: Cast each button element to HTMLButtonElement to access the 'disabled' property.
-    allOptionBtns.forEach(btn => (btn as HTMLButtonElement).disabled = true);
+    // Quiz Proficiency
+    elements.quizProficiencyBtns.forEach(btn => {
+        // Fix for: Property 'onclick' does not exist on type 'Element'. and Property 'dataset' does not exist on type 'Element'.
+        (btn as HTMLElement).onclick = (e) => startQuiz((e.target as HTMLElement).dataset.level);
+    });
+    if(elements.backFromQuizSetupBtn) (elements.backFromQuizSetupBtn as HTMLElement).onclick = backToMenu;
+    if(elements.nextQuestionBtn) (elements.nextQuestionBtn as HTMLElement).onclick = nextQuizQuestion;
 
-    if (selectedOption === correctAnswer) {
-        button.classList.add('correct');
-        elements.quizFeedbackArea.textContent = 'Correct!';
-        elements.quizFeedbackArea.style.color = 'var(--success)';
-        state.quizScore += 100;
-    } else {
-        button.classList.add('incorrect');
-        elements.quizFeedbackArea.textContent = `Incorrect. The correct answer is "${correctAnswer}".`;
-        elements.quizFeedbackArea.style.color = 'var(--error)';
-        // Highlight the correct answer
-        allOptionBtns.forEach(btn => {
-            if (btn.textContent === correctAnswer) {
-                btn.classList.add('correct');
+    // Game Controls
+    if(elements.checkBtn) elements.checkBtn.onclick = () => checkAnswer(false);
+    if(elements.resetBtn) (elements.resetBtn as HTMLElement).onclick = resetWordPositions;
+    if(elements.playAgainBtn) (elements.playAgainBtn as HTMLElement).onclick = backToMenu;
+    if(elements.backToMenuBtn) (elements.backToMenuBtn as HTMLElement).onclick = backToMenu;
+    if(elements.quizBackToMenuBtn) (elements.quizBackToMenuBtn as HTMLElement).onclick = backToMenu;
+
+    // Drag and Drop listeners for containers
+    [elements.sentenceTray, elements.wordPool].forEach(container => {
+        if(container) {
+            container.addEventListener('dragover', dragOver);
+            container.addEventListener('dragleave', dragLeave);
+            container.addEventListener('drop', drop);
+        }
+    });
+
+    // Multiplayer Setup
+    if(elements.multiplayerCreateTab) elements.multiplayerCreateTab.onclick = () => {
+        elements.multiplayerCreateTab.classList.add('active');
+        elements.multiplayerJoinTab.classList.remove('active');
+        if(elements.groupCodeInput) elements.groupCodeInput.style.display = 'none';
+        if(elements.joinGroupBtn) elements.joinGroupBtn.style.display = 'none';
+        if(elements.createGroupBtn) elements.createGroupBtn.style.display = 'block';
+    };
+     if(elements.multiplayerJoinTab) elements.multiplayerJoinTab.onclick = () => {
+        elements.multiplayerJoinTab.classList.add('active');
+        elements.multiplayerCreateTab.classList.remove('active');
+        if(elements.groupCodeInput) elements.groupCodeInput.style.display = 'block';
+        if(elements.joinGroupBtn) elements.joinGroupBtn.style.display = 'block';
+        if(elements.createGroupBtn) elements.createGroupBtn.style.display = 'none';
+    };
+    if(elements.createGroupBtn) elements.createGroupBtn.onclick = () => {
+        const nickname = elements.nicknameInput.value.trim();
+        if (nickname && state.socket) {
+            state.playerData.nickname = nickname;
+            state.socket.emit('createGroup', state.playerData);
+        } else {
+            if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = "Please enter a nickname.";
+        }
+    };
+    if(elements.joinGroupBtn) elements.joinGroupBtn.onclick = () => {
+        const nickname = elements.nicknameInput.value.trim();
+        const groupCode = elements.groupCodeInput.value.trim();
+        if (nickname && groupCode.length === 3 && state.socket) {
+            state.playerData.nickname = nickname;
+            state.socket.emit('joinGroup', { playerData: state.playerData, groupCode });
+        } else {
+            if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = "Please enter a nickname and a valid 3-digit code.";
+        }
+    };
+    if(elements.backFromMultiplayerBtn) (elements.backFromMultiplayerBtn as HTMLElement).onclick = backToMenu;
+    
+    // Multiplayer Host Proficiency Selection
+    elements.multiplayerProficiencyBtns.forEach(btn => {
+        // Fix for: Property 'onclick' does not exist on type 'Element'. and Property 'dataset' does not exist on type 'Element'.
+        (btn as HTMLElement).onclick = (e) => {
+            const proficiency = (e.target as HTMLElement).dataset.level;
+            state.proficiency = proficiency;
+            if (state.socket && state.groupCode) {
+                state.socket.emit('setProficiency', { groupCode: state.groupCode, proficiency });
             }
-        });
-    }
-    elements.nextQuestionBtn.style.display = 'block';
+            hideModal(elements.multiplayerProficiencyModal);
+            showModal(elements.waitingRoomModal);
+        };
+    });
+    if(elements.backFromMultiplayerProficiencyBtn) (elements.backFromMultiplayerProficiencyBtn as HTMLElement).onclick = backToMenu;
+
+    // Multiplayer Waiting Room
+    if(elements.startGameBtn) elements.startGameBtn.onclick = () => {
+        if(state.socket && state.groupCode) {
+            state.socket.emit('startGameRequest', { groupCode: state.groupCode, proficiency: state.proficiency });
+        }
+    };
+    if(elements.backFromWaitingBtn) (elements.backFromWaitingBtn as HTMLElement).onclick = backToMenu;
 }
 
-function nextQuizQuestion() {
-    state.currentQuizQuestionIndex++;
-    if (state.currentQuizQuestionIndex < state.totalQuestions) {
-        loadQuizQuestion(state.currentQuizQuestionIndex);
-    } else {
-        endGame("Quiz Complete!", "You've finished all the quiz questions.");
-    }
-}
-
-// --- APP INITIALIZATION ---
-function initialize() {
-    setupUI();
-    setupTileInteractions();
-    elements.nextQuestionBtn.addEventListener('click', nextQuizQuestion);
-    showModal(elements.modeModal);
-}
-
-initialize();
+// --- INITIALIZE ---
+document.addEventListener('DOMContentLoaded', init);
