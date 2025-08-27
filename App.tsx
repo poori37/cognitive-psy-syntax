@@ -13,7 +13,11 @@ const shuffleArray = (array: any[]) => {
 };
 
 // Global declarations for external libraries
-declare const ohm: any;
+declare global {
+    interface Window {
+        ohm: any;
+    }
+}
 
 const App: React.FC = () => {
     // Game State
@@ -25,6 +29,7 @@ const App: React.FC = () => {
     const [score, setScore] = useState(0);
     const [timer, setTimer] = useState(50);
     const timerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+    const [grammar, setGrammar] = useState<any>(null);
 
     // Card Game State
     const [trayWords, setTrayWords] = useState<Word[]>([]);
@@ -55,14 +60,6 @@ const App: React.FC = () => {
     const [feedback, setFeedback] = useState<{ message: string; type: 'correct' | 'incorrect' } | null>(null);
     const [isAnswerChecked, setIsAnswerChecked] = useState(false);
     const [hasSavedGame, setHasSavedGame] = useState(false);
-
-    const grammar = useMemo(() => {
-        const grammarScript = document.getElementById('grammar');
-        if (grammarScript) {
-            return ohm.grammar(grammarScript.textContent);
-        }
-        return null;
-    }, []);
 
     // --- Game Flow ---
 
@@ -161,6 +158,23 @@ const App: React.FC = () => {
 
     // --- Effects ---
     
+    // Grammar Initialization Effect
+    useEffect(() => {
+        if (window.ohm) {
+            const grammarScript = document.getElementById('grammar');
+            if (grammarScript?.textContent) {
+                try {
+                    const g = window.ohm.grammar(grammarScript.textContent);
+                    setGrammar(g);
+                } catch (e) {
+                    console.error("Failed to initialize Ohm.js grammar:", e);
+                }
+            }
+        } else {
+            console.error("Ohm.js library not found. Grammar functionality will be unavailable.");
+        }
+    }, []);
+
     // Timer Effect
     useEffect(() => {
         if (timer <= 0 && view !== 'menu' && !isAnswerChecked) {
@@ -297,6 +311,10 @@ const App: React.FC = () => {
             const normalize = (str: string) => str.toLowerCase().replace(/[.,?]$/, '').trim().replace(/\s+/g, ' ');
             isCorrect = normalize(typingInput) === normalize(correctAnswer);
         } else {
+            if (!grammar) {
+                setFeedback({ message: 'Error: Grammar engine is not ready.', type: 'incorrect' });
+                return;
+            }
             if (trayWords.length === 0) {
               setFeedback({ message: 'Please build a sentence first.', type: 'incorrect'});
               setTimeout(() => setFeedback(null), 2000);
