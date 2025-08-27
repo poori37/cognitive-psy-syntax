@@ -12,9 +12,17 @@ const shuffleArray = (array: any[]) => {
   return array;
 };
 
+// Type definition for saved game state
+interface SavedGameState {
+    proficiency: Proficiency;
+    currentQuestionIndex: number;
+    score: number;
+    timer: number;
+}
+
 // Word with a unique ID for drag-and-drop
 interface IdentifiedWord extends Word {
-    id: number;
+    id: string;
 }
 
 
@@ -93,7 +101,7 @@ const App: React.FC = () => {
         if (prof !== 'hard') {
             const q = questionData as CardQuestion;
             // Create IDs that are unique across the entire level, not just the question
-            const wordsWithIds = q.words.map((word, idx) => ({ ...word, id: Number(`${index}${idx}`) }));
+            const wordsWithIds = q.words.map((word, idx) => ({ ...word, id: `${index}-${idx}` }));
             setTrayWords([]);
             setPoolWords(shuffleArray([...wordsWithIds]));
         }
@@ -143,7 +151,7 @@ const App: React.FC = () => {
       }
     }, [currentQuizQuestionIndex, quizProficiency, loadQuizQuestion, endGame]);
     
-    const startGame = useCallback((resumedState: any = null, profOverride?: Proficiency) => {
+    const startGame = useCallback((resumedState: SavedGameState | null = null, profOverride?: Proficiency) => {
         const prof = profOverride || resumedState?.proficiency || proficiency;
         const qIndex = resumedState?.currentQuestionIndex || 0;
         const initialScore = resumedState?.score || 0;
@@ -193,7 +201,7 @@ const App: React.FC = () => {
     useEffect(() => {
         const saveGameState = () => {
             if (gameMode === 'single' && view === 'game') {
-                const stateToSave = { proficiency, currentQuestionIndex, score, timer };
+                const stateToSave: SavedGameState = { proficiency, currentQuestionIndex, score, timer };
                 localStorage.setItem('syntaxGameState', JSON.stringify(stateToSave));
             }
         };
@@ -354,8 +362,9 @@ const App: React.FC = () => {
     };
 
     const resumeGame = () => {
-        const savedState = JSON.parse(localStorage.getItem('syntaxGameState') || '{}');
-        if (savedState) {
+        const savedStateJSON = localStorage.getItem('syntaxGameState');
+        if (savedStateJSON) {
+            const savedState: SavedGameState = JSON.parse(savedStateJSON);
             startGame(savedState);
         }
     };
