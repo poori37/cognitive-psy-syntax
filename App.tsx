@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { levels, quizData } from './constants';
@@ -225,66 +226,7 @@ const App: React.FC = () => {
       }
     }, [modal]);
 
-    const initializeSocket = useCallback(() => {
-        if (connectionStatus === 'connecting') return;
-
-        if (socket) {
-            socket.disconnect();
-        }
-
-        // Connect to the server that serves the page
-        const newSocket = io();
-        setSocket(newSocket);
-        setConnectionStatus('connecting');
-        setMultiplayerFeedback('Connecting to server...');
-
-        newSocket.on('connect', () => {
-            setPlayerData(prev => ({ ...prev, id: newSocket.id }));
-            setConnectionStatus('connected');
-            setMultiplayerFeedback('');
-        });
-
-        newSocket.on('connect_error', () => {
-            setConnectionStatus('failed');
-            setMultiplayerFeedback('Failed to connect to server. Please check your connection.');
-            newSocket.disconnect();
-            setSocket(null);
-        });
-
-        newSocket.on('groupCreated', ({ groupCode: code, players: playerList }) => {
-            setGroupCode(code);
-            setPlayers(playerList);
-            setModal('multi-proficiency');
-        });
-
-        newSocket.on('joinSuccess', ({ groupCode: code }) => {
-            setGroupCode(code);
-            setModal('waiting-room');
-        });
-
-        newSocket.on('joinError', (message) => {
-            setMultiplayerFeedback(message);
-        });
-
-        newSocket.on('updatePlayers', (playerList) => {
-            setPlayers(playerList);
-        });
-
-        newSocket.on('gameStarted', ({ proficiency: prof }) => {
-            startGame(null, prof);
-        });
-
-        return newSocket;
-    }, [socket, connectionStatus, startGame]);
-
-    // Effect to initialize socket connection for multiplayer
-    useEffect(() => {
-        if (modal === 'multi-setup' && connectionStatus === 'idle') {
-            initializeSocket();
-        }
-    }, [modal, connectionStatus, initializeSocket]);
-    
-    const resetToMenu = () => {
+    const resetToMenu = useCallback(() => {
         if (timerInterval.current) clearInterval(timerInterval.current);
         if (socket) socket.disconnect();
         
@@ -315,14 +257,82 @@ const App: React.FC = () => {
 
         // Clear saved game when explicitly returning to menu
         localStorage.removeItem('syntaxGameState');
-    };
+    }, [socket]);
+
+    const initializeSocket = useCallback(() => {
+        if (connectionStatus === 'connecting') return;
+
+        if (socket) {
+            socket.disconnect();
+        }
+
+        // Connect to the server that serves the page
+        const newSocket = io();
+        setSocket(newSocket);
+        setConnectionStatus('connecting');
+        setMultiplayerFeedback('Connecting to server...');
+
+        newSocket.on('connect', () => {
+            setPlayerData(prev => ({ ...prev, id: newSocket.id }));
+            setConnectionStatus('connected');
+            setMultiplayerFeedback('');
+        });
+
+        newSocket.on('connect_error', () => {
+            setConnectionStatus('failed');
+            setMultiplayerFeedback('Failed to connect to server. Please check your connection.');
+            newSocket.disconnect();
+            setSocket(null);
+        });
+        
+        newSocket.on('disconnect', () => {
+            if (view !== 'menu') {
+                setMultiplayerFeedback("You have been disconnected. Returning to the menu.");
+                setTimeout(() => resetToMenu(), 3000);
+            }
+        });
+
+        newSocket.on('groupCreated', ({ groupCode: code, players: playerList }) => {
+            setGroupCode(code);
+            setPlayers(playerList);
+            setModal('multi-proficiency');
+        });
+
+        newSocket.on('joinSuccess', ({ groupCode: code }) => {
+            setGroupCode(code);
+            setModal('waiting-room');
+        });
+
+        newSocket.on('joinError', (message) => {
+            setMultiplayerFeedback(message);
+        });
+
+        newSocket.on('updatePlayers', (playerList) => {
+            setPlayers(playerList);
+        });
+
+        newSocket.on('gameStarted', ({ proficiency: prof }) => {
+            startGame(null, prof);
+        });
+
+        return newSocket;
+    }, [socket, connectionStatus, startGame, view, resetToMenu]);
+
+    // Effect to initialize socket connection for multiplayer
+    useEffect(() => {
+        if (modal === 'multi-setup' && connectionStatus === 'idle') {
+            initializeSocket();
+        }
+    }, [modal, connectionStatus, initializeSocket]);
 
     const checkAnswer = () => {
         let isCorrect = false;
         
         if (proficiency === 'hard') {
             const correctAnswer = (levels[proficiency][currentQuestionIndex] as HardQuestion).answer;
-            const normalize = (str: string) => str.toLowerCase().replace(/[.,?]/g, '').trim().replace(/\s+/g, ' ');
+            // Normalize strings by converting to lower case, removing all punctuation,
+            // trimming whitespace, and collapsing multiple spaces into one.
+            const normalize = (str: string) => str.toLowerCase().replace(/[^\w\s]/g, '').trim().replace(/\s+/g, ' ');
             isCorrect = normalize(typingInput) === normalize(correctAnswer);
         } else {
             if (!grammar) {
@@ -662,7 +672,7 @@ const App: React.FC = () => {
           <main>
               <div className="progress-tracker">
                   <div>Difficulty: {quizProficiency.charAt(0).toUpperCase() + quizProficiency.slice(1)}</div>
-                  <div>Question: {currentQuizQuestionIndex + 1}/{totalQuestions}</div>
+                  <div>Question: {currentQuestionIndex + 1}/{totalQuestions}</div>
               </div>
               <div className="progress-bar-container">
                   <div className="progress-bar" style={{ width: `${((currentQuizQuestionIndex + 1) / totalQuestions) * 100}%` }}></div>
