@@ -3,6 +3,8 @@ const http = require('http');
 const { Server } = require("socket.io");
 const path = require('path');
 const cors = require('cors');
+const fs = require('fs');
+const babel = require('@babel/core');
 
 const app = express();
 app.use(cors()); // Enable CORS for all routes
@@ -15,15 +17,44 @@ const io = new Server(server, {
   }
 });
 
-// Serve static files from the project's root directory.
-// Set correct MIME type for TypeScript/TSX files to be processed by Babel on the client-side.
-app.use(express.static(__dirname, {
-    setHeaders: function (res, filePath) {
-        if (filePath.endsWith('.tsx') || filePath.endsWith('.ts') || filePath.endsWith('.jsx') || filePath.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-        }
+// Middleware to transpile TSX/TS files on the fly
+app.use((req, res, next) => {
+    const isTsx = req.path.endsWith('.tsx');
+    const isTs = req.path.endsWith('.ts');
+
+    if (isTsx || isTs) {
+        const filePath = path.join(__dirname, req.path);
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                // If the file doesn't exist, let the next middleware handle it (e.g., express.static for a 404).
+                return next();
+            }
+            try {
+                // Transpile the file content using Babel.
+                const result = babel.transformSync(data, {
+                    presets: [
+                        '@babel/preset-react',
+                        ['@babel/preset-typescript', { isTSX: isTsx, allExtensions: true }]
+                    ],
+                    filename: filePath // Important for sourcemaps and error messages
+                });
+                // Send the transpiled code as JavaScript.
+                res.setHeader('Content-Type', 'application/javascript');
+                res.send(result.code);
+            } catch (e) {
+                console.error(`Babel transformation error in ${filePath}:`, e);
+                res.status(500).send('Error during transpilation');
+            }
+        });
+    } else {
+        // If it's not a TS/TSX file, move to the next middleware.
+        next();
     }
-}));
+});
+
+
+// Serve static files from the project's root directory.
+app.use(express.static(__dirname));
 
 // Add a health check route for the hosting platform
 app.get("/health", (req, res) => {
