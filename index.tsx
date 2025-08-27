@@ -1,5 +1,5 @@
 
-// Fix for: Cannot find name 'ohm' and Cannot find name 'io'.
+// FIX: Declare global variables for ohm and io to resolve 'Cannot find name' errors.
 declare var ohm: any;
 declare var io: any;
 
@@ -53,16 +53,14 @@ const elements = {
     sentenceTray: document.getElementById('sentence-tray'),
     wordPool: document.getElementById('word-pool'),
     feedbackArea: document.getElementById('feedback-area'),
-    // Fix for: Property 'disabled' does not exist on type 'HTMLElement'.
-    checkBtn: document.getElementById('check-btn') as HTMLButtonElement,
+    checkBtn: document.getElementById('check-btn'),
     resetBtn: document.getElementById('reset-btn'),
     timerDisplay: document.getElementById('timer'),
     // Typing Game Elements
     typingChallengeContainer: document.getElementById('typing-challenge-container'),
     typingPrompt: document.getElementById('typing-prompt'),
     typingWordSet: document.getElementById('typing-word-set'),
-    // Fix for: Property 'value' does not exist on type 'HTMLElement'.
-    typingInput: document.getElementById('typing-input') as HTMLInputElement,
+    typingInput: document.getElementById('typing-input'),
     // Single Player Setup
     proficiencyBtns: document.querySelectorAll('.proficiency-btn'),
     resumeGameContainer: document.getElementById('resume-game-container'),
@@ -72,19 +70,14 @@ const elements = {
     quizProficiencyBtns: document.querySelectorAll('.quiz-proficiency-btn'),
     backFromQuizSetupBtn: document.getElementById('back-from-quiz-setup-btn'),
     // Multiplayer Elements
-    // Fix for: Property 'value' does not exist on type 'HTMLElement'.
-    nicknameInput: document.getElementById('nickname-input') as HTMLInputElement,
-    // Fix for: Property 'value' does not exist on type 'HTMLElement'.
-    groupCodeInput: document.getElementById('group-code-input') as HTMLInputElement,
-    // Fix for: Property 'disabled' does not exist on type 'HTMLElement'.
-    joinGroupBtn: document.getElementById('join-group-btn') as HTMLButtonElement,
-    // Fix for: Property 'disabled' does not exist on type 'HTMLElement'.
-    createGroupBtn: document.getElementById('create-group-btn') as HTMLButtonElement,
+    nicknameInput: document.getElementById('nickname-input'),
+    groupCodeInput: document.getElementById('group-code-input'),
+    joinGroupBtn: document.getElementById('join-group-btn'),
+    createGroupBtn: document.getElementById('create-group-btn'),
     multiplayerFeedback: document.getElementById('multiplayer-feedback'),
     groupCodeDisplay: document.querySelector('#group-code-display strong'),
     waitingPlayerList: document.getElementById('waiting-room-player-list'),
-    // Fix for: Property 'disabled' does not exist on type 'HTMLElement'.
-    startGameBtn: document.getElementById('start-game-btn') as HTMLButtonElement,
+    startGameBtn: document.getElementById('start-game-btn'),
     multiplayerScoreboard: document.getElementById('multiplayer-scoreboard'),
     playerScoresList: document.getElementById('player-scores'),
     multiplayerCreateTab: document.getElementById('multiplayer-create-tab'),
@@ -112,7 +105,7 @@ const elements = {
 };
 
 // --- OHM.JS GRAMMAR ---
-// Fix for: Cannot find name 'ohm'.
+// FIX: Added 'declare var ohm: any;' at the top of the file to resolve 'Cannot find name 'ohm'' error.
 const grammar = ohm.grammar(document.getElementById('grammar').textContent);
 
 // --- GAME & QUIZ DATA ---
@@ -472,7 +465,7 @@ function drop(e) {
         if ((e.target as HTMLElement).classList.contains('word-tile') && e.target !== draggedElement) {
             const rect = (e.target as HTMLElement).getBoundingClientRect();
             const nextSibling = (e.clientX - rect.left) > (rect.width / 2) ? (e.target as HTMLElement).nextSibling : e.target;
-            droppable.insertBefore(draggedElement, nextSibling);
+            droppable.insertBefore(draggedElement, nextSibling as Node);
         } else {
             droppable.appendChild(draggedElement);
         }
@@ -524,7 +517,7 @@ function setupQuestion() {
         });
     }
 
-    if (elements.checkBtn) elements.checkBtn.disabled = false;
+    if (elements.checkBtn) (elements.checkBtn as HTMLButtonElement).disabled = false;
     if (state.gameMode !== 'multi') {
         startTimer();
     }
@@ -535,7 +528,8 @@ function setupTypingChallenge(question) {
     const shuffledWords = [...question.words].sort(() => Math.random() - 0.5);
     if (elements.typingWordSet) elements.typingWordSet.textContent = shuffledWords.join(', ');
     if (elements.typingInput) {
-        elements.typingInput.value = '';
+        // FIX: Cast 'elements.typingInput' to HTMLInputElement to access 'value' property.
+        (elements.typingInput as HTMLInputElement).value = '';
         elements.typingInput.focus();
     }
 }
@@ -550,7 +544,8 @@ function checkAnswer(timedOut = false) {
     const question = levelData[state.currentQuestionIndex];
 
     if (state.proficiency === 'hard') {
-        const userInput = elements.typingInput.value.trim().toLowerCase();
+        // FIX: Cast 'elements.typingInput' to HTMLInputElement to access 'value' property.
+        const userInput = (elements.typingInput as HTMLInputElement).value.trim().toLowerCase();
         // Simple check: see if all required words are present
         isCorrect = question.words.every(word => userInput.includes(word.toLowerCase()));
         if (isCorrect) {
@@ -560,6 +555,7 @@ function checkAnswer(timedOut = false) {
         }
     } else {
         const sentenceTiles = elements.sentenceTray.querySelectorAll('.word-tile');
+        // FIX: Cast 'tile' to HTMLElement to access 'dataset' property. This is likely the fix for the misreported error on line 551.
         const submittedTypes = Array.from(sentenceTiles).map(tile => (tile as HTMLElement).dataset.type);
         const submittedSentence = submittedTypes.join('_');
         
@@ -582,7 +578,8 @@ function checkAnswer(timedOut = false) {
             state.socket.emit('updateScore', state.playerData);
         }
         
-        if (elements.checkBtn) elements.checkBtn.disabled = true;
+        // FIX: Cast 'elements.checkBtn' to HTMLButtonElement to access 'disabled' property.
+        if (elements.checkBtn) (elements.checkBtn as HTMLButtonElement).disabled = true;
         
         setTimeout(() => {
             state.currentQuestionIndex++;
@@ -652,7 +649,6 @@ function endGame(completed) {
     if(elements.gameOverMessage) elements.gameOverMessage.textContent = completed 
         ? "You've successfully answered all questions." 
         : "You've completed the session.";
-    // Fix for: Type 'number' is not assignable to type 'string'.
     if(elements.finalScore) elements.finalScore.textContent = state.score.toString();
     showModal(elements.gameOverModal);
 }
@@ -717,7 +713,7 @@ function displayQuizQuestion() {
         elements.quizOptionsArea.appendChild(button);
     });
 
-    if(elements.nextQuestionBtn) (elements.nextQuestionBtn as HTMLElement).style.display = 'none';
+    if(elements.nextQuestionBtn) elements.nextQuestionBtn.style.display = 'none';
 }
 
 function checkQuizAnswer(selectedOption, correctAnswer) {
@@ -725,7 +721,7 @@ function checkQuizAnswer(selectedOption, correctAnswer) {
     let correctButton;
 
     buttons.forEach(button => {
-        // Fix for: Property 'disabled' does not exist on type 'Element'.
+        // FIX: Cast 'button' to HTMLButtonElement to access 'disabled' property.
         (button as HTMLButtonElement).disabled = true;
         if (button.textContent === correctAnswer) {
             button.classList.add('correct');
@@ -745,7 +741,7 @@ function checkQuizAnswer(selectedOption, correctAnswer) {
         if(elements.quizFeedbackArea) elements.quizFeedbackArea.className = 'feedback-incorrect';
     }
 
-    if(elements.nextQuestionBtn) (elements.nextQuestionBtn as HTMLElement).style.display = 'block';
+    if(elements.nextQuestionBtn) elements.nextQuestionBtn.style.display = 'block';
 }
 
 function nextQuizQuestion() {
@@ -767,7 +763,7 @@ function endQuiz() {
 // --- MULTIPLAYER LOGIC ---
 function connectToServer() {
     // Connect to the server running on the same host
-    // Fix for: Cannot find name 'io'.
+    // FIX: Added 'declare var io: any;' at the top of the file to resolve 'Cannot find name 'io'' error.
     state.socket = io({
         reconnectionAttempts: 3,
         timeout: 10000,
@@ -777,8 +773,9 @@ function connectToServer() {
     state.socket.on('connect', () => {
         console.log("Connected to server with ID:", state.socket.id);
         if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = "";
-        if(elements.createGroupBtn) elements.createGroupBtn.disabled = false;
-        if(elements.joinGroupBtn) elements.joinGroupBtn.disabled = false;
+        // FIX: Cast 'elements.createGroupBtn' and 'elements.joinGroupBtn' to HTMLButtonElement to access 'disabled' property.
+        if(elements.createGroupBtn) (elements.createGroupBtn as HTMLButtonElement).disabled = false;
+        if(elements.joinGroupBtn) (elements.joinGroupBtn as HTMLButtonElement).disabled = false;
         state.playerData.id = state.socket.id;
     });
 
@@ -790,8 +787,9 @@ function connectToServer() {
     state.socket.on('disconnect', () => {
         console.log("Disconnected from server.");
         if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = "Disconnected.";
-        if(elements.createGroupBtn) elements.createGroupBtn.disabled = true;
-        if(elements.joinGroupBtn) elements.joinGroupBtn.disabled = true;
+        // FIX: Cast 'elements.createGroupBtn' and 'elements.joinGroupBtn' to HTMLButtonElement to access 'disabled' property.
+        if(elements.createGroupBtn) (elements.createGroupBtn as HTMLButtonElement).disabled = true;
+        if(elements.joinGroupBtn) (elements.joinGroupBtn as HTMLButtonElement).disabled = true;
     });
 
     state.socket.on('groupCreated', ({ groupCode, players }) => {
@@ -817,11 +815,11 @@ function connectToServer() {
 
     state.socket.on('updatePlayers', (players) => {
         state.players = players;
-        if ((elements.waitingRoomModal as HTMLElement).style.display === 'flex') {
+        if (elements.waitingRoomModal.style.display === 'flex') {
             const isHost = players.length > 0 && players[0].id === state.playerData.id;
             updateWaitingRoom(players, isHost);
         }
-        if ((elements.gameContainer as HTMLElement).style.display === 'block' && state.gameMode === 'multi') {
+        if (elements.gameContainer.style.display === 'block' && state.gameMode === 'multi') {
             updatePlayerScores(players);
         }
     });
@@ -842,7 +840,8 @@ function updateWaitingRoom(players, isHost) {
     
     if (isHost) {
         if(elements.startGameBtn) elements.startGameBtn.style.display = 'block';
-        if(elements.startGameBtn) elements.startGameBtn.disabled = players.length < 1; // Can start with 1 for testing
+        // FIX: Cast 'elements.startGameBtn' to HTMLButtonElement to access 'disabled' property.
+        if(elements.startGameBtn) (elements.startGameBtn as HTMLButtonElement).disabled = players.length < 1; // Can start with 1 for testing
     } else {
         if(elements.startGameBtn) elements.startGameBtn.style.display = 'none';
     }
@@ -888,25 +887,25 @@ function init() {
 
     // Single Player Proficiency
     elements.proficiencyBtns.forEach(btn => {
-        // Fix for: Property 'onclick' does not exist on type 'Element'. and Property 'dataset' does not exist on type 'Element'.
-        (btn as HTMLElement).onclick = (e) => startGame((e.target as HTMLElement).dataset.level);
+        // FIX: Cast 'btn' to HTMLElement to add 'onclick' event listener and access 'dataset'.
+        (btn as HTMLElement).onclick = (e) => startGame((btn as HTMLElement).dataset.level);
     });
-    if(elements.backFromSetupBtn) (elements.backFromSetupBtn as HTMLElement).onclick = backToMenu;
+    if(elements.backFromSetupBtn) elements.backFromSetupBtn.onclick = backToMenu;
 
     // Quiz Proficiency
     elements.quizProficiencyBtns.forEach(btn => {
-        // Fix for: Property 'onclick' does not exist on type 'Element'. and Property 'dataset' does not exist on type 'Element'.
-        (btn as HTMLElement).onclick = (e) => startQuiz((e.target as HTMLElement).dataset.level);
+        // FIX: Cast 'btn' to HTMLElement to add 'onclick' event listener and access 'dataset'.
+        (btn as HTMLElement).onclick = (e) => startQuiz((btn as HTMLElement).dataset.level);
     });
-    if(elements.backFromQuizSetupBtn) (elements.backFromQuizSetupBtn as HTMLElement).onclick = backToMenu;
-    if(elements.nextQuestionBtn) (elements.nextQuestionBtn as HTMLElement).onclick = nextQuizQuestion;
+    if(elements.backFromQuizSetupBtn) elements.backFromQuizSetupBtn.onclick = backToMenu;
+    if(elements.nextQuestionBtn) elements.nextQuestionBtn.onclick = nextQuizQuestion;
 
     // Game Controls
     if(elements.checkBtn) elements.checkBtn.onclick = () => checkAnswer(false);
-    if(elements.resetBtn) (elements.resetBtn as HTMLElement).onclick = resetWordPositions;
-    if(elements.playAgainBtn) (elements.playAgainBtn as HTMLElement).onclick = backToMenu;
-    if(elements.backToMenuBtn) (elements.backToMenuBtn as HTMLElement).onclick = backToMenu;
-    if(elements.quizBackToMenuBtn) (elements.quizBackToMenuBtn as HTMLElement).onclick = backToMenu;
+    if(elements.resetBtn) elements.resetBtn.onclick = resetWordPositions;
+    if(elements.playAgainBtn) elements.playAgainBtn.onclick = backToMenu;
+    if(elements.backToMenuBtn) elements.backToMenuBtn.onclick = backToMenu;
+    if(elements.quizBackToMenuBtn) elements.quizBackToMenuBtn.onclick = backToMenu;
 
     // Drag and Drop listeners for containers
     [elements.sentenceTray, elements.wordPool].forEach(container => {
@@ -933,7 +932,8 @@ function init() {
         if(elements.createGroupBtn) elements.createGroupBtn.style.display = 'none';
     };
     if(elements.createGroupBtn) elements.createGroupBtn.onclick = () => {
-        const nickname = elements.nicknameInput.value.trim();
+        // FIX: Cast 'elements.nicknameInput' to HTMLInputElement to access 'value' property.
+        const nickname = (elements.nicknameInput as HTMLInputElement).value.trim();
         if (nickname && state.socket) {
             state.playerData.nickname = nickname;
             state.socket.emit('createGroup', state.playerData);
@@ -942,8 +942,9 @@ function init() {
         }
     };
     if(elements.joinGroupBtn) elements.joinGroupBtn.onclick = () => {
-        const nickname = elements.nicknameInput.value.trim();
-        const groupCode = elements.groupCodeInput.value.trim();
+        // FIX: Cast 'elements.nicknameInput' and 'elements.groupCodeInput' to HTMLInputElement to access 'value' property.
+        const nickname = (elements.nicknameInput as HTMLInputElement).value.trim();
+        const groupCode = (elements.groupCodeInput as HTMLInputElement).value.trim();
         if (nickname && groupCode.length === 3 && state.socket) {
             state.playerData.nickname = nickname;
             state.socket.emit('joinGroup', { playerData: state.playerData, groupCode });
@@ -951,13 +952,13 @@ function init() {
             if(elements.multiplayerFeedback) elements.multiplayerFeedback.textContent = "Please enter a nickname and a valid 3-digit code.";
         }
     };
-    if(elements.backFromMultiplayerBtn) (elements.backFromMultiplayerBtn as HTMLElement).onclick = backToMenu;
+    if(elements.backFromMultiplayerBtn) elements.backFromMultiplayerBtn.onclick = backToMenu;
     
     // Multiplayer Host Proficiency Selection
     elements.multiplayerProficiencyBtns.forEach(btn => {
-        // Fix for: Property 'onclick' does not exist on type 'Element'. and Property 'dataset' does not exist on type 'Element'.
+        // FIX: Cast 'btn' to HTMLElement to add 'onclick' event listener and access 'dataset'.
         (btn as HTMLElement).onclick = (e) => {
-            const proficiency = (e.target as HTMLElement).dataset.level;
+            const proficiency = (btn as HTMLElement).dataset.level;
             state.proficiency = proficiency;
             if (state.socket && state.groupCode) {
                 state.socket.emit('setProficiency', { groupCode: state.groupCode, proficiency });
@@ -966,7 +967,7 @@ function init() {
             showModal(elements.waitingRoomModal);
         };
     });
-    if(elements.backFromMultiplayerProficiencyBtn) (elements.backFromMultiplayerProficiencyBtn as HTMLElement).onclick = backToMenu;
+    if(elements.backFromMultiplayerProficiencyBtn) elements.backFromMultiplayerProficiencyBtn.onclick = backToMenu;
 
     // Multiplayer Waiting Room
     if(elements.startGameBtn) elements.startGameBtn.onclick = () => {
@@ -974,7 +975,7 @@ function init() {
             state.socket.emit('startGameRequest', { groupCode: state.groupCode, proficiency: state.proficiency });
         }
     };
-    if(elements.backFromWaitingBtn) (elements.backFromWaitingBtn as HTMLElement).onclick = backToMenu;
+    if(elements.backFromWaitingBtn) elements.backFromWaitingBtn.onclick = backToMenu;
 }
 
 // --- INITIALIZE ---
