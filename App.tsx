@@ -39,6 +39,7 @@ const App: React.FC = () => {
     const [score, setScore] = useState(0);
     const [timer, setTimer] = useState(50);
     const timerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+    const [grammar, setGrammar] = useState<any>(null);
 
     // Card Game State
     const [trayWords, setTrayWords] = useState<IdentifiedWord[]>([]);
@@ -71,12 +72,20 @@ const App: React.FC = () => {
     const [hasSavedGame, setHasSavedGame] = useState(false);
     const [gameOverMessage, setGameOverMessage] = useState({ title: '', message: '' });
 
-    const grammar = useMemo(() => {
-        const grammarScript = document.getElementById('grammar');
-        if (grammarScript) {
-            return ohm.grammar(grammarScript.textContent);
+    // Safely initialize grammar after component mounts to prevent race conditions
+    useEffect(() => {
+        try {
+            const grammarScript = document.getElementById('grammar');
+            if (grammarScript && typeof ohm !== 'undefined' && grammarScript.textContent) {
+                setGrammar(ohm.grammar(grammarScript.textContent));
+            } else if (typeof ohm === 'undefined') {
+                console.error("ohm.js library is not loaded.");
+            } else {
+                console.error("Grammar script tag not found in the DOM.");
+            }
+        } catch (e) {
+            console.error("Failed to initialize Ohm grammar:", e);
         }
-        return null;
     }, []);
 
     // --- Game Flow ---
@@ -223,7 +232,8 @@ const App: React.FC = () => {
             socket.disconnect();
         }
 
-        const newSocket = io('https://cognitive-psy-assessment.onrender.com');
+        // Connect to the server that serves the page
+        const newSocket = io();
         setSocket(newSocket);
         setConnectionStatus('connecting');
         setMultiplayerFeedback('Connecting to server...');
@@ -312,9 +322,14 @@ const App: React.FC = () => {
         
         if (proficiency === 'hard') {
             const correctAnswer = (levels[proficiency][currentQuestionIndex] as HardQuestion).answer;
-            const normalize = (str: string) => str.toLowerCase().replace(/[.,?]$/, '').trim().replace(/\s+/g, ' ');
+            const normalize = (str: string) => str.toLowerCase().replace(/[.,?]/g, '').trim().replace(/\s+/g, ' ');
             isCorrect = normalize(typingInput) === normalize(correctAnswer);
         } else {
+            if (!grammar) {
+                setFeedback({ message: 'Grammar engine is not ready. Please wait.', type: 'incorrect' });
+                setTimeout(() => setFeedback(null), 2000);
+                return;
+            }
             if (trayWords.length === 0) {
               setFeedback({ message: 'Please build a sentence first.', type: 'incorrect'});
               setTimeout(() => setFeedback(null), 2000);
@@ -331,15 +346,15 @@ const App: React.FC = () => {
             setIsAnswerChecked(true);
 
             const points = 100 + Math.max(0, timer * 2);
-            const newScore = score + points;
-            setScore(newScore);
             setFeedback({ message: `Correct! +${points} points`, type: 'correct' });
             
-            if (gameMode === 'multi' && socket) {
-                const updatedPlayerData = { ...playerData, score: newScore };
-                setPlayerData(updatedPlayerData);
-                socket.emit('updateScore', { ...updatedPlayerData, groupCode });
+            if (gameMode === 'single') {
+                const newScore = score + points;
+                setScore(newScore);
+            } else if (gameMode === 'multi' && socket) {
+                socket.emit('correctAnswer', { groupCode, timeRemaining: timer });
             }
+            
             setTimeout(nextQuestion, 1500);
         } else {
             setFeedback({ message: "That's not quite right. Try again!", type: 'incorrect' });
@@ -601,14 +616,20 @@ const App: React.FC = () => {
                 <div className={`feedback-area ${feedback ? `feedback-${feedback.type}` : ''}`}>{feedback?.message}</div>
                 <div id="action-buttons">
                     <button onClick={() => loadQuestion(currentQuestionIndex, proficiency)} className="btn btn-secondary">Reset</button>
-                    <button onClick={checkAnswer} className="btn btn-primary" disabled={isAnswerChecked}>Check Answer</button>
+                    <button 
+                        onClick={checkAnswer} 
+                        className="btn btn-primary" 
+                        disabled={isAnswerChecked || (proficiency !== 'hard' && !grammar)}
+                    >
+                        Check Answer
+                    </button>
                 </div>
 
                 {gameMode === 'multi' && (
                     <div id="multiplayer-scoreboard">
                         <h3>Scoreboard</h3>
                         <ul id="player-scores">
-                            {[...players].sort((a,b) => b.score - a.score).map(p => (
+                            {players.map(p => (
                                 <li key={p.id}>
                                     <span className="player-name">{p.nickname}{p.id === playerData.id ? ' (You)' : ''}</span>
                                     <span className="player-score">{p.score}</span>

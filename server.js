@@ -16,7 +16,8 @@ const io = new Server(server, {
 });
 
 // Serve static files from the project's root directory.
-app.use(express.static(__dirname));
+// Using path.join for robust, cross-platform path construction.
+app.use(express.static(path.join(__dirname)));
 
 // Add a health check route for the hosting platform
 app.get("/health", (req, res) => {
@@ -79,13 +80,18 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('updateScore', (playerData) => {
-        // The client sends its entire playerData object, which now includes the groupCode
-        const { groupCode } = playerData;
+    socket.on('correctAnswer', ({ groupCode, timeRemaining }) => {
         if (groupCode && groups[groupCode]) {
             const playerIndex = groups[groupCode].players.findIndex(p => p.id === socket.id);
             if (playerIndex !== -1) {
-                groups[groupCode].players[playerIndex].score = playerData.score;
+                // Server-side score calculation for security
+                const points = 100 + Math.max(0, timeRemaining * 2);
+                groups[groupCode].players[playerIndex].score += points;
+
+                // Sort players by score descending before broadcasting
+                const sortedPlayers = [...groups[groupCode].players].sort((a, b) => b.score - a.score);
+                groups[groupCode].players = sortedPlayers;
+
                 io.to(groupCode).emit('updatePlayers', groups[groupCode].players);
             }
         }
@@ -113,6 +119,12 @@ io.on('connection', (socket) => {
     });
 });
 
+// This catch-all route should be placed after all other API routes and static file handlers.
+// It ensures that any request not handled by the routes above will serve the main application file.
+// This is crucial for single-page applications.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
