@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { levels, quizData } from './constants';
 import { Word, Player, Proficiency, GameMode, QuizQuestion, HardQuestion, CardQuestion } from './types';
@@ -14,7 +14,6 @@ const shuffleArray = (array: any[]) => {
 
 // Global declarations for external libraries
 declare const ohm: any;
-// Fix: Removed conflicting 'io' declaration. It is already imported from socket.io-client.
 
 const App: React.FC = () => {
     // Game State
@@ -25,8 +24,7 @@ const App: React.FC = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [timer, setTimer] = useState(50);
-    // Fix: Replaced NodeJS.Timeout with ReturnType<typeof setTimeout> for browser compatibility.
-    const timerInterval = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const timerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Card Game State
     const [trayWords, setTrayWords] = useState<Word[]>([]);
@@ -66,6 +64,101 @@ const App: React.FC = () => {
         return null;
     }, []);
 
+    // --- Game Flow ---
+
+    const startTimer = useCallback(() => {
+        if (timerInterval.current) clearInterval(timerInterval.current);
+        timerInterval.current = setInterval(() => {
+            setTimer(prev => prev - 1);
+        }, 1000);
+    }, []);
+
+    const resetTimer = useCallback(() => {
+        if (timerInterval.current) clearInterval(timerInterval.current);
+        setTimer(50);
+    }, []);
+
+    const endGame = useCallback((title: string, message: string) => {
+        if(timerInterval.current) clearInterval(timerInterval.current);
+        setModal('game-over');
+        if (gameMode === 'single') {
+            localStorage.removeItem('syntaxGameState');
+        }
+    }, [gameMode]);
+    
+    const loadQuizQuestion = useCallback((index: number) => {
+      setFeedback(null);
+      setSelectedQuizAnswer(null);
+      setIsAnswerChecked(false);
+      const question = quizData[quizProficiency][index];
+      setShuffledQuizOptions(shuffleArray([...question.options]));
+    }, [quizProficiency]);
+    
+    const nextQuizQuestion = useCallback(() => {
+      const nextIndex = currentQuizQuestionIndex + 1;
+      if (nextIndex < quizData[quizProficiency].length) {
+          setCurrentQuizQuestionIndex(nextIndex);
+          loadQuizQuestion(nextIndex);
+      } else {
+          endGame("Quiz Complete!", "You've finished all the quiz questions.");
+      }
+    }, [currentQuizQuestionIndex, quizProficiency, loadQuizQuestion, endGame]);
+    
+    const loadQuestion = useCallback((index: number, prof: Proficiency) => {
+        setFeedback(null);
+        setIsAnswerChecked(false);
+        const questionData = levels[prof][index];
+
+        if (prof === 'hard') {
+            // No direct state change here, just for type guarding
+        } else {
+            const q = questionData as CardQuestion;
+            setTrayWords([]);
+            setPoolWords(shuffleArray([...q.words]));
+        }
+        setTypingInput('');
+        
+        resetTimer();
+        startTimer();
+    }, [resetTimer, startTimer]);
+
+    const nextQuestion = useCallback(() => {
+        const nextIndex = currentQuestionIndex + 1;
+        if (nextIndex < levels[proficiency].length) {
+            setCurrentQuestionIndex(nextIndex);
+            loadQuestion(nextIndex, proficiency);
+        } else {
+            endGame('Level Complete!', "You'veanswered all questions for this level.");
+        }
+    }, [currentQuestionIndex, proficiency, loadQuestion, endGame]);
+    
+    const startGame = useCallback((resumedState: any = null) => {
+        const prof = resumedState?.proficiency || proficiency;
+        const qIndex = resumedState?.currentQuestionIndex || 0;
+        const initialScore = resumedState?.score || 0;
+
+        setModal(null);
+        setView('game');
+        setProficiency(prof);
+        setCurrentQuestionIndex(qIndex);
+        setScore(initialScore);
+
+        loadQuestion(qIndex, prof);
+
+        if (resumedState?.timer) {
+            setTimer(resumedState.timer > 0 ? resumedState.timer : 50);
+            startTimer();
+        }
+    }, [proficiency, loadQuestion, startTimer]);
+
+    const startQuiz = useCallback(() => {
+      setModal(null);
+      setView('quiz');
+      setCurrentQuizQuestionIndex(0);
+      setQuizScore(0);
+      loadQuizQuestion(0);
+    }, [loadQuizQuestion]);
+
     // --- Effects ---
     
     // Timer Effect
@@ -73,9 +166,10 @@ const App: React.FC = () => {
         if (timer <= 0 && view !== 'menu' && !isAnswerChecked) {
             if(timerInterval.current) clearInterval(timerInterval.current);
             setFeedback({ message: "Time's up! Moving to the next question.", type: 'incorrect' });
-            setTimeout(() => gameMode === 'quiz' ? nextQuizQuestion() : nextQuestion(), 2000);
+            const timeoutId = setTimeout(() => gameMode === 'quiz' ? nextQuizQuestion() : nextQuestion(), 2000);
+            return () => clearTimeout(timeoutId);
         }
-    }, [timer, view, isAnswerChecked]);
+    }, [timer, view, isAnswerChecked, gameMode, nextQuestion, nextQuizQuestion]);
 
     // Cleanup timer on unmount/view change
     useEffect(() => {
@@ -103,26 +197,64 @@ const App: React.FC = () => {
       }
     }, [modal]);
 
+    const initializeSocket = useCallback(() => {
+        if (connectionStatus === 'connecting') return;
+
+        if (socket) {
+            socket.disconnect();
+        }
+
+        const newSocket = io('https://cognitive-psy-assessment.onrender.com');
+        setSocket(newSocket);
+        setConnectionStatus('connecting');
+        setMultiplayerFeedback('Connecting to server...');
+
+        newSocket.on('connect', () => {
+            setPlayerData(prev => ({ ...prev, id: newSocket.id }));
+            setConnectionStatus('connected');
+            setMultiplayerFeedback('');
+        });
+
+        newSocket.on('connect_error', () => {
+            setConnectionStatus('failed');
+            setMultiplayerFeedback('Failed to connect to server. Please check your connection.');
+            newSocket.disconnect();
+            setSocket(null);
+        });
+
+        newSocket.on('groupCreated', ({ groupCode: code, players: playerList }) => {
+            setGroupCode(code);
+            setPlayers(playerList);
+            setModal('multi-proficiency');
+        });
+
+        newSocket.on('joinSuccess', ({ groupCode: code }) => {
+            setGroupCode(code);
+            setModal('waiting-room');
+        });
+
+        newSocket.on('joinError', (message) => {
+            setMultiplayerFeedback(message);
+        });
+
+        newSocket.on('updatePlayers', (playerList) => {
+            setPlayers(playerList);
+        });
+
+        newSocket.on('gameStarted', ({ proficiency: prof }) => {
+            setProficiency(prof);
+            startGame();
+        });
+
+        return newSocket;
+    }, [socket, connectionStatus, startGame]);
+
     // Effect to initialize socket connection for multiplayer
     useEffect(() => {
         if (modal === 'multi-setup' && connectionStatus === 'idle') {
             initializeSocket();
         }
-    }, [modal, connectionStatus]);
-
-    // --- Game Flow ---
-
-    const startTimer = () => {
-        if (timerInterval.current) clearInterval(timerInterval.current);
-        timerInterval.current = setInterval(() => {
-            setTimer(prev => prev - 1);
-        }, 1000);
-    };
-
-    const resetTimer = () => {
-        if (timerInterval.current) clearInterval(timerInterval.current);
-        setTimer(50);
-    };
+    }, [modal, connectionStatus, initializeSocket]);
     
     const resetToMenu = () => {
         if (timerInterval.current) clearInterval(timerInterval.current);
@@ -155,87 +287,6 @@ const App: React.FC = () => {
 
         // Clear saved game when explicitly returning to menu
         localStorage.removeItem('syntaxGameState');
-    };
-
-    const startGame = (resumedState: any = null) => {
-        const prof = resumedState?.proficiency || proficiency;
-        const qIndex = resumedState?.currentQuestionIndex || 0;
-        const initialScore = resumedState?.score || 0;
-
-        setModal(null);
-        setView('game');
-        setProficiency(prof);
-        setCurrentQuestionIndex(qIndex);
-        setScore(initialScore);
-
-        loadQuestion(qIndex, prof);
-
-        if (resumedState?.timer) {
-            setTimer(resumedState.timer > 0 ? resumedState.timer : 50);
-            startTimer();
-        }
-    };
-    
-    const startQuiz = () => {
-      setModal(null);
-      setView('quiz');
-      setCurrentQuizQuestionIndex(0);
-      setQuizScore(0);
-      loadQuizQuestion(0);
-    }
-
-    const loadQuestion = (index: number, prof: Proficiency) => {
-        setFeedback(null);
-        setIsAnswerChecked(false);
-        const questionData = levels[prof][index];
-
-        if (prof === 'hard') {
-            const q = questionData as HardQuestion;
-            setTypingInput('');
-        } else {
-            const q = questionData as CardQuestion;
-            setTrayWords([]);
-            setPoolWords(shuffleArray([...q.words]));
-        }
-        
-        resetTimer();
-        startTimer();
-    };
-    
-    const loadQuizQuestion = (index: number) => {
-      setFeedback(null);
-      setSelectedQuizAnswer(null);
-      setIsAnswerChecked(false);
-      const question = quizData[quizProficiency][index];
-      setShuffledQuizOptions(shuffleArray([...question.options]));
-    };
-
-    const nextQuestion = () => {
-        const nextIndex = currentQuestionIndex + 1;
-        if (nextIndex < levels[proficiency].length) {
-            setCurrentQuestionIndex(nextIndex);
-            loadQuestion(nextIndex, proficiency);
-        } else {
-            endGame('Level Complete!', "You'veanswered all questions for this level.");
-        }
-    };
-    
-    const nextQuizQuestion = () => {
-      const nextIndex = currentQuizQuestionIndex + 1;
-      if (nextIndex < quizData[quizProficiency].length) {
-          setCurrentQuizQuestionIndex(nextIndex);
-          loadQuizQuestion(nextIndex);
-      } else {
-          endGame("Quiz Complete!", "You've finished all the quiz questions.");
-      }
-    };
-    
-    const endGame = (title: string, message: string) => {
-        if(timerInterval.current) clearInterval(timerInterval.current);
-        setModal('game-over');
-        if (gameMode === 'single') {
-            localStorage.removeItem('syntaxGameState');
-        }
     };
 
     const checkAnswer = () => {
@@ -299,56 +350,6 @@ const App: React.FC = () => {
     };
 
     // --- Multiplayer ---
-    
-    const initializeSocket = () => {
-        if (socket) {
-            socket.disconnect();
-        }
-
-        const newSocket = io('https://cognitive-psy-assessment.onrender.com');
-        setSocket(newSocket);
-        setConnectionStatus('connecting');
-        setMultiplayerFeedback('Connecting to server...');
-
-        newSocket.on('connect', () => {
-            setPlayerData(prev => ({ ...prev, id: newSocket.id }));
-            setConnectionStatus('connected');
-            setMultiplayerFeedback('');
-        });
-
-        newSocket.on('connect_error', () => {
-            setConnectionStatus('failed');
-            setMultiplayerFeedback('Failed to connect to server. Please check your connection.');
-            newSocket.disconnect();
-            setSocket(null);
-        });
-
-        newSocket.on('groupCreated', ({ groupCode: code, players: playerList }) => {
-            setGroupCode(code);
-            setPlayers(playerList);
-            setModal('multi-proficiency');
-        });
-
-        newSocket.on('joinSuccess', ({ groupCode: code }) => {
-            setGroupCode(code);
-            setModal('waiting-room');
-        });
-
-        newSocket.on('joinError', (message) => {
-            setMultiplayerFeedback(message);
-        });
-
-        newSocket.on('updatePlayers', (playerList) => {
-            setPlayers(playerList);
-        });
-
-        newSocket.on('gameStarted', ({ proficiency: prof }) => {
-            setProficiency(prof);
-            startGame();
-        });
-
-        return newSocket;
-    };
     
     const handleCreateGroup = () => {
       if(nickname && socket) {
