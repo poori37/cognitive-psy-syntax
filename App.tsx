@@ -12,6 +12,12 @@ const shuffleArray = (array: any[]) => {
   return array;
 };
 
+// Word with a unique ID for drag-and-drop
+interface IdentifiedWord extends Word {
+    id: number;
+}
+
+
 // Global declarations for external libraries
 declare const ohm: any;
 
@@ -27,8 +33,8 @@ const App: React.FC = () => {
     const timerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Card Game State
-    const [trayWords, setTrayWords] = useState<Word[]>([]);
-    const [poolWords, setPoolWords] = useState<Word[]>([]);
+    const [trayWords, setTrayWords] = useState<IdentifiedWord[]>([]);
+    const [poolWords, setPoolWords] = useState<IdentifiedWord[]>([]);
     
     // Typing Game State
     const [typingInput, setTypingInput] = useState('');
@@ -55,6 +61,7 @@ const App: React.FC = () => {
     const [feedback, setFeedback] = useState<{ message: string; type: 'correct' | 'incorrect' } | null>(null);
     const [isAnswerChecked, setIsAnswerChecked] = useState(false);
     const [hasSavedGame, setHasSavedGame] = useState(false);
+    const [gameOverMessage, setGameOverMessage] = useState({ title: '', message: '' });
 
     const grammar = useMemo(() => {
         const grammarScript = document.getElementById('grammar');
@@ -77,9 +84,28 @@ const App: React.FC = () => {
         if (timerInterval.current) clearInterval(timerInterval.current);
         setTimer(50);
     }, []);
+    
+    const loadQuestion = useCallback((index: number, prof: Proficiency) => {
+        setFeedback(null);
+        setIsAnswerChecked(false);
+        const questionData = levels[prof][index];
 
+        if (prof !== 'hard') {
+            const q = questionData as CardQuestion;
+            // Create IDs that are unique across the entire level, not just the question
+            const wordsWithIds = q.words.map((word, idx) => ({ ...word, id: Number(`${index}${idx}`) }));
+            setTrayWords([]);
+            setPoolWords(shuffleArray([...wordsWithIds]));
+        }
+        setTypingInput('');
+        
+        resetTimer();
+        startTimer();
+    }, [resetTimer, startTimer]);
+    
     const endGame = useCallback((title: string, message: string) => {
         if(timerInterval.current) clearInterval(timerInterval.current);
+        setGameOverMessage({ title, message });
         setModal('game-over');
         if (gameMode === 'single') {
             localStorage.removeItem('syntaxGameState');
@@ -94,6 +120,19 @@ const App: React.FC = () => {
       setShuffledQuizOptions(shuffleArray([...question.options]));
     }, [quizProficiency]);
     
+    const nextQuestion = useCallback(() => {
+        const nextIndex = currentQuestionIndex + 1;
+        if (nextIndex < levels[proficiency].length) {
+            setCurrentQuestionIndex(nextIndex);
+            loadQuestion(nextIndex, proficiency);
+        } else {
+            endGame(
+                `'${proficiency.charAt(0).toUpperCase() + proficiency.slice(1)}' Level Complete!`, 
+                "You've answered all questions for this difficulty."
+            );
+        }
+    }, [currentQuestionIndex, proficiency, loadQuestion, endGame]);
+
     const nextQuizQuestion = useCallback(() => {
       const nextIndex = currentQuizQuestionIndex + 1;
       if (nextIndex < quizData[quizProficiency].length) {
@@ -104,36 +143,8 @@ const App: React.FC = () => {
       }
     }, [currentQuizQuestionIndex, quizProficiency, loadQuizQuestion, endGame]);
     
-    const loadQuestion = useCallback((index: number, prof: Proficiency) => {
-        setFeedback(null);
-        setIsAnswerChecked(false);
-        const questionData = levels[prof][index];
-
-        if (prof === 'hard') {
-            // No direct state change here, just for type guarding
-        } else {
-            const q = questionData as CardQuestion;
-            setTrayWords([]);
-            setPoolWords(shuffleArray([...q.words]));
-        }
-        setTypingInput('');
-        
-        resetTimer();
-        startTimer();
-    }, [resetTimer, startTimer]);
-
-    const nextQuestion = useCallback(() => {
-        const nextIndex = currentQuestionIndex + 1;
-        if (nextIndex < levels[proficiency].length) {
-            setCurrentQuestionIndex(nextIndex);
-            loadQuestion(nextIndex, proficiency);
-        } else {
-            endGame('Level Complete!', "You'veanswered all questions for this level.");
-        }
-    }, [currentQuestionIndex, proficiency, loadQuestion, endGame]);
-    
-    const startGame = useCallback((resumedState: any = null) => {
-        const prof = resumedState?.proficiency || proficiency;
+    const startGame = useCallback((resumedState: any = null, profOverride?: Proficiency) => {
+        const prof = profOverride || resumedState?.proficiency || proficiency;
         const qIndex = resumedState?.currentQuestionIndex || 0;
         const initialScore = resumedState?.score || 0;
 
@@ -181,7 +192,7 @@ const App: React.FC = () => {
     // Save game state on browser close for single player
     useEffect(() => {
         const saveGameState = () => {
-            if (gameMode === 'single' && proficiency !== 'hard' && view === 'game') {
+            if (gameMode === 'single' && view === 'game') {
                 const stateToSave = { proficiency, currentQuestionIndex, score, timer };
                 localStorage.setItem('syntaxGameState', JSON.stringify(stateToSave));
             }
@@ -242,8 +253,7 @@ const App: React.FC = () => {
         });
 
         newSocket.on('gameStarted', ({ proficiency: prof }) => {
-            setProficiency(prof);
-            startGame();
+            startGame(null, prof);
         });
 
         return newSocket;
@@ -293,7 +303,7 @@ const App: React.FC = () => {
         let isCorrect = false;
         
         if (proficiency === 'hard') {
-            const correctAnswer = (levels.hard[currentQuestionIndex] as HardQuestion).answer;
+            const correctAnswer = (levels[proficiency][currentQuestionIndex] as HardQuestion).answer;
             const normalize = (str: string) => str.toLowerCase().replace(/[.,?]$/, '').trim().replace(/\s+/g, ' ');
             isCorrect = normalize(typingInput) === normalize(correctAnswer);
         } else {
@@ -379,10 +389,10 @@ const App: React.FC = () => {
     }
 
     // --- Drag and Drop Handlers ---
-    const draggedTile = useRef<Word | null>(null);
+    const draggedTile = useRef<IdentifiedWord | null>(null);
     const draggedFrom = useRef<'pool' | 'tray' | null>(null);
 
-    const onDragStart = (word: Word, from: 'pool' | 'tray') => {
+    const onDragStart = (word: IdentifiedWord, from: 'pool' | 'tray') => {
         draggedTile.current = word;
         draggedFrom.current = from;
     };
@@ -392,9 +402,9 @@ const App: React.FC = () => {
         
         // Remove from source
         if (draggedFrom.current === 'pool') {
-            setPoolWords(prev => prev.filter(w => w.word !== draggedTile.current!.word));
+            setPoolWords(prev => prev.filter(w => w.id !== draggedTile.current!.id));
         } else {
-            setTrayWords(prev => prev.filter(w => w.word !== draggedTile.current!.word));
+            setTrayWords(prev => prev.filter(w => w.id !== draggedTile.current!.id));
         }
         
         // Add to target
@@ -406,6 +416,16 @@ const App: React.FC = () => {
         
         draggedTile.current = null;
         draggedFrom.current = null;
+    };
+
+    const handleWordClick = (wordToMove: IdentifiedWord, from: 'pool' | 'tray') => {
+        if (from === 'pool') {
+            setPoolWords(prev => prev.filter(word => word.id !== wordToMove.id));
+            setTrayWords(prev => [...prev, wordToMove]);
+        } else {
+            setTrayWords(prev => prev.filter(word => word.id !== wordToMove.id));
+            setPoolWords(prev => [...prev, wordToMove]);
+        }
     };
 
 
@@ -438,7 +458,7 @@ const App: React.FC = () => {
                     <h3>Select Your Proficiency</h3>
                     <div className="button-group">
                         {(['easy', 'medium', 'hard'] as Proficiency[]).map(level => 
-                            <button key={level} onClick={() => { setProficiency(level); startGame(); }}>{level.charAt(0).toUpperCase() + level.slice(1)}</button>
+                            <button key={level} onClick={() => startGame(null, level)}>{level.charAt(0).toUpperCase() + level.slice(1)}</button>
                         )}
                     </div>
                     {hasSavedGame && <div style={{ marginTop: 20 }}><p>Or</p><button onClick={resumeGame} className="secondary">Resume Previous Game</button></div>}
@@ -501,8 +521,8 @@ const App: React.FC = () => {
                 </div>
               </>);
             case 'game-over':
-                return baseModal(gameMode === 'quiz' ? 'Quiz Complete!' : 'Level Complete!', <>
-                    <p>{gameMode === 'quiz' ? "You've finished all the quiz questions." : "You've finished all questions for this level."}</p>
+                return baseModal(gameOverMessage.title, <>
+                    <p>{gameOverMessage.message}</p>
                     <h3>Final Score: <span id="final-score">{gameMode === 'quiz' ? quizScore : score}</span></h3>
                     <div className="button-group"><button onClick={resetToMenu}>Back to Menu</button></div>
                 </>);
@@ -548,10 +568,10 @@ const App: React.FC = () => {
                             <h2>TARGET: <span>{(currentQuestion as CardQuestion).displayRule}</span></h2>
                         </div>
                         <div className="sentence-tray droppable" onDragOver={e => e.preventDefault()} onDrop={() => onDrop('tray')}>
-                            {trayWords.map(word => <div key={word.word} className="word-tile" draggable onDragStart={() => onDragStart(word, 'tray')}>{word.word}</div>)}
+                            {trayWords.map(word => <div key={word.id} className="word-tile" draggable onDragStart={() => onDragStart(word, 'tray')} onClick={() => handleWordClick(word, 'tray')}>{word.word}</div>)}
                         </div>
                         <div className="word-pool droppable" onDragOver={e => e.preventDefault()} onDrop={() => onDrop('pool')}>
-                            {poolWords.map(word => <div key={word.word} className="word-tile" draggable onDragStart={() => onDragStart(word, 'pool')}>{word.word}</div>)}
+                            {poolWords.map(word => <div key={word.id} className="word-tile" draggable onDragStart={() => onDragStart(word, 'pool')} onClick={() => handleWordClick(word, 'pool')}>{word.word}</div>)}
                         </div>
                     </>
                 )}
