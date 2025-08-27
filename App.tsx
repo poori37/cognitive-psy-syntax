@@ -400,22 +400,35 @@ const App: React.FC = () => {
     const onDrop = (target: 'pool' | 'tray') => {
         if (!draggedTile.current || !draggedFrom.current) return;
         
-        // Remove from source
-        if (draggedFrom.current === 'pool') {
-            setPoolWords(prev => prev.filter(w => w.id !== draggedTile.current!.id));
-        } else {
-            setTrayWords(prev => prev.filter(w => w.id !== draggedTile.current!.id));
-        }
-        
-        // Add to target
-        if (target === 'pool') {
-            setPoolWords(prev => [...prev, draggedTile.current!]);
-        } else {
-            setTrayWords(prev => [...prev, draggedTile.current!]);
-        }
-        
+        const droppedWord = draggedTile.current;
+        const source = draggedFrom.current;
+
         draggedTile.current = null;
         draggedFrom.current = null;
+
+        if (source === target) {
+            // This logic moves the dropped item to the end of its list.
+            if (source === 'pool') {
+                setPoolWords(prev => [
+                    ...prev.filter(w => w.id !== droppedWord.id),
+                    droppedWord
+                ]);
+            } else { // source === 'tray'
+                setTrayWords(prev => [
+                    ...prev.filter(w => w.id !== droppedWord.id),
+                    droppedWord
+                ]);
+            }
+        } else {
+            // Move between containers
+            if (source === 'pool') { // and target is 'tray'
+                setPoolWords(prev => prev.filter(w => w.id !== droppedWord.id));
+                setTrayWords(prev => [...prev, droppedWord]);
+            } else { // source is 'tray' and target is 'pool'
+                setTrayWords(prev => prev.filter(w => w.id !== droppedWord.id));
+                setPoolWords(prev => [...prev, droppedWord]);
+            }
+        }
     };
 
     const handleWordClick = (wordToMove: IdentifiedWord, from: 'pool' | 'tray') => {
