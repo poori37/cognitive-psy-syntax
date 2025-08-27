@@ -787,6 +787,16 @@
     Possessive_Noun_Verb_Determiner_Adjective_Noun_Punctuation = Possessive Noun Verb Determiner Adjective Noun Punctuation
     Determiner_Adjective_Noun_Verb_Adverb_Punctuation = Determiner Adjective Noun Verb Adverb Punctuation
     Pronoun_Verb_Adjective_Conjunction_Pronoun_Verb_Adjective_Punctuation = Pronoun Verb Adjective Conjunction Pronoun Verb Adjective Punctuation
+    // New Advanced Rules from Prompts
+    Conjunction_Pronoun_Verb_Adjective_Comma_Pronoun_Verb_Determiner_Noun_Punctuation = Conjunction Pronoun Verb Adjective Comma Pronoun Verb Determiner Noun Punctuation
+    Conjunction_Pronoun_Verb_Comma_Pronoun_Verb_Verb_Determiner_Noun_Punctuation = Conjunction Pronoun Verb Comma Pronoun Verb Verb Determiner Noun Punctuation
+    Pronoun_Verb_Verb_Possessive_Noun_Preposition_Noun_Punctuation = Pronoun Verb Verb Possessive Noun Preposition Noun Punctuation
+    Adverb_Verb_Pronoun_Verb_Conjunction_Determiner_Noun_Verb_Punctuation = Adverb Verb Pronoun Verb Conjunction Determiner Noun Verb Punctuation
+    Conjunction_Pronoun_Verb_Ving_Comma_Pronoun_Verb_Adverb_Punctuation = Conjunction Pronoun Verb Ving Comma Pronoun Verb Adverb Punctuation
+    Pronoun_Verb_Adjective_Conjunction_Possessive_Noun_Verb_Adverb_Punctuation = Pronoun Verb Adjective Conjunction Possessive Noun Verb Adverb Punctuation
+    Determiner_Noun_Pronoun_Verb_Determiner_Noun_Verb_Determiner_Noun_Punctuation = Determiner Noun Pronoun Verb Determiner Noun Verb Determiner Noun Punctuation
+    Determiner_Noun_Verb_Conjunction_Verb_Determiner_Noun_Punctuation = Determiner Noun Verb Conjunction Verb Determiner Noun Punctuation
+    Conjunction_Determiner_Noun_Verb_Comma_Possessive_Noun_Verb_Punctuation = Conjunction Determiner Noun Verb Comma Possessive Noun Verb Punctuation
 
     // Professional
     Determiner_Adjective_Adjective_Noun_Verb_Preposition_Determiner_Adjective_Noun_Punctuation = Determiner Adjective Adjective Noun Verb Preposition Determiner Adjective Noun Punctuation
@@ -981,56 +991,109 @@
             },
         ],
         advanced: [
+            // Prompt 1: Subordinate Clause
             { 
-                rule: "Pronoun_Verb_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Preposition - Determiner - Noun - Punctuation', 
-                words: [{word: "He", type: "Pronoun"}, {word: "walked", type: "Verb"}, {word: "to", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "store", type: "Noun"}, {word: ".", type: "Punctuation"}] 
+                rule: "Conjunction_Pronoun_Verb_Adjective_Comma_Pronoun_Verb_Determiner_Noun_Punctuation",
+                displayRule: 'Complex Sentence: Subordinate Clause', 
+                words: [
+                    {word: "Although", type: "Conjunction"}, {word: "he", type: "Pronoun"}, {word: "was", type: "Verb"}, 
+                    {word: "tired", type: "Adjective"}, {word: ",", type: "Comma"}, {word: "he", type: "Pronoun"}, 
+                    {word: "finished", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "project", type: "Noun"}, 
+                    {word: ".", type: "Punctuation"}
+                ] 
             },
+            // Prompt 2: Conditional Sentence
             { 
-                rule: "Pronoun_Verb_Determiner_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "She", type: "Pronoun"}, {word: "put", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "keys", type: "Noun"}, {word: "on", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "table", type: "Noun"}, {word: ".", type: "Punctuation"}]
+                rule: "Conjunction_Pronoun_Verb_Comma_Pronoun_Verb_Verb_Determiner_Noun_Punctuation",
+                displayRule: 'Conditional Sentence (using "Unless")', 
+                words: [
+                    {word: "Unless", type: "Conjunction"}, {word: "you", type: "Pronoun"}, {word: "study", type: "Verb"}, 
+                    {word: ",", type: "Comma"}, {word: "you", type: "Pronoun"}, {word: "will", type: "Verb"}, 
+                    {word: "fail", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "exam", type: "Noun"}, 
+                    {word: ".", type: "Punctuation"}
+                ]
             },
+            // Prompt 3: Past Perfect Tense
             { 
-                rule: "Pronoun_Verb_Adjective_Comma_Conjunction_Pronoun_Verb_Adjective_Punctuation",
-                displayRule: 'Subject - Verb - Adjective - Conjunction - Subject - Verb - Adjective - Punctuation', 
-                words: [{word:"I", type: "Pronoun"}, {word:"was", type: "Verb"}, {word:"tired", type: "Adjective"}, {word:",", type: "Comma"}, {word:"but", type: "Conjunction"}, {word:"I", type: "Pronoun"}, {word:"was", type: "Verb"}, {word:"happy", type: "Adjective"}, {word:".", type: "Punctuation"}]
+                rule: "Pronoun_Verb_Verb_Possessive_Noun_Preposition_Noun_Punctuation",
+                displayRule: 'Sentence with Past Perfect Tense', 
+                words: [
+                    {word: "She", type: "Pronoun"}, {word: "had", type: "Verb"}, {word: "finished", type: "Verb"}, 
+                    {word: "her", type: "Possessive"}, {word: "homework", type: "Noun"}, {word: "before", type: "Preposition"}, 
+                    {word: "dinner", type: "Noun"}, {word: ".", type: "Punctuation"}
+                ] 
             },
+            // Prompt 4: Interrogative Sentence
             { 
-                rule: "Pronoun_Verb_Conjunction_Verb_Punctuation",
-                displayRule: 'Subject - Verb - Conjunction - Verb - Punctuation', 
-                words: [{word: "He", type: "Pronoun"}, {word: "sang", type: "Verb"}, {word: "and", type: "Conjunction"}, {word: "danced", type: "Verb"}, {word: ".", type: "Punctuation"}] 
+                rule: "Adverb_Verb_Pronoun_Verb_Conjunction_Determiner_Noun_Verb_Punctuation",
+                displayRule: 'Interrogative with Subordinate Clause', 
+                words: [
+                    {word: "Why", type: "Adverb"}, {word: "did", type: "Verb"}, {word: "you", type: "Pronoun"}, 
+                    {word: "leave", type: "Verb"}, {word: "before", type: "Conjunction"}, {word: "the", type: "Determiner"}, 
+                    {word: "party", type: "Noun"}, {word: "ended", type: "Verb"}, {word: "?", type: "Punctuation"}
+                ] 
             },
+            // Prompt 5: Sentence begins with "Although..."
             { 
-                rule: "Pronoun_Verb_Determiner_Noun_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Prepositional Phrase - Punctuation', 
-                words: [{word: "He", type: "Pronoun"}, {word: "read", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "book", type: "Noun"}, {word: "in", type: "Preposition"}, {word: "the", type: "Determiner"}, {word: "park", type: "Noun"}, {word: ".", type: "Punctuation"}]
+                rule: "Conjunction_Pronoun_Verb_Ving_Comma_Pronoun_Verb_Adverb_Punctuation",
+                displayRule: 'Sentence starting with "Although"', 
+                words: [
+                    {word: "Although", type: "Conjunction"}, {word: "it", type: "Pronoun"}, {word: "was", type: "Verb"}, 
+                    {word: "raining", type: "Ving"}, {word: ",", type: "Comma"}, {word: "we", type: "Pronoun"}, 
+                    {word: "played", type: "Verb"}, {word: "outside", type: "Adverb"}, {word: ".", type: "Punctuation"}
+                ]
             },
+            // Prompt 6: Two clauses joined by "because"
             { 
-                rule: "Pronoun_Verb_Verb_Conjunction_Pronoun_Verb_Ving_Punctuation",
-                displayRule: 'Subject - Verb - Subordinate Clause - Punctuation', 
-                words: [{word: "We", type: "Pronoun"}, {word: "will", type: "Verb"}, {word: "go", type: "Verb"}, {word: "if", type: "Conjunction"}, {word: "it", type: "Pronoun"}, {word: "stops", type: "Verb"}, {word: "raining", type: "Ving"}, {word: ".", type: "Punctuation"}]
+                rule: "Pronoun_Verb_Adjective_Conjunction_Possessive_Noun_Verb_Adverb_Punctuation",
+                displayRule: 'Two clauses joined by "because"', 
+                words: [
+                    {word: "He", type: "Pronoun"}, {word: "was", type: "Verb"}, {word: "late", type: "Adjective"}, 
+                    {word: "because", type: "Conjunction"}, {word: "his", type: "Possessive"}, {word: "car", type: "Noun"}, 
+                    {word: "broke", type: "Verb"}, {word: "down", type: "Adverb"}, {word: ".", type: "Punctuation"}
+                ]
             },
+            // Prompt 7: Relative Clause
             { 
-                rule: "Determiner_Noun_Verb_Adverb_Punctuation",
-                displayRule: 'Subject - Verb - Adverb - Punctuation', 
-                words: [{word: "The", type: "Determiner"}, {word: "dog", type: "Noun"}, {word: "barked", type: "Verb"}, {word: "loudly", type: "Adverb"}, {word: ".", type: "Punctuation"}] 
+                rule: "Determiner_Noun_Pronoun_Verb_Determiner_Noun_Verb_Determiner_Noun_Punctuation",
+                displayRule: 'Sentence with a Relative Clause (who/which)', 
+                words: [
+                    {word: "The", type: "Determiner"}, {word: "artist", type: "Noun"}, {word: "who", type: "Pronoun"}, 
+                    {word: "created", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "painting", type: "Noun"}, 
+                    {word: "inspired", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "audience", type: "Noun"}, 
+                    {word: ".", type: "Punctuation"}
+                ]
             },
+            // Prompt 8: Subject with two actions
             { 
-                rule: "Pronoun_Verb_Pronoun_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Punctuation', 
-                words: [{word: "He", type: "Pronoun"}, {word: "gave", type: "Verb"}, {word: "her", type: "Pronoun"}, {word: "a", type: "Determiner"}, {word: "gift", type: "Noun"}, {word: ".", type: "Punctuation"}] 
+                rule: "Determiner_Noun_Verb_Conjunction_Verb_Determiner_Noun_Punctuation",
+                displayRule: 'Subject performing two actions', 
+                words: [
+                    {word: "The", type: "Determiner"}, {word: "student", type: "Noun"}, {word: "studied", type: "Verb"}, 
+                    {word: "and", type: "Conjunction"}, {word: "wrote", type: "Verb"}, {word: "the", type: "Determiner"}, 
+                    {word: "essay", type: "Noun"}, {word: ".", type: "Punctuation"}
+                ]
             },
+            // Prompt 9: Adverbial clause of time
+            { 
+                rule: "Conjunction_Determiner_Noun_Verb_Comma_Possessive_Noun_Verb_Punctuation",
+                displayRule: 'Adverbial Clause of Time (e.g., while)', 
+                words: [
+                    {word: "While", type: "Conjunction"}, {word: "the", type: "Determiner"}, {word: "children", type: "Noun"}, 
+                    {word: "played", type: "Verb"}, {word: ",", type: "Comma"}, {word: "their", type: "Possessive"}, 
+                    {word: "parents", type: "Noun"}, {word: "watched", type: "Verb"}, {word: ".", type: "Punctuation"}
+                ]
+            },
+            // Prompt 10: Irrelevant word
             { 
                 rule: "Determiner_Noun_Verb_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Object - Punctuation', 
-                words: [{word: "The", type: "Determiner"}, {word: "student", type: "Noun"}, {word: "passed", type: "Verb"}, {word: "the", type: "Determiner"}, {word: "test", type: "Noun"}, {word: ".", type: "Punctuation"}]
-            },
-            { 
-                rule: "Determiner_Noun_Verb_Preposition_Determiner_Noun_Punctuation",
-                displayRule: 'Subject - Verb - Prepositional Phrase - Punctuation', 
-                words: [{word: "The", type: "Determiner"}, {word: "artist", type: "Noun"}, {word: "painted", type: "Verb"}, {word: "with", type: "Preposition"}, {word: "a", type: "Determiner"}, {word: "brush", type: "Noun"}, {word: ".", type: "Punctuation"}]
-            },
+                displayRule: 'Simple Sentence (ignore one word)', 
+                words: [
+                    {word: "The", type: "Determiner"}, {word: "manager", type: "Noun"}, {word: "organized", type: "Verb"}, 
+                    {word: "the", type: "Determiner"}, {word: "meeting", type: "Noun"}, {word: ".", type: "Punctuation"}, 
+                    {word: "toothbrush", type: "Noun"}
+                ]
+            }
         ],
         professional: [
             { 
@@ -1580,8 +1643,10 @@
 
     // --- MULTIPLAYER LOGIC ---
     function initializeSocket() {
-        // Force WebSocket transport to avoid issues with HTTP long-polling in some environments.
-        state.socket = io({ transports: ['websocket'] });
+        // Connect to the remote server, prioritizing websockets
+        state.socket = io('https://cognitive-psy-assessment.onrender.com', {
+            transports: ['websocket']
+        }); 
         elements.multiplayerFeedback.textContent = 'Connecting to server...';
 
         state.socket.on('connect', () => {
