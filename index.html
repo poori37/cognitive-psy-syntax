@@ -1080,7 +1080,11 @@
                     socket.disconnect();
                 }
 
-                const newSocket = io();
+                // Explicitly connect to the production server on Render.
+                // For local development, you would change this to 'http://localhost:3000'
+                // and run the server.js file locally.
+                const SERVER_URL = 'https://cognitive-psy-assessment.onrender.com';
+                const newSocket = io(SERVER_URL);
                 setSocket(newSocket);
                 setConnectionStatus('connecting');
                 setMultiplayerFeedback('Connecting to server...');
@@ -1093,7 +1097,7 @@
 
                 newSocket.on('connect_error', () => {
                     setConnectionStatus('failed');
-                    setMultiplayerFeedback('Failed to connect to server. Please check your connection.');
+                    setMultiplayerFeedback('Failed to connect. Is the server running?');
                     newSocket.disconnect();
                     setSocket(null);
                 });
