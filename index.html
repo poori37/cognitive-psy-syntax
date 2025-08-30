@@ -22,21 +22,31 @@
     <script src="https://unpkg.com/ohm-js@16.4.0/dist/ohm.js"></script>
     <style>
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes aurora-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px var(--accent-secondary), 0 0 25px var(--accent-secondary); }
+            50% { box-shadow: 0 0 25px var(--accent-secondary), 0 0 40px var(--accent-secondary); }
         }
 
         :root {
-            --bg-dark: #0d0c22;
-            --bg-medium: #1f1f38;
-            --bg-light: #2a2a4e;
-            --text-light: #e0e0e0;
-            --text-dark: #a0a0c0;
-            --accent-primary: #ff00ff; /* Magenta */
-            --accent-secondary: #00ffff; /* Cyan */
-            --success: #00ff7f; /* Spring Green */
-            --error: #ff4d4d; /* Neon Red */
-            --warning: #ffff00; /* Yellow */
+            --bg-dark: #02041b;
+            --bg-medium-translucent: rgba(20, 18, 52, 0.5);
+            --bg-light-translucent: rgba(35, 32, 83, 0.6);
+            --text-light: #f0f0ff;
+            --text-dark: #a0a8d0;
+            --accent-primary: #f000ff; /* Magenta */
+            --accent-secondary: #00d0ff; /* Cyan */
+            --success: #00ff9b; /* Mint Green */
+            --error: #ff4d6e; /* Neon Red */
             --font-heading: 'Orbitron', sans-serif;
             --font-body: 'Poppins', sans-serif;
         }
@@ -48,28 +58,28 @@
         body {
             font-family: var(--font-body);
             background-color: var(--bg-dark);
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background: linear-gradient(-45deg, #02041b, #1d0f3b, #04203d, #02041b);
+            background-size: 400% 400%;
+            animation: aurora-bg 25s ease infinite;
             color: var(--text-light);
             margin: 0;
             padding: 2rem;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         
         h1, h2, h3, h4, h5, h6 {
             font-family: var(--font-heading);
             color: var(--accent-secondary);
-            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+            text-shadow: 0 0 8px rgba(0, 208, 255, 0.7), 0 0 2px rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
         }
         h1 { font-size: 2.2rem; }
         h2 { font-size: 1.8rem; }
-        h3 { font-size: 1.4rem; color: var(--accent-primary); text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);}
+        h3 { font-size: 1.4rem; color: var(--accent-primary); text-shadow: 0 0 8px rgba(240, 0, 255, 0.7), 0 0 2px rgba(255, 255, 255, 0.5);}
 
         .modal-overlay {
             display: flex;
@@ -78,21 +88,21 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(13, 12, 34, 0.8);
+            background-color: rgba(2, 4, 27, 0.7);
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(8px);
-            animation: fadeIn 0.3s ease-out;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.4s ease-out;
         }
 
         .modal-content {
-            background-color: rgba(31, 31, 56, 0.9);
-            border: 2px solid var(--accent-primary);
-            box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
-            color: white;
+            background-color: var(--bg-medium-translucent);
+            border: 1px solid rgba(240, 0, 255, 0.5);
+            box-shadow: 0 0 40px rgba(240, 0, 255, 0.3), inset 0 0 10px rgba(240, 0, 255, 0.2);
+            color: var(--text-light);
             padding: 40px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-align: center;
             width: 90%;
             max-width: 450px;
@@ -104,13 +114,14 @@
             border: 2px solid var(--accent-primary);
             padding: 12px 24px;
             margin: 5px;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
+            box-shadow: 0 0 8px rgba(240, 0, 255, 0.5), inset 0 0 8px rgba(240, 0, 255, 0.3);
         }
 
         .modal-content button {
@@ -118,9 +129,8 @@
         }
 
         .modal-content button:hover:not(:disabled), .btn:hover:not(:disabled) {
-            background-color: var(--accent-primary);
-            color: var(--bg-dark);
-            box-shadow: 0 0 20px var(--accent-primary);
+            background-color: rgba(240, 0, 255, 0.2);
+            box-shadow: 0 0 25px var(--accent-primary);
         }
 
         .modal-content button:disabled, .btn:disabled {
@@ -128,16 +138,17 @@
             cursor: not-allowed;
             border-color: var(--text-dark);
             color: var(--text-dark);
+            box-shadow: none;
         }
 
         .modal-content button.secondary, .btn-secondary {
             color: var(--accent-secondary);
             border-color: var(--accent-secondary);
+            box-shadow: 0 0 8px rgba(0, 208, 255, 0.5), inset 0 0 8px rgba(0, 208, 255, 0.3);
         }
         .modal-content button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
-            background-color: var(--accent-secondary);
-            box-shadow: 0 0 20px var(--accent-secondary);
-            color: var(--bg-dark);
+            background-color: rgba(0, 208, 255, 0.2);
+            box-shadow: 0 0 25px var(--accent-secondary);
         }
 
         .modal-content input {
@@ -145,9 +156,9 @@
             width: 100%;
             padding: 12px;
             margin-bottom: 1rem;
-            border-radius: 5px;
-            border: 2px solid var(--bg-light);
-            background-color: var(--bg-dark);
+            border-radius: 8px;
+            border: 2px solid rgba(160, 168, 208, 0.3);
+            background-color: rgba(2, 4, 27, 0.5);
             color: var(--text-light);
             font-size: 1rem;
             text-align: center;
@@ -160,7 +171,7 @@
         .modal-content input:focus {
             outline: none;
             border-color: var(--accent-primary);
-            box-shadow: 0 0 10px var(--accent-primary);
+            box-shadow: 0 0 15px var(--accent-primary);
         }
 
         .modal-content .button-group {
@@ -191,16 +202,17 @@
             margin-top: 1rem;
             color: var(--error);
             font-weight: 600;
-            text-shadow: 0 0 5px var(--error);
+            text-shadow: 0 0 8px var(--error);
         }
         
         .segmented-control {
             display: flex;
             width: 100%;
-            border: 2px solid var(--bg-light);
-            border-radius: 5px;
+            border: 2px solid rgba(160, 168, 208, 0.3);
+            border-radius: 8px;
             overflow: hidden;
             margin-bottom: 1.5rem;
+            background-color: rgba(2, 4, 27, 0.5);
         }
         .segmented-control button {
             flex: 1;
@@ -211,19 +223,20 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s, color 0.3s, text-shadow 0.3s;
+            transition: all 0.3s;
             margin: 0;
             border-radius: 0;
             width: 50%;
             text-transform: uppercase;
+            box-shadow: none;
         }
         .segmented-control button.active {
             background-color: var(--accent-primary);
-            color: var(--bg-dark);
-            text-shadow: none;
+            color: #fff;
+            text-shadow: 0 0 5px #000;
         }
         .segmented-control button:not(.active):hover {
-            background-color: var(--bg-light);
+            background-color: rgba(160, 168, 208, 0.1);
             color: var(--text-light);
         }
 
@@ -236,32 +249,31 @@
             padding: 0.5rem 1rem;
             background-color: var(--bg-dark);
             border: 2px solid var(--accent-secondary);
-            border-radius: 5px;
+            border-radius: 8px;
             color: var(--accent-secondary);
             letter-spacing: 4px;
             margin-left: 0.5rem;
             font-size: 1.5rem;
             font-family: var(--font-heading);
-            box-shadow: 0 0 10px var(--accent-secondary);
+            box-shadow: 0 0 15px var(--accent-secondary), inset 0 0 8px rgba(0, 208, 255, 0.3);
         }
         
         #waiting-room-player-list {
             list-style: none;
-            padding: 0;
+            padding: 1rem;
             margin: 1.5rem 0;
             text-align: left;
             max-height: 200px;
             overflow-y: auto;
-            background-color: var(--bg-dark);
-            border-radius: 5px;
-            padding: 1rem;
-            border: 1px solid var(--bg-light);
+            background-color: rgba(2, 4, 27, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(160, 168, 208, 0.2);
         }
         #waiting-room-player-list li {
             padding: 0.75rem;
             font-weight: 600;
             border-left: 4px solid var(--accent-primary);
-            background-color: var(--bg-medium);
+            background-color: rgba(20, 18, 52, 0.7);
             margin-bottom: 0.5rem;
             border-radius: 0 4px 4px 0;
         }
@@ -269,21 +281,26 @@
         #game-container {
             width: 100%;
             max-width: 800px;
-            background-color: var(--bg-medium);
+            background-color: var(--bg-medium-translucent);
+            backdrop-filter: blur(12px);
             border-radius: 1rem;
             padding: 2rem;
-            border: 2px solid var(--accent-secondary);
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+            border: 1px solid rgba(0, 208, 255, 0.4);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(0, 208, 255, 0.2);
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
             animation: fadeIn 0.5s ease-out;
+            transform: perspective(1200px) rotateX(2deg);
+            transition: transform 0.3s ease;
+        }
+        #game-container:hover {
+            transform: perspective(1200px) rotateX(0deg);
         }
 
         #game-container header {
             text-align: center;
-            position: relative;
-            border-bottom: 1px solid var(--bg-light);
+            border-bottom: 1px solid rgba(160, 168, 208, 0.2);
             padding-bottom: 1rem;
         }
         #game-container header h1 {
@@ -294,20 +311,22 @@
             color: var(--text-dark);
         }
         .menu-btn {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            z-index: 500;
         }
 
         #timer {
-            position: absolute;
-            top: 0;
-            right: 0;
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 500;
             font-size: 1.2rem;
             font-weight: 600;
-            background: var(--bg-light);
+            background: var(--bg-light-translucent);
             padding: 0.5rem 1rem;
-            border-radius: 5px;
+            border-radius: 8px;
             font-family: var(--font-heading);
             color: var(--accent-secondary);
             border: 1px solid var(--accent-secondary);
@@ -325,11 +344,11 @@
 
         .progress-bar-container {
             width: 100%;
-            background-color: var(--bg-dark);
+            background-color: rgba(2, 4, 27, 0.5);
             border-radius: 10px;
             overflow: hidden;
             height: 12px;
-            border: 1px solid var(--bg-light);
+            border: 1px solid rgba(160, 168, 208, 0.2);
         }
         .progress-bar {
             height: 100%;
@@ -340,11 +359,11 @@
         }
 
         #challenge-display {
-            background-color: var(--bg-dark);
+            background-color: rgba(2, 4, 27, 0.5);
             padding: 1rem 1.5rem;
-            border-radius: 5px;
+            border-radius: 8px;
             text-align: center;
-            border: 1px solid var(--bg-light);
+            border: 1px solid rgba(160, 168, 208, 0.2);
         }
         #challenge-display h2 {
             margin: 0;
@@ -363,10 +382,10 @@
             gap: 1rem;
         }
         #typing-prompt-area, #typing-word-set-area {
-            background: var(--bg-dark);
+            background: rgba(2, 4, 27, 0.5);
             padding: 1rem;
-            border-radius: 5px;
-            border: 1px solid var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid rgba(160, 168, 208, 0.2);
         }
         #typing-prompt-area h3, #typing-word-set-area h4 {
             margin: 0 0 0.5rem 0;
@@ -383,9 +402,9 @@
         #typing-input {
             width: 100%;
             padding: 1rem;
-            border-radius: 5px;
-            border: 2px solid var(--bg-light);
-            background-color: var(--bg-dark);
+            border-radius: 8px;
+            border: 2px solid rgba(160, 168, 208, 0.3);
+            background-color: rgba(2, 4, 27, 0.5);
             color: var(--text-light);
             font-size: 1.1rem;
             font-family: var(--font-body);
@@ -395,31 +414,32 @@
         #typing-input:focus {
             outline: none;
             border-color: var(--accent-secondary);
-            box-shadow: 0 0 10px var(--accent-secondary);
+            box-shadow: 0 0 15px var(--accent-secondary);
         }
 
         .droppable {
             padding: 1rem;
-            border-radius: 5px;
+            border-radius: 8px;
             min-height: 80px;
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            align-items: center;
+            align-content: flex-start;
             transition: all 0.3s ease;
         }
         .sentence-tray {
-            background-color: var(--bg-dark);
-            border: 2px dashed var(--bg-light);
+            background-color: rgba(2, 4, 27, 0.5);
+            border: 2px dashed rgba(160, 168, 208, 0.3);
         }
         .word-pool {
             background-color: transparent;
             min-height: 120px;
-            border: 2px solid transparent;
+            border: none;
             justify-content: center;
         }
         .word-tile {
-            background: rgba(0, 255, 255, 0.1);
+            background: rgba(0, 208, 255, 0.1);
+            backdrop-filter: blur(5px);
             color: var(--accent-secondary);
             border: 1px solid var(--accent-secondary);
             padding: 10px 15px;
@@ -427,17 +447,18 @@
             font-weight: 600;
             cursor: grab;
             user-select: none;
-            transition: transform 0.2s, box-shadow 0.2s, color 0.2s, background 0.2s;
-            text-shadow: 0 0 5px var(--accent-secondary);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+            text-shadow: 0 0 8px var(--accent-secondary);
         }
         .word-tile:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0 10px var(--accent-secondary);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 15px var(--accent-secondary);
+            background: rgba(0, 208, 255, 0.2);
         }
         .word-tile:active {
             cursor: grabbing;
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: scale(1.1);
+            box-shadow: 0 0 25px var(--accent-secondary);
             background: var(--accent-secondary);
             color: var(--bg-dark);
             text-shadow: none;
@@ -454,11 +475,11 @@
         }
         .feedback-correct { 
             color: var(--success); 
-            text-shadow: 0 0 8px var(--success);
+            text-shadow: 0 0 12px var(--success);
         }
         .feedback-incorrect { 
             color: var(--error); 
-            text-shadow: 0 0 8px var(--error);
+            text-shadow: 0 0 12px var(--error);
         }
         
         #action-buttons, #quiz-action-buttons {
@@ -470,10 +491,10 @@
 
         #multiplayer-scoreboard {
             margin-top: 1rem;
-            background: var(--bg-dark);
+            background: rgba(2, 4, 27, 0.5);
             padding: 1rem;
-            border-radius: 5px;
-            border: 1px solid var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid rgba(160, 168, 208, 0.2);
         }
         #multiplayer-scoreboard h3 {
             margin-top: 0;
@@ -488,23 +509,23 @@
             display: flex;
             justify-content: space-between;
             padding: 0.75rem 0.5rem;
-            border-bottom: 1px solid var(--bg-light);
+            border-bottom: 1px solid rgba(160, 168, 208, 0.2);
             font-weight: 600;
             transition: background-color 0.2s;
         }
         #player-scores li:hover {
-            background-color: var(--bg-light);
+            background-color: var(--bg-light-translucent);
         }
         #player-scores li:last-child { border-bottom: none; }
 
         /* Quiz Specific Styles */
         #quiz-question-area {
-            background-color: var(--bg-dark);
+            background-color: rgba(2, 4, 27, 0.5);
             padding: 2rem;
-            border-radius: 5px;
+            border-radius: 8px;
             text-align: center;
             margin-bottom: 1.5rem;
-            border: 1px solid var(--bg-light);
+            border: 1px solid rgba(160, 168, 208, 0.2);
         }
         #quiz-question-text {
             margin: 0;
@@ -520,11 +541,11 @@
             gap: 1rem;
         }
         .quiz-option-btn {
-            background-color: var(--bg-light);
+            background-color: var(--bg-light-translucent);
             color: var(--text-light);
-            border: 2px solid var(--bg-light);
+            border: 2px solid rgba(160, 168, 208, 0.3);
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
@@ -533,6 +554,7 @@
         }
         .quiz-option-btn:not(:disabled):hover {
             border-color: var(--accent-secondary);
+            background-color: rgba(0, 208, 255, 0.1);
             color: var(--accent-secondary);
         }
         .quiz-option-btn.correct { 
@@ -540,12 +562,14 @@
             border-color: var(--success);
             color: var(--bg-dark); 
             text-shadow: none;
+            box-shadow: 0 0 15px var(--success);
         }
         .quiz-option-btn.incorrect { 
             background-color: var(--error); 
             border-color: var(--error);
-            color: var(--bg-dark); 
+            color: #fff; 
             text-shadow: none;
+            box-shadow: 0 0 15px var(--error);
         }
         .quiz-option-btn:disabled { 
             cursor: not-allowed; 
@@ -563,7 +587,7 @@
             color: var(--accent-secondary);
             font-size: 2.5rem;
             font-family: var(--font-heading);
-            text-shadow: 0 0 10px var(--accent-secondary);
+            text-shadow: 0 0 15px var(--accent-secondary), 0 0 25px var(--accent-secondary);
         }
 
     </style>
@@ -1329,30 +1353,63 @@
                 draggedFrom.current = from;
             };
 
-            const onDrop = (target) => {
-                if (!draggedTile.current || !draggedFrom.current) return;
-                
-                const droppedWord = draggedTile.current;
-                const source = draggedFrom.current;
+            const onDrop = (target, insertAtIndex = -1) => {
+              if (!draggedTile.current || !draggedFrom.current) return;
+              
+              const droppedWord = draggedTile.current;
+              const source = draggedFrom.current;
 
-                draggedTile.current = null;
-                draggedFrom.current = null;
-
-                if (source === target) {
-                    if (source === 'pool') {
-                        setPoolWords(prev => [ ...prev.filter(w => w.id !== droppedWord.id), droppedWord ]);
-                    } else {
-                        setTrayWords(prev => [ ...prev.filter(w => w.id !== droppedWord.id), droppedWord ]);
-                    }
+              // Function to remove word from source
+              const removeFromSource = () => {
+                if (source === 'pool') {
+                  setPoolWords(prev => prev.filter(w => w.id !== droppedWord.id));
                 } else {
-                    if (source === 'pool') {
-                        setPoolWords(prev => prev.filter(w => w.id !== droppedWord.id));
-                        setTrayWords(prev => [...prev, droppedWord]);
-                    } else {
-                        setTrayWords(prev => prev.filter(w => w.id !== droppedWord.id));
-                        setPoolWords(prev => [...prev, droppedWord]);
-                    }
+                  setTrayWords(prev => prev.filter(w => w.id !== droppedWord.id));
                 }
+              };
+
+              // Function to add word to target
+              const addToTarget = () => {
+                if (target === 'pool') {
+                  setPoolWords(prev => [...prev, droppedWord]);
+                } else { // target is 'tray'
+                  setTrayWords(prev => {
+                    const newTray = [...prev];
+                    if (insertAtIndex > -1) {
+                      newTray.splice(insertAtIndex, 0, droppedWord);
+                    } else {
+                      newTray.push(droppedWord);
+                    }
+                    return newTray;
+                  });
+                }
+              };
+
+              if (source === target) {
+                // Reordering within the same container
+                let list, setList;
+                if (source === 'tray') {
+                  list = trayWords;
+                  setList = setTrayWords;
+                } else { // source === 'pool', though reordering pool isn't as critical
+                  list = poolWords;
+                  setList = setPoolWords;
+                }
+                const reorderedList = list.filter(w => w.id !== droppedWord.id);
+                if(insertAtIndex > -1) {
+                  reorderedList.splice(insertAtIndex, 0, droppedWord);
+                } else {
+                  reorderedList.push(droppedWord)
+                }
+                setList(reorderedList);
+              } else {
+                // Moving between containers
+                removeFromSource();
+                addToTarget();
+              }
+              
+              draggedTile.current = null;
+              draggedFrom.current = null;
             };
 
             const handleWordClick = (wordToMove, from) => {
@@ -1364,7 +1421,7 @@
                     setPoolWords(prev => [...prev, wordToMove]);
                 }
             };
-
+            
             // --- Render Logic ---
             
             const renderModal = () => {
@@ -1386,7 +1443,7 @@
                                 <li>Choose your game mode: Single Player/ Multiplayer/ Syntax Quiz</li>
                                 <li>Select a difficulty level: Easy / Medium / Hard.</li>
                                 <li>The system will randomly assign you a prompt card and a set of word cards from the chosen level.</li>
-                                <li>Tap to select the words to build a meaningful sentence in the sentence box.</li>
+                                <li>Tap or Drag the words to build a meaningful sentence in the sentence box.</li>
                                 <li>Make sure your sentence is grammatically correct and matches the prompt.</li>
                                 <li>Submit your answer to lock it in.</li>
                             </ol>
@@ -1486,10 +1543,8 @@
 
                 return (<>
                     <header>
-                        <button onClick={resetToMenu} className="menu-btn btn btn-secondary">Menu</button>
                         <h1>The Syntax Card Game</h1>
                         <p>{proficiency === 'hard' ? 'Type the sentence based on the prompt below.' : 'Arrange the words to match the target sentence structure.'}</p>
-                        <div id="timer">Time: {timer}</div>
                     </header>
                     <main>
                         <div className="progress-tracker">
@@ -1531,7 +1586,7 @@
                             <button onClick={() => loadQuestion(currentQuestionIndex, proficiency)} className="btn btn-secondary">Reset</button>
                             <button 
                                 onClick={checkAnswer} 
-                                className="btn btn-primary" 
+                                className="btn" 
                                 disabled={isAnswerChecked || (proficiency !== 'hard' && !grammar)}
                             >
                                 Check Answer
@@ -1568,7 +1623,6 @@
 
               return (<>
                   <header>
-                      <button onClick={resetToMenu} className="menu-btn btn btn-secondary">Menu</button>
                       <h1>Syntax Quiz</h1>
                       <p>Test your grammar knowledge.</p>
                   </header>
@@ -1597,7 +1651,7 @@
                       </div>
                       <div id="quiz-feedback-area" style={{ color: feedback?.type === 'correct' ? 'var(--success)' : 'var(--error)'}}>{feedback?.message}</div>
                       <div id="quiz-action-buttons">
-                          {isAnswerChecked && <button onClick={nextQuizQuestion} className="btn btn-primary">Next Question</button>}
+                          {isAnswerChecked && <button onClick={nextQuizQuestion} className="btn">Next Question</button>}
                       </div>
                   </main>
               </>);
@@ -1607,10 +1661,14 @@
                 <>
                     {renderModal()}
                     {(view === 'game' || view === 'quiz') && (
-                        <div id="game-container">
-                            {view === 'game' && renderGameView()}
-                            {view === 'quiz' && renderQuizView()}
-                        </div>
+                        <>
+                            <button onClick={resetToMenu} className="menu-btn btn btn-secondary">Menu</button>
+                            {view === 'game' && <div id="timer">Time: {timer}</div>}
+                            <div id="game-container">
+                                {view === 'game' && renderGameView()}
+                                {view === 'quiz' && renderQuizView()}
+                            </div>
+                        </>
                     )}
                 </>
             );
